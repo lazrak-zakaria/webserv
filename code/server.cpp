@@ -10,7 +10,7 @@ void    server::setup()
         exit(1);
     }
     bzero(&addr_server, sizeof(addr_server));
-    port = 8086;
+    port = 8439;
     addr_server.sin_family = AF_INET;
     addr_server.sin_addr.s_addr = INADDR_ANY; // ?? i just copied this from tutorials
     addr_server.sin_port = htons(port);
@@ -51,13 +51,19 @@ void    server::run()
                 if (FD_ISSET((*it).first, &r))
                 {
                     //read req and parse it;
+                    // std::cout << "reeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\n";
                     read_request((*it).first);
+                    FD_CLR((*it).first, &r);
+                    FD_SET((*it).first, &w);
                 }
                 else if (FD_ISSET((*it).first, &w))
                 {
                     //build res and send
+                    // std::cout << "weeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\n";
                 
                     send_response((*it).first);
+                    FD_CLR((*it).first, &w);
+                    FD_SET((*it).first, &r);
                 }
             }
         }
@@ -78,7 +84,7 @@ void    server::accept_client()
 {
     client  __client;
     bzero(&__client, sizeof(client));
-    //bzero(&__client.addr_client, sizeof(__client.addr_client));
+    bzero(&__client.addr_client, sizeof(__client.addr_client));
     __client.fd_client = accept(fd_server, (struct sockaddr*)&(__client.addr_client), &__client.addr_length);
     if (__client.fd_client == -1)
     {
@@ -105,23 +111,31 @@ void    server::read_request(int fd)
     // }
     clients[fd].received += r;
     clients[fd].client_request[clients[fd].received] = '\0';
-    std::cout << clients[fd].client_request << "\n";
+    // char *q = strstr(clients[fd].client_request, "\r\n\r\n");
+    // if (!q) return ;
+    // std::cout << clients[fd].client_request << "\n";
     FD_CLR(fd, &read_set);
+    // FD_CLR(fd, &r);
     FD_SET(fd, &write_set);
-   // clients[fd].http_request.parse(clients[fd].client_request);//
+   clients[fd].http_request.parse(clients[fd].client_request);//
+    bzero(clients[fd].client_request, sizeof((clients[fd].client_request)));
+    clients[fd].received = 0;
 }
 
 void    server::send_response(int fd)
 {
-    std::string s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 748\r\n\
+    std::string s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 773\r\n\
 Content-Type: text/html\r\n\r\n";
      int f = open("./index.html", O_RDONLY);
       char buf[41000];
        int r = read(f, buf, 41000);
       buf[r] = 0;
+      std::cout << "--------------------------------------------------------------> " << r << "\n";
     send(fd, s.c_str(), s.length(), 0);
     send(fd, buf, r, 0);
-    std::cout << "here\n";
+    //std::cout << "here\n";
     FD_CLR(fd, &write_set);
     FD_SET(fd, &read_set);
+    //close (f);
 }
+
