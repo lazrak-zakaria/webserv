@@ -33,7 +33,7 @@ void    server::run()
     {
         int mx = std::max(fd_server, clients.size() ? (*(--clients.end())).first: fd_server);
         fd_set  r = read_set, w = write_set;
-        if (select(mx + 1, &r, &w, 0, 0))
+        if (select(mx + 1, &r, &w, 0, 0) == -1)
         {
             perror("select");
             exit(1);
@@ -53,9 +53,11 @@ void    server::run()
                     //read req and parse it;
                     read_request((*it).first);
                 }
-                else if (FD_ISSET((*it).first, &write_set))
+                else if (FD_ISSET((*it).first, &w))
                 {
                     //build res and send
+                
+                    send_response((*it).first);
                 }
             }
         }
@@ -76,7 +78,7 @@ void    server::accept_client()
 {
     client  __client;
     bzero(&__client, sizeof(client));
-    bzero(&__client.addr_client, sizeof(__client.addr_client));
+    //bzero(&__client.addr_client, sizeof(__client.addr_client));
     __client.fd_client = accept(fd_server, (struct sockaddr*)&(__client.addr_client), &__client.addr_length);
     if (__client.fd_client == -1)
     {
@@ -104,7 +106,22 @@ void    server::read_request(int fd)
     clients[fd].received += r;
     clients[fd].client_request[clients[fd].received] = '\0';
     std::cout << clients[fd].client_request << "\n";
-
-    clients[fd].http_request.parse(clients[fd].client_request);//
+    FD_CLR(fd, &read_set);
+    FD_SET(fd, &write_set);
+   // clients[fd].http_request.parse(clients[fd].client_request);//
 }
 
+void    server::send_response(int fd)
+{
+    std::string s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 748\r\n\
+Content-Type: text/html\r\n\r\n";
+     int f = open("./index.html", O_RDONLY);
+      char buf[41000];
+       int r = read(f, buf, 41000);
+      buf[r] = 0;
+    send(fd, s.c_str(), s.length(), 0);
+    send(fd, buf, r, 0);
+    std::cout << "here\n";
+    FD_CLR(fd, &write_set);
+    FD_SET(fd, &read_set);
+}

@@ -24,6 +24,7 @@ class server
 
         void    accept_client();
         void    read_request(int fd);
+        void    send_response(int fd);
         //void    set_port(char *)
 };
 
