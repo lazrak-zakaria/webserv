@@ -14,4 +14,11 @@ class client
     socklen_t           addr_length; // accept func
 
     request             http_request;
+
+    bool                start_body;
+    bool                first_found_body;
+    std::string         body;
+
+
+  
 };

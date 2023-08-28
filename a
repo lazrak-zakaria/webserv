@@ -21,3 +21,9 @@ i should put the client in a vector in server class
             in who ever running the server;
 
 
+
+
+the request:
+    i read the header in not more than 9000bytes  ---> length exceeded
+    i read the body
+

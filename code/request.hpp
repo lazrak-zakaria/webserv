@@ -20,11 +20,12 @@ class   request
 
         std::string body;
         
-        void    parse(std::string req);
+        void    parse_header(std::string req);
         void    save_headers(std::string &s);
         void    split(std::string &s, std::string del, std::vector<std::string> &vec, bool f);
-        void    parse_body();
 
+        void    parse_body();
+        size_t    request::parse_body_multipart(std::string boundary, size_t i);
 };
 
 

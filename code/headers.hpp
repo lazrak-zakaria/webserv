@@ -26,5 +26,6 @@
 
 
 #define CRLF "\r\n"
-#define REQ_SIZE 8000
+#define REQ_SIZE 9000
+#define RE 40
 #endif

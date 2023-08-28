@@ -10,14 +10,14 @@ void    server::setup()
         exit(1);
     }
     bzero(&addr_server, sizeof(addr_server));
-    port = 8439;
+    port = 8059;
     addr_server.sin_family = AF_INET;
     addr_server.sin_addr.s_addr = INADDR_ANY; // ?? i just copied this from tutorials
     addr_server.sin_port = htons(port);
     if (bind(fd_server, (struct sockaddr *) &addr_server,
               sizeof(addr_server)) < 0) 
     {
-        perror("socket");
+        perror("bind");
         exit(1);
     }
     listen(fd_server, 10);
@@ -100,8 +100,9 @@ void    server::accept_client()
 
 void    server::read_request(int fd)
 {
-    int r = recv(fd, clients[fd].client_request + clients[fd].received, REQ_SIZE - clients[fd].received, 0);
-    if (r == -1)
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    int r = recv(fd, clients[fd].client_request + clients[fd].received,  , 0);
+    if (r == -1 )
     {
         std::cerr << "connetion closed\n";
         return ;
@@ -111,26 +112,30 @@ void    server::read_request(int fd)
     // }
     clients[fd].received += r;
     clients[fd].client_request[clients[fd].received] = '\0';
-    // char *q = strstr(clients[fd].client_request, "\r\n\r\n");
-    // if (!q) return ;
+    char *q = strstr(clients[fd].client_request, "\r\n\r\n");
+    if (!q && !clients[fd].start_body){
+        return ;}
+    else
+        clients[fd].start_body = 1;
     // std::cout << clients[fd].client_request << "\n";
     FD_CLR(fd, &read_set);
     // FD_CLR(fd, &r);
     FD_SET(fd, &write_set);
-   clients[fd].http_request.parse(clients[fd].client_request);//
+    clients[fd].http_request.parse_header(clients[fd].client_request);//
     bzero(clients[fd].client_request, sizeof((clients[fd].client_request)));
     clients[fd].received = 0;
 }
+
 
 void    server::send_response(int fd)
 {
     std::string s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 773\r\n\
 Content-Type: text/html\r\n\r\n";
-     int f = open("./index.html", O_RDONLY);
-      char buf[41000];
-       int r = read(f, buf, 41000);
-      buf[r] = 0;
-      std::cout << "--------------------------------------------------------------> " << r << "\n";
+    int f = open("./index.html", O_RDONLY);
+    char buf[41000];
+    int r = read(f, buf, 41000);
+    buf[r] = 0;
+    //  std::cout << "--------------------------------------------------------------> " << r << "\n";
     send(fd, s.c_str(), s.length(), 0);
     send(fd, buf, r, 0);
     //std::cout << "here\n";

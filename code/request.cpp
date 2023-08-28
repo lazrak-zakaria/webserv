@@ -20,20 +20,32 @@ void    request::split(std::string &s, std::string del, std::vector<std::string>
     }
 }
 
-void    request::parse(std::string s)
+void    request::parse_header(std::string s)
 {
-   std::cout << s << "\n";
+    std::cout << s << "\n";
     std::vector<std::string>    split_part1; 
     split(s, "\r\n\r\n", split_part1, 1);
-    //save_headers(split_part1[0]);
-    int i = 0;
+
+     int i = 0;
     //std::cout << split_part1.size() << "\n";
-   while (i < split_part1.size())
-    std::cout << "***********************************++++++++*\n" << split_part1[i++] << "\n***************++++++++**\n";
+   //while (i < split_part1.size())
+    //std::cout << "***********************************++++++++*\n" << split_part1[i++] << "\n***************++++++++**\n";
     //if (split_part1.size() > 1)
       //  std::cout << "++++++++++++++++\n" << split_part1.size() << "\n" << split_part1[1] << "\n++++++++++++++++++\n";
 
   //  std::cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&  " << split_part1.size() << "\n" ;
+
+    // std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    // save_headers(split_part1[0]);
+    // for (auto &i : this->headers)
+    // {
+    //     std::cout << i.first << " ";
+    //     for (auto &j : i.second)
+    //         std::cout << j << "\t\t";
+    //     std::cout << "\n";
+    // }
+    // std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    // headers.clear();
 }
 
 // https://stackoverflow.com/questions/50191786/are-http-methods-case-sensitive    methode are case sensitive;
@@ -53,3 +65,13 @@ void    request::save_headers(std::string &s)
     }
 }
 
+
+size_t    request::parse_body_multipart(std::string boundary, size_t i)
+{
+
+}
+
+void    request::parse_body()
+{
+    
+}

@@ -14,6 +14,8 @@ class server
         std::map<int, client>    clients;
         fd_set              read_set;
         fd_set              write_set;
+    
+        
 
     public:
         //server();

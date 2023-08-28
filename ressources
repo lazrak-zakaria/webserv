@@ -1,2 +1,44 @@
 https://eklitzke.org/blocking-io-nonblocking-io-and-epoll
+https://forhjy.medium.com/42-webserv-cgi-programming-66d63c3b22db
 
+
+
+    Programming CGI in C
+
+What is CGI?
+
+CGI stands for Common Gateway Interface, it enables web-server to provide dynamic web-page to clients. When client sends request(usually GET, POST method) to server, web-server makes a process to run the requested data. Then send the result back to client.
+CGI Workflow
+How to Programming CGI?
+
+[Step1] Make process by using fork( ). Also open pipes.
+
+[Step 2] Execute CGI in child process.
+
+fd = open(//temporary file to record cgi result);pipe(tubes);if ((cgi_pid = fork())== 0) // child process
+{
+  close(tubes[1]);  
+  dup2(tubes[0], 0);   
+  execve(args[0], args, env);
+}
+
+    args[0] has to be a path of cgi program or cgi script. Such as “/usr/local/bin/php-cgi”
+    args[1] has to be a path of cgi file . If it script it has to be NULL.
+    args[2] == NULL
+    env has parsed request and some more variables according to RFC3875
+
+Meta-variables with names beginning with "HTTP_" contain values read    from the client request header fields, if the protocol used is HTTP.    The HTTP header field name is converted to upper case, has all    occurrences of "-" replaced with "_" and has "HTTP_" prepended to    give the meta-variable name.
+
+[STEP 3] Pass requested data through pipe in Parent Process.
+
+CGI will give result to web-server and web-server will make response based on this result.
+
+
+
+
+
+https://stackoverflow.com/questions/686217/maximum-on-http-header-values
+
+HTTP Header values are restricted by server implementations. Http specification doesn't restrict header size.
+
+    A server that receives a request header field, or set of fields, larger than it wishes to process MUST respond with an appropriate 4xx (Client Error) status code. Ignoring such header fields would increase the server's vulnerability to request smuggling attacks (Section 9.5).
