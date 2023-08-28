@@ -23,9 +23,12 @@
 #include <unordered_map>
 #include <deque>
 #include <algorithm>
-
+#include <sstream>
 
 #define CRLF "\r\n"
 #define REQ_SIZE 9000
 #define RE 40
+
+#include "server.hpp"
+
 #endif

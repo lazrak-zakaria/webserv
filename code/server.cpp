@@ -127,20 +127,20 @@ void    server::read_request(int fd)
 }
 
 
-void    server::send_response(int fd)
-{
-    std::string s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 773\r\n\
-Content-Type: text/html\r\n\r\n";
-    int f = open("./index.html", O_RDONLY);
-    char buf[41000];
-    int r = read(f, buf, 41000);
-    buf[r] = 0;
-    //  std::cout << "--------------------------------------------------------------> " << r << "\n";
-    send(fd, s.c_str(), s.length(), 0);
-    send(fd, buf, r, 0);
-    //std::cout << "here\n";
-    FD_CLR(fd, &write_set);
-    FD_SET(fd, &read_set);
-    //close (f);
-}
+// void    server::send_response(int fd)
+// {
+//     std::string s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 773\r\n\
+// Content-Type: text/html\r\n\r\n";
+//     int f = open("./index.html", O_RDONLY);
+//     char buf[41000];
+//     int r = read(f, buf, 41000);
+//     buf[r] = 0;
+//     //  std::cout << "--------------------------------------------------------------> " << r << "\n";
+//     send(fd, s.c_str(), s.length(), 0);
+//     send(fd, buf, r, 0);
+//     //std::cout << "here\n";
+//     FD_CLR(fd, &write_set);
+//     FD_SET(fd, &read_set);
+//     //close (f);
+// }
 

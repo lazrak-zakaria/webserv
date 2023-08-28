@@ -12,11 +12,11 @@ void    request::split(std::string &s, std::string del, std::vector<std::string>
         if (end == std::string::npos || (flag && flag__))
             end = s.size();
         
-            std::string d = s.substr(start, end - start);
-            if (!d.empty())
-                vec.push_back(d);
-            start = end + del.size();
-            flag__ = 1;
+        std::string d = s.substr(start, end - start);
+        if (!d.empty())
+            vec.push_back(d);
+        start = end + del.size();
+        flag__ = 1;
     }
 }
 
@@ -65,13 +65,12 @@ void    request::save_headers(std::string &s)
     }
 }
 
-
-size_t    request::parse_body_multipart(std::string boundary, size_t i)
+void    request::parse_body()
 {
-
+    
 }
 
-void    request::parse_body()
+void    request::parse_body_chunked()
 {
     
 }

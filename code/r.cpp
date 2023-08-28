@@ -70,3 +70,82 @@ void    server::read_request(int fd)
         FD_SET(fd, &write_set);
     }
 }
+  /*
+  
+  
+  #include <iostream>
+#include <string>
+
+int main() {
+    std::string request = "POST /example HTTP/1.1\r\n"
+                          "Host: www.example.com\r\n"
+                          "Transfer-Encoding: chunked\r\n"
+                          "\r\n"
+                          "7\r\n"
+                          "Chunk 1\r\n"
+                          "6\r\n"
+                          "Chunk 2\r\n"
+                          "0\r\n"
+                          "\r\n";
+
+    std::string body;
+    bool is_chunked = false;
+    size_t chunk_size = 0;
+
+    // Parse the request header to determine if the request body is chunked
+    size_t pos = request.find("\r\n\r\n");
+    if (pos != std::string::npos) {
+        std::string header = request.substr(0, pos);
+        if (header.find("Transfer-Encoding: chunked") != std::string::npos) {
+            is_chunked = true;
+        }
+    }
+
+    // Parse the request body if it is chunked
+    if (is_chunked) {
+        pos = request.find("\r\n\r\n") + 4;
+        while (pos < request.size()) {
+            size_t chunk_pos = request.find("\r\n", pos);
+            if (chunk_pos == std::string::npos) {
+                break;
+            }
+            chunk_size = std::stoi(request.substr(pos, chunk_pos - pos), nullptr, 16);
+            if (chunk_size == 0) {
+                break;
+            }
+            pos = chunk_pos + 2;
+            body += request.substr(pos, chunk_size);
+            pos += chunk_size + 2;
+        }
+    }
+
+    std::cout << "Request body: " << body << std::endl;
+
+    return 0;
+}
+*/
+
+//more cheking later
+void    request::parse_body_chunked()
+{
+    size_t  body_size = body.size();
+    
+    size_t      chunk_pos = body.find("\r\n"); // chnukpos != ::npos;
+    if (chunk_pos == std::string::npos)
+        return ;
+    std::string chunk_size_string = body.substr(0, chunk_pos);
+    size_t  chunk_size ;
+    while (chunk_pos < body_size)
+    {
+        // std::stringstream ss;
+        // ss << std::hex << chunk_size_string;
+        // ss >> chunk_size;
+        chunk_size = strtol(chunk_size_string.c_str(), NULL, 16);
+        if (!chunk_size)
+            break;
+        body_parsed += body.substr(chunk_pos + 2, chunk_size) + "\n";
+        size_t start = chunk_pos + 2 + chunk_size + 2;
+        chunk_pos = body.find("\r\n", start);
+        chunk_size_string = body.substr(start, chunk_pos - start);
+    }
+}
