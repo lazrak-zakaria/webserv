@@ -2,6 +2,25 @@
 using namespace std;
 
 
+typedef struct location
+{
+    std::string root; //alias
+    std::vector<std::string> cgi_exec;
+    std::map<std::string, std::string> cgi_path_ext;
+
+} location;
+
+class config
+{
+
+    public:
+        std::string server_name;
+        std::string port;
+        std::unordered_map<std::string, location> locations;
+};
+
+
+
 void    split(std::string &s, std::string del, std::vector<std::string> &vec, bool flag)
 {
     int start = 0, end = 0;
@@ -52,22 +71,35 @@ typedef struct uri
 
 void    parse_uri(std::map<std::string, std::vector<std::string> > headers, uri &u)
 {
-    std::string met = headers.count("GET") ? "GET" :  headers.count("DELETE") ? "POST" 
-                            : headers.count("DELETE") ? "DELETE" : "";
-    if (met.empty())
-        return ;
-    std::vector<std::string> &vec = headers[met];
-    std::map<std::string, std::vector<std::string> >::iterator it = headers.find(met);
+    std::map<std::string, std::vector<std::string> >::iterator it = headers.find("GET");
+    if (it == headers.end())
+    {
+        it = headers.find("POST");
+        if (it == headers.end())
+            it = headers.find("DELETE");
+        if (it == headers.end())
+            return ;
+    }
     //make use size is 2;
     u.methode = it->first;
-    u.http_version = it->second[2];
-    size_t pos = it->second[1].find('?');
+    u.http_version = it->second[1];
+    //std::cout << "http\t" << "\n";
+    size_t pos = it->second[0].find('?');
     if (pos != std::string::npos)
     {
-        u.path = it->second[1].substr(0, pos);
-        size_t pos_fragement = it->second[1].find('#', pos);
-        u.query_string = it->second[1].substr(pos+1, pos_fragement);
+        u.path = it->second[0].substr(0, pos);
+        size_t pos_fragement = it->second[0].find('#', pos);
+        u.query_string = it->second[0].substr(pos+1, pos_fragement);
     }
+    else
+    {
+        pos = it->second[0].find('#');
+        u.path = it->second[0].substr(0, pos);
+    }
+    // std::cout << "http\t" << u.http_version << "\n";
+    // std::cout << "path\t" << u.path << "\n";
+    // std::cout << "query_string\t" << u.query_string << "\n";
+    // std::cout << "methode\t" << u.methode << "\n";
 }
 
 void    parse_header(std::string s)
@@ -99,16 +131,18 @@ void    parse_header(std::string s)
         }
     }
 
-    for (auto &g : headers)
-    {
-        std::cout << g.first << "\t\t";
-        for (auto &j : g.second)
-        {
-            std::cout << j << '\t';
-        }
-        std::cout << "\n";
-    }
+    // for (auto &g : headers)
+    // {
+    //     std::cout << g.first << "\t\t";
+    //     for (auto &j : g.second)
+    //     {
+    //         std::cout << j << '\t';
+    //     }
+    //     std::cout << "\n";
+    // }
 }
+
+
 
 int main()
 {
@@ -124,4 +158,41 @@ int main()
 "dddddddddddddddddddddddddddd\r\n"
 "ddddddddddddddddddddddddddddddddd\r\n";
     parse_header(s);
+}
+
+
+
+
+
+
+// s2 == uri;
+// s == location
+
+bool    start_with(const std::string &s, std::string &s2)
+{
+    if (s2.substr(0, s.length()) == s)
+        return 1;
+    return 0;
+}
+
+location    *return_location(config &f, uri &u)
+{
+    std::vector<std::string>   location_set;
+    for (std::unordered_map<std::string, location>::iterator it = f.locations.begin(); it != f.locations.end(); ++it)
+    {
+        if (start_with(it->first, u.path))
+            location_set.push_back(it->first);
+    }
+    if (location_set.empty()) return NULL;
+    size_t mx = location_set[0].length();
+    int j = 0;
+    for (int i = 1; i < location_set.size(); ++i) 
+    {
+        if (location_set[i].length() > mx)
+        {
+            mx = location_set[i].length();
+            j = i;
+        }
+    }
+    return (&f.locations[location_set[j]]);
 }
