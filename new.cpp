@@ -364,3 +364,8 @@ namespace timeout
             wait(NULL); //printf("child finished normally\n");
     }
 };
+
+void    cgi__()
+{
+    
+}

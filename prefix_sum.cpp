@@ -20,15 +20,10 @@ void   prefix_sum(vector<int> a)
 
 int main()
 {
-    // vector<int> a = {5,2,7,1,0,3,2};
-    // int q;
+    vector<int> a = {5,2,7,1,0,3,2};
+    int q;
 
-    // prefix_sum(a) ;//<< "   ";
-    std::string str ("Test string");
-  std::cout << "size: " << str.size() << "\n";
-  std::cout << "length: " << str.length() << "\n";
-  std::cout << "capacity: " << str.capacity() << "\n";
-  std::cout << "max_size: " << str.max_size() << "\n";
+    prefix_sum(a) ;//<< "   ";
   return 0;
 
 }
