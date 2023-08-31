@@ -317,6 +317,7 @@ void    save_regular_file(location *l, std::string file, uri &i, std::string a, 
     int length = ifs.tellg();
     ifs.seekg (0, ifs.beg);
 
+    
     std::stringstream strStream;
     strStream << ifs.rdbuf(); //read the file
     res.body = strStream.str(); //str holds the content of the file
