@@ -1,0 +1,2 @@
+--boundary123\r\nContent-Disposition: form-data; name="field1"\r\n\r\nvalue1\r\n--boundary123\r\nContent-Disposition: form-data; name="field2"\r\n\r\nvalue2\r\n--boundary123\r\nContent-Disposition: form-data; name="file1"; filename="file.txt"\r\nContent-Type: application/octet-stream\r\n\r\n[Contents of the file.txt here]othercontent
+ano ano ano ano\r\n--boundary123--\r\n

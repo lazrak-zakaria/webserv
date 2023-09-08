@@ -14,35 +14,74 @@ using namespace std;
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <string>
-#define S 1
+#define S 5
 
 int jj = 0;
 
-void	fun(std::string &pu, int &si, int fd1, size_t pos)
+void	fun(std::string &pu, int &si, int &fd1, size_t pos, std::string bound)
 {
-		
-		
+	if (!si && pu.length() + 4 >= pos)
+	{
+		if (pu.find(bound) != string::npos)
+			pu.erase(0, pu.find(bound) + bound.length() + 4);
+		if (pu.find("\\r\\n\\r\\n") != string::npos)
+		{
+			if (pu.find("Content-Disposition:")!= string::npos )
+			{
+				if (pu.find("filename=")!= string::npos && !fd1)
+				{
+					fd1 = open("./secwri", O_RDWR);
+					std::cout << "h--------------\n";
+				}
+			}
+			if (pu.find( "Content-Type:")!= string::npos)
+			{
+				std::cout << pu << "\n";
+				pu.erase(0, pu.find("\\r\\n\\r\\n") + 8);
+				si = 1;
+			}
+		}
+	}
+	if (si)
+	{
+		if (pu.find("\\r\\n") != string::npos)
+		{
+			string g = pu.substr(0,(pu.find("\\r\\n")));
+			write(fd1, g.c_str(), g.length());
+			pu = pu.substr(pu.find("\\r\\n") + 4);
+			si = 0;
+		}
+		else if (pu.length() > pos && fd1)
+		{
+			string g = pu.substr(0,pu.length() - pos);
+			write(fd1, g.c_str(), g.length());
+			pu = pu.substr(pu.length() - pos);
+		}
+	}
+	
 }
 
 
 int main()
 {
-    int fd = open("./file", O_RDWR);
-    int fd1 = open("./filewri", O_RDWR);
+    int fd = open("./sec", O_RDWR);
+    // int fd1 = open("./filewri", O_RDWR);
+	int fd1 = 0;
     char buf[5000];
     int r = read(fd, buf, S);
     int si = 0;
     int i = 0;
     char a[10] = {};
     std::string pu;
+	size_t pos = 14;
+	std::string bound = "--boundary123";
     while (r > 0)
     {
         buf[r] = 0;
-		std::cout << buf<<"\n";
+		//// std::cout << buf<<"\n";
         pu += buf ;
-	    size_t pos = pu.find("\\r\\n");
 		// if(pos != string::npos)
-			fun(pu, si, fd1, pos);
+		fun(pu, si, fd1, pos, bound);
         // if (jj == 16)
         //     while(1);
         r = read(fd, buf, S);
