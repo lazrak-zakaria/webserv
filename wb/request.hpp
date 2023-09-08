@@ -34,7 +34,7 @@ class request
 		void	parse(std::string request_data);
 
 		void	parse_chunked_data(std::string &body_data);
-		void	parse_chunked(size_t index);
+		void	parse_chunked(bool size_data, size_t pos);
 
 		request(/* args */);
 		~request();

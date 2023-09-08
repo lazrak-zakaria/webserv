@@ -1,5 +1,6 @@
 #include "../request.hpp"
 
+
 void	request::parse(std::string request_data)
 {
 	if (!is_header)
@@ -60,9 +61,72 @@ void	request::parse_header()
 	//else change to fdsetwrite;
 }
 
-
 void	request::parse_chunked_data(std::string &body_data)
 {
-	
+	body += body_data;
+	size_t pos = body.find("\r\n");
+	parse_chunked(0, pos);
 }
 
+void	request::parse_chunked(bool size_data, size_t pos)
+{
+	    if (pos != std::string::npos && !size_data)
+        {
+            if (body[0] == '0')
+            {
+                body = "";
+				return ;
+            }
+            body.erase(0, pos + 4);
+            size_data = 1;
+        }
+        else if (size_data && pos != std::string::npos)
+        {
+            std::string g = body.substr(0, pos);
+			fprintf(temp_file, "%s", g.c_str());
+            body = body.substr(pos + 4);
+            size_data = 0;
+        }
+		if (size_data && pos == std::string::npos && body.length() > 2)
+		{
+			std::string g = body.substr(0, body.length() - 2);
+            fprintf(temp_file, "%s", g.c_str());
+            body = body.substr(body.length() - 2);
+		}
+		if (pos != std::string::npos)
+			if (pos = body.find("\r\n") != std::string::npos)
+				parse_chunked(size_data ,pos);
+}
+
+
+void	parse_form_data(std::string &body_data)
+{
+
+}
+
+
+/*
+
+
+POST /upload HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=boundary123
+Connection: close
+
+--boundary123\r\n
+Content-Disposition: form-data; name="field1"\r\n
+\r\n
+value1\r\n
+--boundary123\r\n
+Content-Disposition: form-data; name="field2"\r\n
+\r\n
+value2\r\n
+--boundary123\r\n
+Content-Disposition: form-data; name="file1"; filename="file.txt"\r\n
+Content-Type: application/octet-stream\r\n
+\r\n
+[Contents of the file.txt here]\r\n
+--boundary123--\r\n
+
+
+*/
