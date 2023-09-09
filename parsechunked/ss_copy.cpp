@@ -14,12 +14,13 @@
 #include <fcntl.h>
 #include <string>
 #include <iostream>
+#include <fstream>
 #define S 5 
 using namespace std;
 
 int jj = 0;
-
-void	fun(std::string &pu, int &si, int &fd1, size_t pos, std::string bound)
+int fd1;
+void	fun(std::string &pu, int &si, ofstream &ofs, size_t pos, std::string bound)
 {
 	if (!si && pu.length() + 4 >= pos)
 	{
@@ -29,13 +30,23 @@ void	fun(std::string &pu, int &si, int &fd1, size_t pos, std::string bound)
 		{
 			if (pu.find("Content-Disposition:")!= string::npos )
 			{
-				if (pu.find("filename=")!= string::npos)
+				char a[50];
+					// std::cout << "----------" << std::tmpnam(a) <<"\n";
+				if (pu.find("filename=") != string::npos)
 				{
 					// fd1 = open("./secwri", O_RDWR);
-					char a[] = "zXXXXXX";
+					char a[] = "fileXXXXXX";
 					fd1 = mkstemp(a);
-					std::cout << "------------->	"<< a << "\n";
-					// std::cout << "h--------------\n";
+					ofs.close();
+					if (fd == -1)
+					{
+						std::cout << "internal error\n";
+						exit(0);
+					}
+					ofs.open(a);
+					if (!ofs.is_open())
+						exit(7);
+					std::cout << "h--------------\n";
 				}
 			}
 			if (pu.find( "Content-Type:")!= string::npos)
@@ -51,14 +62,16 @@ void	fun(std::string &pu, int &si, int &fd1, size_t pos, std::string bound)
 		if (pu.find("\\r\\n") != string::npos)
 		{
 			string g = pu.substr(0,(pu.find("\\r\\n")));
-			write(fd1, g.c_str(), g.length());
+			// write(fd1, g.c_str(), g.length());
+			ofs << g;
 			pu = pu.substr(pu.find("\\r\\n") + 4);
 			si = 0;
 		}
-		else if (pu.length() > pos && fd1)
+		else if (pu.length() > pos )
 		{
 			string g = pu.substr(0,pu.length() - pos);
-			write(fd1, g.c_str(), g.length());
+			// write(fd1, g.c_str(), g.length());
+			ofs << g;
 			pu = pu.substr(pu.length() - pos);
 		}
 	}
@@ -78,6 +91,7 @@ int main()
     char a[10] = {};
     std::string pu;
 	size_t pos = 14;
+	ofstream ofs;
 	std::string bound = "--boundary123";
     while (r > 0)
     {
@@ -85,7 +99,7 @@ int main()
 		//// std::cout << buf<<"\n";
         pu += buf ;
 		// if(pos != string::npos)
-		fun(pu, si, fd1, pos, bound);
+		fun(pu, si, ofs, pos, bound);
         // if (jj == 16)
         //     while(1);
         r = read(fd, buf, S);

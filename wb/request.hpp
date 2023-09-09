@@ -17,7 +17,7 @@ class request
 		size_t			content_length;
 		struct uri
 		{
-    		std::string methode;
+    		std::string method;
 			std::string http_version;
 			std::string path;
 			std::string query_string;
@@ -25,9 +25,14 @@ class request
 			std::string code;
 		} uri;
 
+		std::ofstream	ofs;
+		size_t			boundary_size;
+		std::string		boundary;
+		bool			flag;
+
 		bool	is_header;
 		bool	is_chunked;
-		void	parse_uri(std::string first_line_request);
+		void	parse_uri(std::string &first_line_request);
 		void	parse_header();
 		void	parse_body();
 		void	parse_form_data(std::string &body_data);

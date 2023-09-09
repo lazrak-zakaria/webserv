@@ -98,11 +98,89 @@ void	request::parse_chunked(bool size_data, size_t pos)
 				parse_chunked(size_data ,pos);
 }
 
-
-void	parse_form_data(std::string &body_data)
+// just in case of upload
+void	request::parse_form_data(std::string &body_data)
 {
-
+	body += body_data;
+	size_t	position_crlf;
+	size_t	body_length = body.length();
+	if (!flag && body_length + 4 >= boundary_size)
+	{
+		if (body.find(boundary) != std::string::npos)
+		{
+			size_t	boundary_position_and_header = body.find("\r\n\r\n");
+			if (body.find("filename=") != std::string::npos)
+			{
+				//later i will see if use just random name or the name of file;
+				char a[] = "fileXXXXXX";
+				int fd = mkstemp(a);
+				ofs.close();
+				ofs.open(a);
+				//check later//;
+				body.erase(0, boundary_position_and_header + 4);
+				flag = true;
+			}
+		}
+	}
+	if (flag)
+	{
+		position_crlf = body.find("\r\n");
+		if (position_crlf != std::string::npos)
+		{
+			std::string	tmp = body.substr(position_crlf);
+			ofs << tmp;
+			body = body.substr(position_crlf);
+			flag = false;
+		}
+		else if (body_length > boundary_size)
+		{
+			std::string	tmp = body.substr(0, body_length - boundary_size);
+			ofs << tmp;
+		}
+	}
 }
+
+
+void	request::parse_uri(std::string &first_line_request)
+{
+	std::stringstream	ss(first_line_request);
+	std::string			temp_data;
+	getline(ss, temp_data);
+	if (temp_data != "GET" && temp_data != "POST" && temp_data != "DELETE")
+		throw std::runtime_error("Methode not allowed");
+	uri.method = temp_data;
+	getline(ss, temp_data);
+	if (temp_data.empty())
+		throw std::runtime_error("Request Not valid");
+	uri.path = temp_data;
+	getline(ss, temp_data);
+	if (temp_data != "HTTP/1.1")
+		throw std::runtime_error("Not valid protocol");
+
+	size_t i = 0;
+	temp_data = uri.path;
+	uri.path = "";
+	for (i = 0 ; temp_data[i] && temp_data[i] != '?' && temp_data[i] != '#'; ++i)
+		uri.path += temp_data[i];
+	if (temp_data[i] == '?')
+	{
+		for ( ; temp_data[i] && temp_data[i] != '#'; ++i)
+			uri.path += temp_data[i];
+	}
+	else if (temp_data[i] == '#')
+	{
+		for ( ; temp_data[i]; ++i)
+			uri.path += temp_data[i];
+	}
+	// i need to know more about path
+}
+
+
+
+// char *tmpname = strdup("/tmp/tmpfileXXXXXX");
+// mkstemp(tmpname);
+// ofstream f(tmpname);
+
 
 
 /*
