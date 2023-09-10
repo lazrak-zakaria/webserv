@@ -39,7 +39,7 @@ void	build_header_send()
 
 /* forget about socket just code like checking a pth now*/
 int autox = 1;
-int indx = 1;
+int indx = 0;
 void	get(std::string path)
 {
 	struct stat sb;
@@ -98,7 +98,11 @@ void	get(std::string path)
       						printf("%s\n", dir->d_name);
     					}
     					closedir(d);
-  					}				
+					}
+					else
+					{
+						std::cout << "denied\n";
+					}			
 			}
 		}
 	}

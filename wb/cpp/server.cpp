@@ -79,20 +79,20 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 		}
 		else if (FD_ISSET(client_fd_sock, &temp_write_set))
 		{
-			// const std::string &answer = client_obj.http_response.answer;
-			// int		sent = send(client_fd_sock, answer.c_str(), answer.size(), 0);
-			// if (answer.size() != sent)
-			// {
-			// 	std::cerr << "client close connection\n";
-			// 	exit(0);
-			// 	// testing
-			// 	// drop client;
-			// }
-			// if (client_obj.http_response.finished_flag)
-			// {
-			// 	FD_CLR(client_fd_sock, &write_set);
-			// 	FD_SET(client_fd_sock, &read_set);
-			// }
+			const std::string &answer = client_obj.http_response.answer;
+			int		sent = send(client_fd_sock, answer.c_str(), answer.size(), 0);
+			if (answer.size() != sent)
+			{
+				std::cerr << "client close connection\n";
+				exit(0);
+				// testing
+				// drop client;
+			}
+			if (client_obj.http_response.finished_flag)
+			{
+				FD_CLR(client_fd_sock, &write_set);
+				FD_SET(client_fd_sock, &read_set);
+			}
 		}
 	}
 }
