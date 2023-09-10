@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include "header.hpp"
 #include "request.hpp"
+// #include "response.hpp"
 
 class client
 {
@@ -31,13 +32,15 @@ class client
 
 	public:
 		int					fd_sock;
-		char				*client_request;
+		// char				*client_request;
 		size_t				received;
 		struct sockaddr_in	client_sockaddr;
 		socklen_t			client_sockaddr_length;
 
 		request				http_request;
-		// response			http_response;
+		//response			http_response;
+
+
 		client(/* args */);
 		~client();
 };

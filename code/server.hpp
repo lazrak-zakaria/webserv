@@ -12,8 +12,7 @@ class server
         struct sockaddr_in  addr_server;
         int                 maxfd;
         std::map<int, client>    clients;
-        fd_set              read_set;
-        fd_set              write_set;
+ç
     
         
 

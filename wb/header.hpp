@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <string>
@@ -26,5 +27,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
+
+#define SIZE_READ 2048
 
 #endif

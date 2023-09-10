@@ -17,7 +17,7 @@ void	request::parse(std::string request_data)
 	else
 	{
 		header += request_data;
-		size_t	pos = header.find("\r\n");
+		size_t	pos = header.find("\r\n\r\n");
 		if (pos == std::string::npos)
 			return ;
 		is_header = !is_header;
@@ -30,7 +30,10 @@ void	request::parse_header()
 {
 	std::stringstream	ss(header);
 	std::string			temp_data;
-	
+	std::cout << "----------------\n";
+	std::cout << header;
+	std::cout << "----------------\n";
+
 	getline(ss, temp_data);
 	parse_uri(temp_data);
 
@@ -94,7 +97,7 @@ void	request::parse_chunked(bool size_data, size_t pos)
             body = body.substr(body.length() - 2);
 		}
 		if (pos != std::string::npos)
-			if (pos = body.find("\r\n") != std::string::npos)
+			if ((pos = body.find("\r\n")) != std::string::npos)
 				parse_chunked(size_data ,pos);
 }
 
@@ -145,18 +148,18 @@ void	request::parse_uri(std::string &first_line_request)
 {
 	std::stringstream	ss(first_line_request);
 	std::string			temp_data;
-	getline(ss, temp_data);
+	getline(ss, temp_data, ' ');
 	if (temp_data != "GET" && temp_data != "POST" && temp_data != "DELETE")
 		throw std::runtime_error("Methode not allowed");
 	uri.method = temp_data;
-	getline(ss, temp_data);
+	getline(ss, temp_data, ' ');
 	if (temp_data.empty())
 		throw std::runtime_error("Request Not valid");
 	uri.path = temp_data;
-	getline(ss, temp_data);
+	getline(ss, temp_data, '\r');
+	std::cout << "********************************\n|"<< temp_data << "|\n";
 	if (temp_data != "HTTP/1.1")
 		throw std::runtime_error("Not valid protocol");
-
 	size_t i = 0;
 	temp_data = uri.path;
 	uri.path = "";
@@ -208,3 +211,33 @@ Content-Type: application/octet-stream\r\n
 
 
 */
+
+request::request()
+{
+	is_header = 1;
+}
+request::~request()
+{}
+
+request& request::operator=(const request& f)
+{
+	header_fields = f.header_fields;
+
+	header = f.header;
+	body = f.body;
+	temp_file = f.temp_file;
+
+	content_length = f.content_length;
+	return (*this);
+}
+
+request::request(const request & f)
+{
+		header_fields = f.header_fields;
+
+	header = f.header;
+	body = f.body;
+	temp_file = f.temp_file;
+
+	content_length = f.content_length;
+}

@@ -1,15 +1,15 @@
-#include "response.hpp"
+#include "../response.hpp"
 
 bool	response::start_with(const std::string &location_directive,const  std::string &path)
 {
 	return (path.substr(0, location_directive.length()) == location_directive);
 }
 
-void	response::detect_final_location(server_config& server, request& http_request)
+void	response::detect_final_location(server& server_conf, request& http_request)
 {
 	std::map<std::string, location>::iterator	it;
 	std::vector<std::string> location_set;
-	for (it = server.all_locations.begin(); it == server.all_locations.end(); ++it)
+	for (it = server_conf.all_locations.begin(); it == server_conf.all_locations.end(); ++it)
 	{
 		if (start_with(it->first, http_request.uri.path))
 			location_set.push_back(it->first);
@@ -29,9 +29,9 @@ void	response::detect_final_location(server_config& server, request& http_reques
 		}
 	}
 	this->key_location = location_set[index_of_most_descriptive_location];
-	if (!server.all_locations[key_location].root.empty()) // not empty
+	if (!server_conf.all_locations[key_location].root.empty()) // not empty
 	{
-		std::string &tmp = server.all_locations[key_location].root;
+		std::string &tmp = server_conf.all_locations[key_location].root;
 		this->final_path = tmp + http_request.uri.path;
 	}
 	else
@@ -41,15 +41,15 @@ void	response::detect_final_location(server_config& server, request& http_reques
 	}
 }
 
-void	response::serve_response(server_config& server, request& http_request)
+void	response::serve_response(server& server_conf, request& http_request)
 {
 	if (final_path.empty())
 	{
-		detect_final_location(server, http_request);
+		detect_final_location(server_conf, http_request);
 	}	
 	if (http_request.uri.method == "GET")
 	{
-		
+
 	}
 	else if (http_request.uri.method == "POST")
 	{
@@ -63,7 +63,40 @@ void	response::serve_response(server_config& server, request& http_request)
 
 
 
-void	response::get_method(server_config& server, request& http_request)
+void	response::get_method(server& server_conf, request& http_request)
 {
+	if (!body_sending)
+	{
+		struct stat	path_stat;
+		if (S_ISREG(path_stat.st_mode))
+		{
+			//cgi later;
+			ifs.open(final_path);
+			if (!ifs.is_open())
+			{
+				//permision denied
+			}
+			//	build header;
+			//	after sending header turn on body_sending;
+		}
+		else if (S_ISDIR(path_stat.st_mode))
+		{
+			if (server_conf.all_locations[key_location].index.size())
+			{
 
+			}
+			else if (server_conf.all_locations[key_location].index.directory_listing)
+			{
+				
+			}
+		}
+	}
+	else
+	{
+		
+	}
 }
+
+/*
+because im 
+*/

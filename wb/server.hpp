@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "client.hpp"
 
 //https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/
 
@@ -26,19 +27,19 @@ typedef struct location
 	std::string					alias;
 	bool						directory_listing;
 	std::string					default_file_directory;
-
+	std::vector<std::string>	index;
 	std::map<std::string, std::string> cgi; // map< file extension , cgi program> 
 
 	bool					upload_store; //path to store file being uploaded
 
 } location;
 
-class server_config
+class server
 {
 	private:
 
 	public:
-		std::string					port;
+		int							port;
 		std::string					host;
 		std::string					server_name;
 
@@ -49,14 +50,19 @@ class server_config
 		std::map<std::string, std::string>	error_pages;
 		
 		std::map<std::string, location>		all_locations;
-
+		struct sockaddr_in  addr_server;
 		
 
 		int								fd_sock;
 		void							socket_bind_listen();
 
-		server_config();
-		~server_config();
+		std::map<int, client>			server_clients;
+
+		int		return_max_sock_client() const;
+		void	accept_client(fd_set &read_set);
+		void	handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_set,fd_set &read_set, fd_set &write_set);
+		server(){}
+		~server(){}
 };
 
 

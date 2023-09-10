@@ -41,7 +41,12 @@ class request
 		void	parse_chunked_data(std::string &body_data);
 		void	parse_chunked(bool size_data, size_t pos);
 
+		bool	finished_flag; // not added to the code yet
+
+		request& operator=(const request& f);
 		request(/* args */);
+		request(const request& );
+
 		~request();
 };
 

@@ -1,14 +1,14 @@
 #ifndef __SERVER__HPP__
 #define __SERVER__HPP__
 
-#include "server_config.hpp"
+#include "server.hpp"
 
 class	webserver
 {
 	public:
-
-		void	run(std::vector<server_config&> &servers_config);
-
+		void				run(std::map<int, server> &servers_config);
+		fd_set              read_set;
+        fd_set              write_set;
 };
 
 #endif
