@@ -2,6 +2,7 @@
 #define REQUEST_HPP__
 
 #include "header.hpp"
+#include "./server.hpp"
 
 class request
 {
@@ -22,7 +23,7 @@ class request
 			std::string path;
 			std::string query_string;
 			//std::string fragment_identifier; //i see no use;
-			std::string code;
+			// std::string code;
 		} uri;
 
 		std::ofstream	ofs;
@@ -32,11 +33,12 @@ class request
 
 		bool	is_header;
 		bool	is_chunked;
+		bool	is_multipart;
 		void	parse_uri(std::string &first_line_request);
 		void	parse_header();
 		void	parse_body();
 		void	parse_form_data(std::string &body_data);
-		void	parse(std::string request_data);
+		void	parse(std::string request_data, server& server_config);
 
 		void	parse_chunked_data(std::string &body_data);
 		void	parse_chunked(bool size_data, size_t pos);
@@ -48,7 +50,21 @@ class request
 		request(const request& );
 
 		~request();
+
+
+		int	code_status;
+
+		std::string		key_location;	// the valid location
+		std::string		final_path; // path i deal with it
+		void			detect_final_location(server& server_conf);
+		bool			start_with(const std::string &location_directive, const  std::string &path);
+		std::string		file_name;
+
+		std::string		cgi_output_file_name;
+		std::ofstream	cgi_output_ofs;
 };
 
+// https://www.jmarshall.com/easy/http/#postmethod
 
+// https://www.filibeto.org/aduritz/misc/web_upload_cgi.html  cgi
 #endif

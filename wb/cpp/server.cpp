@@ -70,7 +70,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 			}
 			buf[collected] = '\0';
 			std::cout << buf << "\n";
-			client_obj.http_request.parse(buf);
+			client_obj.http_request.parse(buf, *this);
 			// if (client_obj.http_request.finished_flag)
 			// {
 				FD_CLR(client_fd_sock, &read_set);

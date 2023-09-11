@@ -16,13 +16,14 @@
 #include <netdb.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <map>
-#include <unordered_set>
-#include <unordered_map>
 #include <deque>
 #include <algorithm>
 #include <sstream>

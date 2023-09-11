@@ -17,13 +17,13 @@ int main()
 {
     std::string a = "-------------------------------------------";
     write(2,"blalal\n", 8);
-    char rrr[500];
-    int o = read(0, rrr, 2);
+    char rrr[5000];
+    int o = read(0, rrr, 2000);
     rrr[o] = 0;
     string h = rrr ;
     h += "::::::\n";
-    write(2, h.c_str(), strlen(h.c_str()));
+    write(1, h.c_str(), strlen(h.c_str()));
     // a = a;
-    write(1, a.c_str(), a.length());
+    // write(1, a.c_str(), a.length());
     // write(2, a.c_str(), a.length());
 }

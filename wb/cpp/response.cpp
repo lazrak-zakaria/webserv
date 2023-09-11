@@ -1,9 +1,5 @@
 #include "../response.hpp"
 
-bool	response::start_with(const std::string &location_directive,const  std::string &path)
-{
-	return (path.substr(0, location_directive.length()) == location_directive);
-}
 
 void	response::create_header()
 {
@@ -16,41 +12,7 @@ void	response::create_header()
 	header = ss.str();
 }
 
-void	response::detect_final_location(server& server_conf, request& http_request)
-{
-	std::map<std::string, location>::iterator	it;
-	std::vector<std::string> location_set;
-	for (it = server_conf.all_locations.begin(); it == server_conf.all_locations.end(); ++it)
-	{
-		if (start_with(it->first, http_request.uri.path))
-			location_set.push_back(it->first);
-	}
-	if (location_set.empty())
-		return ;
-	size_t	most_descriptive_location = location_set[0].length();
-	size_t	location_set_size = location_set.size();
-	size_t	index_of_most_descriptive_location = 0;
-	for (size_t i = 1; i < location_set_size; ++i)
-	{
-		size_t	len = location_set[i].length();
-		if (len > most_descriptive_location)
-		{
-			most_descriptive_location = len;
-			index_of_most_descriptive_location = i;
-		}
-	}
-	this->key_location = location_set[index_of_most_descriptive_location];
-	if (!server_conf.all_locations[key_location].root.empty()) // not empty
-	{
-		std::string &tmp = server_conf.all_locations[key_location].root;
-		this->final_path = tmp + http_request.uri.path;
-	}
-	else
-	{
-		std::string &tmp = server_conf.all_locations[key_location].alias;
-		this->final_path = tmp + http_request.uri.path.substr(tmp.length());
-	}
-}
+
 
 void	response::serve_response(server& server_conf, request& http_request)
 {
@@ -102,11 +64,11 @@ void	response::get_method(server& server_conf, request& http_request)
 			{
 				if (server_conf.all_locations[key_location].index.size())
 				{
-					if (path[path.length() - 1] != '/')
-						path += '/';
+					if (final_path[final_path.length() - 1] != '/')
+						final_path += '/';
 					size_t size_ = server_conf.all_locations[key_location].index.size();
 					std::vector<std::string> &index_files =  server_conf.all_locations[key_location].index;
-					for (size_t i = 0; i < size; ++i)
+					for (size_t i = 0; i < size_; ++i)
 					{
 						struct stat path_stat_2;
 						std::string	tmp_path = final_path + index_files[i];
@@ -165,7 +127,7 @@ because im
 std::string		response::getmime(std::string path)
 {
 	size_t	pos  = path.find_last_of('.');
-	if (pos != std:string::npos)
+	if (pos != std::string::npos)
 	{
 		std::string	tmp = path.substr(pos);
 		if (mime.count(tmp))
@@ -192,4 +154,20 @@ response::response()
 	mime[".pdf"]	= "application/pdf";
 	mime[".svg"]	= "image/svg+xml";
 	mime[".txt"]	= "text/plain";
+}
+
+void	response::post_method(server& server_conf, request& http_request)
+{
+	location &valid_location = server_conf.all_locations[http_request.key_location];
+	// ishould check if everything okay till this point;
+
+	// if okay then 
+	if (!valid_location.cgi.empty())
+	{
+		//handle cgi;
+	}
+	else
+	{
+		// build answer on the code_from request;
+	}
 }

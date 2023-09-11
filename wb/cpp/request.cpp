@@ -1,17 +1,47 @@
 #include "../request.hpp"
 
 
-void	request::parse(std::string request_data)
+void	request::parse(std::string request_data, server& server_config)
 {
 	if (!is_header)
 	{
-		if (is_chunked)
+		location &valid_location =  server_config.all_locations[key_location];
+		if (!valid_location.cgi.empty()
+				|| valid_location.upload_store)
 		{
-			parse_chunked_data(request_data);
+			if (!valid_location.cgi.empty())
+			{
+				// i will open a file in temporary_dir
+				if (is_chunked)
+				{
+					parse_chunked_data(request_data);
+				}
+				else
+				{
+					ofs << request_data;
+				}
+			}
+			else
+			{
+				// open file in the final_path
+				if (is_chunked)
+				{
+					parse_chunked_data(request_data);
+				}
+				else if (is_multipart) // i will see what to do about it later
+				{
+					
+				}
+				else //just store it
+				{
+					ofs << request_data;
+				}
+			}
 		}
 		else
 		{
-			parse_form_data(request_data);
+			code_status = 90000; // what should i do?
+			finished_flag = true;
 		}
 	}
 	else
@@ -23,6 +53,7 @@ void	request::parse(std::string request_data)
 		is_header = !is_header;
 		body = header.substr(pos + 2);
 		parse_header();
+		detect_final_location(server_config);
 	}
 }
 
@@ -242,3 +273,43 @@ request::request(const request & f)
 	content_length = f.content_length;
 }
 
+bool	request::start_with(const std::string &location_directive,const  std::string &path)
+{
+	return (path.substr(0, location_directive.length()) == location_directive);
+}
+
+void	request::detect_final_location(server& server_conf)
+{
+	std::map<std::string, location>::iterator	it;
+	std::vector<std::string> location_set;
+	for (it = server_conf.all_locations.begin(); it == server_conf.all_locations.end(); ++it)
+	{
+		if (start_with(it->first, uri.path))
+			location_set.push_back(it->first);
+	}
+	if (location_set.empty())
+		return ;
+	size_t	most_descriptive_location = location_set[0].length();
+	size_t	location_set_size = location_set.size();
+	size_t	index_of_most_descriptive_location = 0;
+	for (size_t i = 1; i < location_set_size; ++i)
+	{
+		size_t	len = location_set[i].length();
+		if (len > most_descriptive_location)
+		{
+			most_descriptive_location = len;
+			index_of_most_descriptive_location = i;
+		}
+	}
+	this->key_location = location_set[index_of_most_descriptive_location];
+	if (!server_conf.all_locations[key_location].root.empty()) // not empty
+	{
+		std::string &tmp = server_conf.all_locations[key_location].root;
+		this->final_path = tmp + uri.path;
+	}
+	else
+	{
+		std::string &tmp = server_conf.all_locations[key_location].alias;
+		this->final_path = tmp + uri.path.substr(tmp.length());
+	}
+}
