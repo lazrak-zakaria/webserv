@@ -83,13 +83,13 @@ void	cgi::execute_cgi(server &server_conf, request &http_request)
 		char ext[] = ".py"; // retrive this;
 		to_execute[0] = strdup(server_conf.all_locations[http_request.key_location].cgi[ext].c_str());
 		to_execute[2] = NULL;
-
 		//	make the file as input;
 		//	make 	another file as output;
 		// use freopen;
 		freopen(http_request.file_name.c_str(), "r", stdin);
 		freopen(http_request.cgi_output_file_name.c_str(), "w", stdout);
 		execve(to_execute[0], to_execute, env);
+		// no need to delete allocated
 		exit(1);
 	}
 	else

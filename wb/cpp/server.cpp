@@ -12,7 +12,8 @@ void	server::socket_bind_listen()
     bzero(&addr_server, sizeof(addr_server));
     port = 8069; // later will depend on config file
     addr_server.sin_family = AF_INET;
-    addr_server.sin_addr.s_addr = INADDR_ANY; // ?? i just copied this from tutorials
+	https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
+    addr_server.sin_addr.s_addr = INADDR_ANY;
     addr_server.sin_port = htons(port);
     if (bind(fd_sock, (struct sockaddr *) &addr_server,
               sizeof(addr_server)) < 0) 
