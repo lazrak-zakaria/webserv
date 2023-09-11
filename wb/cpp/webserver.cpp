@@ -2,6 +2,8 @@
 
 void	webserver::run(std::map<int, server> &servers_config)
 {
+	fd_set              read_set;
+    fd_set              write_set;
 	FD_ZERO(&read_set);
     FD_ZERO(&write_set);
 	std::map<int, server>::iterator it_server;

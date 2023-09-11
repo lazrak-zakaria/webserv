@@ -71,7 +71,7 @@ void	cgi::execute_cgi(server &server_conf, request &http_request)
 	// -1 later
 	if (!pid)
 	{
-		// find last directory then chdir to it the run 
+		// find last directory then chdir to it the run  	char *a = dirname(strdup(path.c_str()));
 		char **env= new char*[env_variables.size() + 1];
 		size_t i = 0;
 		for (i = 0; i < env_variables.size(); ++i)

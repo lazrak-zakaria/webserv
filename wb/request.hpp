@@ -1,7 +1,7 @@
 #ifndef REQUEST_HPP__
 #define REQUEST_HPP__
 
-#include "header.hpp"
+#include "./header.hpp"
 #include "./server.hpp"
 
 class request
@@ -61,7 +61,7 @@ class request
 		std::string		file_name;
 
 		std::string		cgi_output_file_name;
-		std::ofstream	cgi_output_ofs;
+		std::ifstream	from_cgi_to_client;
 };
 
 // https://www.jmarshall.com/easy/http/#postmethod

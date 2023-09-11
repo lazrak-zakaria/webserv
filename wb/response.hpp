@@ -1,10 +1,10 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include "header.hpp"
-#include "server.hpp"
-#include "request.hpp"
-
+#include "./header.hpp"
+#include "./server.hpp"
+#include "./request.hpp"
+#include "./cgi.hpp"
 class response
 {
     public:
@@ -39,8 +39,11 @@ class response
 		bool	body_sending;
 
 		bool	done;
-	
+		bool	start_reading_file_cgi;
 		bool	finished_flag;
+
+		std::string		cgi_output_file_name;
+		std::ifstream	from_cgi_to_client;
 		response();
 };
 

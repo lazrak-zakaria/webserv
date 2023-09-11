@@ -22,9 +22,9 @@
 // };
 
 #include <cstdlib>
-#include "header.hpp"
-#include "request.hpp"
-#include "response.hpp"
+#include "./header.hpp"
+#include "./request.hpp"
+#include "./response.hpp"
 
 class client
 {

@@ -16,10 +16,6 @@ void	response::create_header()
 
 void	response::serve_response(server& server_conf, request& http_request)
 {
-	if (final_path.empty())
-	{
-		detect_final_location(server_conf, http_request);
-	}	
 	if (http_request.uri.method == "GET")
 	{
 
@@ -159,15 +155,32 @@ response::response()
 void	response::post_method(server& server_conf, request& http_request)
 {
 	location &valid_location = server_conf.all_locations[http_request.key_location];
-	// ishould check if everything okay till this point;
+	//  i should check if everything okay till this point;
 
-	// if okay then 
-	if (!valid_location.cgi.empty())
+	// if okay then
+	if (!start_reading_file_cgi)
 	{
-		//handle cgi;
+
+		if (!valid_location.cgi.empty())
+		{
+			//handle cgi;
+			// if ok open the file cgi output
+			start_reading_file_cgi = true;
+		}
+		else
+		{
+			// build answer on the code_from request; that is : what the upload did
+		}
 	}
-	else
+	else if (start_reading_file_cgi && !valid_location.cgi.empty())
 	{
-		// build answer on the code_from request;
+		char	buf[SIZE_READ];
+		from_cgi_to_client.read(buf, SIZE_READ - 1);
+		buf[ifs.gcount()] = '\0';
+		received_from_file += ifs.gcount();
+		finished_flag = !ifs.gcount();
+		if (finished_flag)
+			from_cgi_to_client.close();
+		answer = buf;
 	}
 }
