@@ -40,7 +40,7 @@ void	request::parse(std::string request_data, server& server_config)
 		}
 		else
 		{
-			code_status = 90000; // what should i do?
+			code_status = 90000; // what should i do ?
 			finished_flag = true;
 		}
 	}
@@ -243,39 +243,11 @@ Content-Type: application/octet-stream\r\n
 
 */
 
-request::request()
-{
-	is_header = 1;
-}
-request::~request()
-{}
-
-request& request::operator=(const request& f)
-{
-	header_fields = f.header_fields;
-
-	header = f.header;
-	body = f.body;
-	temp_file = f.temp_file;
-
-	content_length = f.content_length;
-	return (*this);
-}
-
-request::request(const request & f)
-{
-		header_fields = f.header_fields;
-
-	header = f.header;
-	body = f.body;
-	temp_file = f.temp_file;
-
-	content_length = f.content_length;
-}
 
 bool	request::start_with(const std::string &location_directive,const  std::string &path)
 {
-	return (path.substr(0, location_directive.length()) == location_directive);
+	size_t	location_length = location_directive.length();
+	return (path.substr(0, location_length) == location_directive); // later check if ending with '/' or '\0'
 }
 
 void	request::detect_final_location(server& server_conf)
@@ -288,7 +260,7 @@ void	request::detect_final_location(server& server_conf)
 			location_set.push_back(it->first);
 	}
 	if (location_set.empty())
-		return ;
+		return ;// error no match
 	size_t	most_descriptive_location = location_set[0].length();
 	size_t	location_set_size = location_set.size();
 	size_t	index_of_most_descriptive_location = 0;
@@ -312,4 +284,48 @@ void	request::detect_final_location(server& server_conf)
 		std::string &tmp = server_conf.all_locations[key_location].alias;
 		this->final_path = tmp + uri.path.substr(tmp.length());
 	}
+}
+
+
+
+request::request(/* args */)
+{
+
+}
+request::request(const request& f)
+{
+	*this = f;
+}
+request& request::operator=(const request& f)
+{
+		header_fields = f.header_fields;
+
+		header = f.header;
+		body = f.body;
+		temp_file = f.temp_file;
+
+		content_length = f.content_length;
+		uri = f.uri;
+
+		// ofs = f.ofs;
+		boundary_size = f.boundary_size;
+		boundary = f.boundary;
+		flag = f.flag;
+
+		is_header = f.is_header;
+		is_chunked	= f.is_chunked;
+		is_multipart = f.is_multipart;
+		finished_flag = f.finished_flag;
+		code_status	= f.code_status;
+
+		key_location = f.key_location;
+		final_path = f.final_path;
+		file_name = f.file_name;
+		cgi_output_file_name = f.cgi_output_file_name;
+		// from_cgi_to_client = f.from_cgi_to_client;
+	return *this;
+}
+request::~request()
+{
+
 }

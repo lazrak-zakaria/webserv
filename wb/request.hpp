@@ -2,6 +2,7 @@
 #define REQUEST_HPP__
 
 #include "./header.hpp"
+
 #include "./server.hpp"
 
 class request
@@ -23,7 +24,7 @@ class request
 			std::string path;
 			std::string query_string;
 			//std::string fragment_identifier; //i see no use;
-			// std::string code;
+			//std::string code;
 		} uri;
 
 		std::ofstream	ofs;
@@ -45,12 +46,6 @@ class request
 
 		bool	finished_flag; // not added to the code yet
 
-		request& operator=(const request& f);
-		request(/* args */);
-		request(const request& );
-
-		~request();
-
 
 		int	code_status;
 
@@ -62,6 +57,16 @@ class request
 
 		std::string		cgi_output_file_name;
 		std::ifstream	from_cgi_to_client;
+		
+		
+		
+		
+		
+		
+		request(/* args */);
+		request(const request& );
+		request& operator=(const request&);
+		~request();
 };
 
 // https://www.jmarshall.com/easy/http/#postmethod

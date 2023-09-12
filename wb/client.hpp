@@ -21,10 +21,11 @@
   
 // };
 
-#include <cstdlib>
+// #include <cstdlib>
 #include "./header.hpp"
+class server;
 #include "./request.hpp"
-#include "./response.hpp"
+// #include "./response.hpp"
 
 class client
 {
@@ -38,10 +39,12 @@ class client
 		socklen_t			client_sockaddr_length;
 
 		request				http_request;
-		response			http_response;
+		// response			http_response;
 
 
 		client(/* args */);
+		client(const client&);
+		client& operator=(const client&);
 		~client();
 };
 

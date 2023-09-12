@@ -1,0 +1,81 @@
+class <config of a server>
+
+class server
+{
+	a pointer to the <config of a server>
+	clients
+}
+
+class client
+{
+	fd_sock
+	
+
+	a pointer to the <config of a server>
+
+	struct request
+	{
+		<map>	request_headers
+		string	header
+		string	body
+		size_t	received_body_size;
+		size_t	content_length
+		size_t	code_status //build response depend on thi code
+
+
+		ofstream	output_file
+		<vector>	files_to_delete
+
+		{
+			methode
+			http_version
+			path;
+			query_string;
+		}
+
+		client_pointer;
+	}
+
+	struct response
+	{
+		<map>	response_headers
+		string	header;
+		output_file_size // i will send
+	
+	
+		client_pointer;
+	}
+
+	struct cgi
+	{
+		ofstream	cgi_output_file;
+		
+
+		client_pointer;
+	}
+
+	struct flags
+	{
+		in_request;
+		in_response;
+
+		is_header;
+		is_chunked;
+
+		start_reading_cgi_output;
+
+		response_body_sending;
+
+		response_finished;
+		request_finished;
+	}
+
+	string	location_key
+	string	final_path
+	
+	string	answer_response;
+
+
+	void	clear_me();
+
+}

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <map>
+class server;
+#include "./request.hpp"
 #include "./client.hpp"
 
 //https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/
@@ -19,20 +21,6 @@
 //https://www.reddit.com/r/AskNetsec/comments/wzk23o/what_is_server_name_in_nginx/?rdt=46513
 
 
-typedef struct location
-{
-	std::vector<std::string>	methods;
-	std::string					redirection;
-	std::string					root;
-	std::string					alias;
-	bool						directory_listing;
-	std::string					default_file_directory;
-	std::vector<std::string>	index;
-	std::map<std::string, std::string> cgi; // map< file extension , cgi program> 
-
-	bool					upload_store; //path to store file being uploaded
-
-} location;
 
 class server
 {
@@ -61,8 +49,14 @@ class server
 		int		return_max_sock_client() const;
 		void	accept_client(fd_set &read_set);
 		void	handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_set,fd_set &read_set, fd_set &write_set);
-		server(){}
-		~server(){}
+		
+
+
+
+		server();
+		server(const server&);
+		server& operator=(const server&);
+		~server();
 };
 
 

@@ -10,3 +10,24 @@ client::~client()
 {
 	
 }
+
+
+
+/*
+
+
+
+
+client
+{
+	have request and response
+	what does the client need from server to handle request?
+		- configs
+}
+
+
+
+
+
+
+*/

@@ -30,7 +30,7 @@ int main()
         // close(fd[1]);
         // close(fd[0]);
 		freopen("file1", "r", stdin);
-		freopen("file2", "w", stdout);
+		freopen("file3", "w", stdout);
 
         string k = "./test";
         char *b[] = { NULL};
@@ -39,7 +39,7 @@ int main()
     }
     wait(0);
     // close(fd[1]);
-	fd[0] = open("file2", O_RDWR);
+	fd[0] = open("file3", O_RDWR);
     int f = read(fd[0], aa, 494);
     aa[f] = 0;
     close(fd[0]);

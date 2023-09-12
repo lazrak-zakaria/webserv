@@ -4,7 +4,8 @@
 #include "./header.hpp"
 #include "./server.hpp"
 #include "./request.hpp"
-#include "./cgi.hpp"
+// #include "./cgi.hpp"
+
 class response
 {
     public:
@@ -45,6 +46,8 @@ class response
 		std::string		cgi_output_file_name;
 		std::ifstream	from_cgi_to_client;
 		response();
+		response(const response&);
+		response& operator=(const response&);
 };
 
 #endif

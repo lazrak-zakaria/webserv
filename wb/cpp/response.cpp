@@ -18,7 +18,7 @@ void	response::serve_response(server& server_conf, request& http_request)
 {
 	if (http_request.uri.method == "GET")
 	{
-
+		get_method(server_conf, http_request);
 	}
 	else if (http_request.uri.method == "POST")
 	{

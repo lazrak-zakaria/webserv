@@ -31,4 +31,19 @@
 
 #define SIZE_READ 2048
 
+typedef struct location
+{
+	std::vector<std::string>	methods;
+	std::string					redirection;
+	std::string					root;
+	std::string					alias;
+	bool						directory_listing;
+	std::string					default_file_directory;
+	std::vector<std::string>	index;
+	std::map<std::string, std::string> cgi; // map< file extension , cgi program> 
+
+	bool					upload_store; //path to store file being uploaded
+
+} location;
+
 #endif

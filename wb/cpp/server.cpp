@@ -10,7 +10,6 @@ void	server::socket_bind_listen()
         exit(1);
     }
     bzero(&addr_server, sizeof(addr_server));
-    port = 8069; // later will depend on config file
     addr_server.sin_family = AF_INET;
 	https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
     addr_server.sin_addr.s_addr = INADDR_ANY;
