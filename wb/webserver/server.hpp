@@ -9,7 +9,7 @@ class server
 	private:
 		int						fd_sock;
 		struct sockaddr_in  	addr_server;
-
+	
 		std::map<int, client>	server_clients;
 		server_config			*config_data;
 

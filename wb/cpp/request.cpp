@@ -51,7 +51,7 @@ void	request::parse(std::string request_data, server& server_config)
 		if (pos == std::string::npos)
 			return ;
 		is_header = !is_header;
-		body = header.substr(pos + 2);
+		body = header.substr(pos + 4);
 		parse_header();
 		detect_final_location(server_config);
 	}

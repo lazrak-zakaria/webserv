@@ -13,7 +13,7 @@ void	server::socket_bind_listen()
     addr_server.sin_family = AF_INET;
 	// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
     addr_server.sin_addr.s_addr = INADDR_ANY;
-    addr_server.sin_port = htons(port);
+    addr_server.sin_port = htons(config_data->port);
     if (bind(fd_sock, (struct sockaddr *) &addr_server,
               sizeof(addr_server)) < 0) 
     {
@@ -47,7 +47,7 @@ void	server::accept_client(fd_set &read_set)
         return ;
 	}
 	FD_SET(fd_sock_tmp, &read_set);
-	server_clients[fd_sock_tmp].fd_sock = fd_sock_tmp;
+	server_clients[fd_sock_tmp];
 }
 
 void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_set,fd_set &read_set, fd_set &write_set)
@@ -70,7 +70,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 			}
 			buf[collected] = '\0';
 			std::cout << buf << "\n";
-			client_obj.http_request.parse(buf, *this);
+			client_obj.serve_client(buf);
 			// if (client_obj.http_request.finished_flag)
 			// {
 				FD_CLR(client_fd_sock, &read_set);
@@ -79,7 +79,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 		}
 		else if (FD_ISSET(client_fd_sock, &temp_write_set))
 		{
-			const std::string &answer = client_obj.http_response.answer;
+			const std::string &answer = client_obj.serve_client("");
 			int		sent = send(client_fd_sock, answer.c_str(), answer.size(), 0);
 			if (answer.size() != sent)
 			{
@@ -88,7 +88,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 				// testing
 				// drop client;
 			}
-			if (client_obj.http_response.finished_flag)
+			if (client_obj.is_response_finished())
 			{
 				FD_CLR(client_fd_sock, &write_set);
 				FD_SET(client_fd_sock, &read_set);

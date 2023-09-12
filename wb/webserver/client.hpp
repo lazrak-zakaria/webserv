@@ -32,14 +32,15 @@ class client
 
 
 			void	parse(const std::string &request_data);
-			void	parse_uri(void);
+			void	parse_uri(std::string &uri);
 			void	parse_header(void);
-			void	parse_body(void);
-
+			
 			void	parse_chunked_data(void);
 			void	parse_chunked(bool size_data, size_t pos);
 			
 			client								*me;
+			
+			request();
 		} request;
 
 
@@ -59,6 +60,8 @@ class client
 
 
 			client								*me;
+
+			response();
 		} response;
 
 		struct cgi
@@ -74,7 +77,8 @@ class client
 			bool	in_request;
 			bool	in_response;
 
-			bool	is_header;
+			bool	is_header_ok;
+			bool	is_request_body;
 			bool	is_chunked;
 
 			bool	start_reading_cgi_output;
@@ -93,10 +97,11 @@ class client
 		client(const client &);
 		client & operator = (const client &);
 
-
 	public:
-
-		void	serve_client(const std::string data);
+		void				set_config_data(server_config *config);
+		bool				is_response_finished(void) const;
+		bool				is_request_finished(void) const;
+		const std::string	&serve_client(const std::string data);
 
 		client();
 		~client();
