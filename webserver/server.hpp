@@ -3,6 +3,7 @@
 
 #include "server_config.hpp"
 #include "client.hpp"
+#include "mime_and_status_code.hpp"
 
 class server
 {
@@ -12,7 +13,7 @@ class server
 	
 		std::map<int, client>	server_clients;
 		server_config			*config_data;
-
+		mime_and_status_code	*mime_status_code;
 	public:
 		void	socket_bind_listen();
 		int		return_max_sock_client() const;

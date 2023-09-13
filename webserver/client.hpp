@@ -2,18 +2,21 @@
 #define CLIENT_HPP__
 
 #include "server_config.hpp"
+#include "mime_and_status_code.hpp"
 
 class client
 {
 	private:
-		server_config		*config_data;
+		server_config			*config_data;
+		mime_and_status_code	*mime_status_code;
+		std::string				location_key;
+		std::string				final_path;
 
-		std::string			location_key;
-		std::string			final_path;
+		std::string				answer_response;
 
-		std::string			answer_response;
+		int						code_status;
 
-		int									code_status;
+
 		struct request
 		{
 			std::map<std::string, std::string>	request_headers;
@@ -102,6 +105,7 @@ class client
 
 	public:
 		void				set_config_data(server_config *config);
+		void				set_mime_status_code(mime_and_status_code *m);
 		bool				is_response_finished(void) const;
 		bool				is_request_finished(void) const;
 		const std::string	&serve_client(const std::string data);

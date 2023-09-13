@@ -1,9 +1,10 @@
 #include "../client.hpp"
-
+#include "../mime_and_status_code.hpp"
 
 int main()
 {
 	server_config	server1;
+	mime_and_status_code	mime;
 	server1.host = "127.0.0.1";
 	server1.port = 8090;
 	server1.server_name = "z";
@@ -42,6 +43,7 @@ int main()
 
 	client clienta;
 	clienta.set_config_data(&server1);
+	clienta.set_mime_status_code(&mime);
 	std::ifstream ifs("../request.txt");
 
 	while (1)

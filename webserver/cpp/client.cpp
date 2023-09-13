@@ -25,6 +25,11 @@ client & client::operator = (const client &from)
 client::~client()
 {}
 
+void				client::set_mime_status_code(mime_and_status_code *m)
+{
+	mime_status_code = m; 
+}
+
 void	client::set_config_data(server_config *config)
 {
 	config_data = config;
@@ -152,7 +157,7 @@ void	client::request::parse(const std::string &request_data)
 		}
 		else
 		{
-			me->code_status = -9; // later
+			me->code_status = 403; // Forbidden
 			me->flags.request_finished = true;
 		}
 	}
@@ -170,7 +175,7 @@ void	client::request::parse(const std::string &request_data)
 			if (content_length > me->config_data->limit_body_size)
 			{
 				me->flags.request_finished = true;
-				me->code_status = -77; // too large
+				me->code_status = 413; // Payload Too Large
 				return ;
 			}
 		}
@@ -205,7 +210,7 @@ void	client::request::parse_uri(std::string &uri)
 	{
 		me->flags.is_header_ok = false;
 		me->flags.request_finished = true;
-		me->code_status = 4; //not suppoerted
+		me->code_status = 501; //Not Implemented
 		return ;
 	}
 	method = temp_data;
@@ -223,7 +228,7 @@ void	client::request::parse_uri(std::string &uri)
 	{
 		me->flags.is_header_ok = false;
 		me->flags.request_finished = true;
-		me->code_status = 4; //not suppoerted
+		me->code_status = 400; //bad request
 		return ;
 	}
 	http_version = temp_data;
@@ -275,7 +280,7 @@ void	client::request::parse_header(void)
 		}
 		else
 		{
-			me->code_status = -8; //later
+			me->code_status = 504; //Not Implemented
 			me->flags.request_finished = true;
 		}
 	}
@@ -287,7 +292,7 @@ void	client::request::parse_header(void)
 			|| request_headers.count("content-length")))
 	{
 		me->flags.request_finished = true;
-		me->code_status = -7;
+		me->code_status = 403; //Forbidden
 	}
 	else
 	{
@@ -367,7 +372,7 @@ void	client::response::generate_directory_listing(void)
 	} 
 	else
 	{
-		me->code_status = 99; // later
+		me->code_status = 403; //forbiden
 		me->answer_response = response_error();
 	}
 }
@@ -391,7 +396,7 @@ void	client::response::get_method(void)
 					input_file.open(me->final_path.c_str());
 					if (!input_file.is_open())
 					{
-						me->code_status = 797;
+						me->code_status = 403;
 						me->answer_response = response_error();
 						me->flags.response_body_sending = true;
 					}
@@ -448,7 +453,7 @@ void	client::response::get_method(void)
 					}
 					if (!me->flags.response_body_sending)
 					{
-						me->code_status = -100; // later
+						me->code_status = 403; // later
 						me->answer_response =  "error";// response_error();
 						me->flags.response_finished = true;
 					}
@@ -458,6 +463,7 @@ void	client::response::get_method(void)
 				}
 				else
 				{
+					me->code_status = 403; // later
 					me->answer_response = "error 403 forbiden\n";
 					me->flags.response_finished = true;
 				}
@@ -465,7 +471,7 @@ void	client::response::get_method(void)
 		}
 		else
 		{
-			me->code_status = -100; // later
+			me->code_status = 403; // later
 			me->answer_response = response_error();
 		}
 	}
@@ -494,7 +500,6 @@ void	client::response::post_method(void)
 		{
 
 			me->flags.start_reading_cgi_output = true;
-
 		}
 		else
 		{
