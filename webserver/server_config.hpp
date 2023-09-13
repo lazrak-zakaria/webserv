@@ -32,8 +32,6 @@ class server_config
 		std::map<std::string, location>		all_locations;
 		size_t								limit_body_size;
 
-		server_config();
-		~server_config();
 };
 
 

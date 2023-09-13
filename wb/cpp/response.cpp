@@ -88,7 +88,7 @@ void	response::get_method(server& server_conf, request& http_request)
 							}
 						}
 					}
-					if (!body_sending) // meannig no index is valid
+					if (!body_sending) // meaning no index is valid
 					{
 						//error
 					}

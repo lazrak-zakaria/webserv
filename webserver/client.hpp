@@ -13,6 +13,7 @@ class client
 
 		std::string			answer_response;
 
+		int									code_status;
 		struct request
 		{
 			std::map<std::string, std::string>	request_headers;
@@ -20,7 +21,6 @@ class client
 			std::string							request_body;
 			size_t								content_length;
 			size_t								received_body_size;
-			int									code_status;
 
 			std::ofstream						output_file;
 			std::vector<std::string>			files_to_delete;
@@ -40,6 +40,8 @@ class client
 			
 			client								*me;
 			
+
+			void	print_header();
 			request();
 		} request;
 
@@ -50,6 +52,7 @@ class client
 			std::string							response_header;
 			size_t								content_length_input_file;
 
+			size_t								received_from_input_file;
 			std::ifstream						input_file;
 			
 			void			generate_header(void);
@@ -58,6 +61,7 @@ class client
 			void			post_method(void);
 		// 	void			delete_method(void);
 
+			std::string	response_error(void);
 
 			client								*me;
 
@@ -88,7 +92,6 @@ class client
 			bool	response_finished;
 			bool	request_finished;
 		} flags;
-
 
 
 		void		detect_final_location(void);

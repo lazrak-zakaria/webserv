@@ -1,0 +1,62 @@
+#include "../client.hpp"
+
+
+int main()
+{
+	server_config	server1;
+	server1.host = "127.0.0.1";
+	server1.port = 8090;
+	server1.server_name = "z";
+
+	server1.root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+
+	std::vector<location> loc(4);
+
+	loc[0].alias = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+	loc[0].index.push_back("index.html");
+	loc[0].methods.push_back("GET");
+	loc[0].methods.push_back("POST");
+
+	loc[1].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+	loc[1].methods.push_back("GET"); // turn methode to map later;
+	
+	loc[2].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+	loc[2].methods.push_back("POST"); // turn methode to map later;
+	loc[2].methods.push_back("DELETE"); // turn methode to map later;
+
+
+	loc[3].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+	loc[3].methods.push_back("POST"); // turn methode to map later;
+	loc[3].methods.push_back("DELETE"); // turn methode to map later;
+
+	loc[3].cgi[".py"] = "/usr/bin/python3";
+	loc[3].cgi[".php"] = "/usr/bin/php";
+	loc[3].cgi[".sh"] = "/usr/bin/sh";
+
+	server1.all_locations["/"] = loc[0];
+	server1.all_locations["/images/"] = loc[1];
+	server1.all_locations["/upload"] = loc[2];
+	server1.all_locations["/cgi-bin"] = loc[3];
+
+
+	client clienta;
+	std::ifstream ifs("../request.txt");
+
+	while (1)
+	{
+		std::string	tmp ;
+		char buf[20];
+		ifs.read(buf, 19);
+		buf[ifs.gcount()] = '\0'; // mandatory;
+		if (!clienta.is_request_finished())
+		{
+			clienta.serve_client(buf);
+			// std::cout << "here\n";
+		}
+		else
+		{
+			break;
+			std::cout << clienta.serve_client("");
+		}
+	}
+}
