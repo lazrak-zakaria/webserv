@@ -93,7 +93,7 @@ class client
 			bool	request_finished;
 		} flags;
 
-
+		void		remove_from_back(std::string &s, int n);
 		void		detect_final_location(void);
 		bool		start_with(const std::string &location_directive, const std::string &path);
 

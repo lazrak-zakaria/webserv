@@ -5,6 +5,7 @@ client::client()
 {
 	config_data = NULL;
 	memset(&flags, 0, sizeof(flags));
+	flags.is_header_ok = true;
 	code_status = 0;
 	request.me = this;
 	response.me = this;
@@ -50,11 +51,12 @@ void		client::detect_final_location(void)
 {
 	std::map<std::string, location>::iterator	it;
 	std::vector<std::string> location_set;
-	for (it = config_data->all_locations.begin(); it == config_data->all_locations.end(); ++it)
+	for (it = config_data->all_locations.begin(); it != config_data->all_locations.end(); ++it)
 	{
 		if (start_with(it->first, request.path))
 			location_set.push_back(it->first);
 	}
+	
 	if (location_set.empty())
 		return ;// error no match
 	size_t	most_descriptive_location = location_set[0].length();
@@ -69,7 +71,8 @@ void		client::detect_final_location(void)
 			index_of_most_descriptive_location = i;
 		}
 	}
-	location_key= location_set[index_of_most_descriptive_location];
+	location_key = location_set[index_of_most_descriptive_location];
+	
 	if (!config_data->all_locations[location_key].root.empty()) // not empty
 	{
 		std::string &tmp = config_data->all_locations[location_key].root;
@@ -86,6 +89,12 @@ void		client::detect_final_location(void)
 	}
 }
 
+void		client::remove_from_back(std::string &s, int n)
+{
+	while (n--)
+		s.pop_back();
+}
+
 const std::string	&client::serve_client(const std::string data)
 {
 	if (!flags.request_finished)
@@ -93,14 +102,15 @@ const std::string	&client::serve_client(const std::string data)
 		request.parse(data);
 		return answer_response;
 	}
-	// else
-	// {
-	// 	if (request.method == "GET")
-	// 	{
-	// 		response.get_method();
-	// 	}
+	else
+	{
+		if (request.method == "GET")
+		{
+			
+			response.get_method();
+		}
 		return answer_response;
-	// }
+	}
 }
 
 
@@ -155,18 +165,21 @@ void	client::request::parse(const std::string &request_data)
 		me->flags.is_request_body = true;
 		request_body = request_header.substr(pos + 8);
 		parse_header();
-		print_header();
-		exit(1);
-		// if (request_headers.count("content-length"))
-		// {
-		// 	if (content_length > me->config_data->limit_body_size)
-		// 	{
-		// 		me->flags.request_finished = true;
-		// 		me->code_status = -77; // too large
-		// 		return ;
-		// 	}
-		// }
-		// me->detect_final_location();
+		if (request_headers.count("content-length"))
+		{
+			if (content_length > me->config_data->limit_body_size)
+			{
+				me->flags.request_finished = true;
+				me->code_status = -77; // too large
+				return ;
+			}
+		}
+		me->detect_final_location();
+		if (method != "POST")
+		{
+			me->flags.request_finished = true;
+		}
+
 	}
 }
 
@@ -177,7 +190,7 @@ void	client::request::print_header()
 	std::cout << "querystaring: " << query_string << "\n";
 	std::cout << "http-version: " << http_version << "\n";
 
-	for (auto it = request_headers.begin(); it != request_headers.begin(); ++it)
+	for (auto it = request_headers.begin(); it != request_headers.end(); ++it)
 	{
 		std::cout << it->first << " " << it->second << "\n"; 
 	}
@@ -185,28 +198,73 @@ void	client::request::print_header()
 
 void	client::request::parse_uri(std::string &uri)
 {
-
+	std::stringstream	ss(uri);
+	std::string			temp_data;
+	getline(ss, temp_data, ' ');
+	if (temp_data != "GET" && temp_data != "POST" && temp_data != "DELETE")
+	{
+		me->flags.is_header_ok = false;
+		me->flags.request_finished = true;
+		me->code_status = 4; //not suppoerted
+		return ;
+	}
+	method = temp_data;
+	getline(ss, temp_data, ' ');
+	if (temp_data.empty())
+	{
+		me->flags.is_header_ok = false;
+		me->flags.request_finished = true;
+		me->code_status = 4; //not suppoerted
+		return ;
+	}
+	path = temp_data;
+	getline(ss, temp_data);
+	if (temp_data != "HTTP/1.1")
+	{
+		me->flags.is_header_ok = false;
+		me->flags.request_finished = true;
+		me->code_status = 4; //not suppoerted
+		return ;
+	}
+	http_version = temp_data;
+	size_t i = 0;
+	temp_data = path;
+	path = "";
+	for (i = 0 ; temp_data[i] && temp_data[i] != '?' && temp_data[i] != '#'; ++i)
+		path += temp_data[i];
+	if (temp_data[i] == '?')
+	{
+		for ( ; temp_data[i] && temp_data[i] != '#'; ++i)
+			path += temp_data[i];
+	}
+	else if (temp_data[i] == '#')
+	{
+		for ( ; temp_data[i]; ++i)
+			path += temp_data[i];
+	}
+	// i need to know more about path
 }
 
 void	client::request::parse_header(void)
 {
+	me->remove_from_back(request_header, 4);
 	std::stringstream	ss(request_header);
 	std::string			tmp_string;
 
 	getline(ss, tmp_string);
-	tmp_string[tmp_string.length() - 4] = '\0';
+	me->remove_from_back(tmp_string, 4);
 	parse_uri(tmp_string);
 	bool	&is_header_ok = me->flags.is_header_ok;
 	while (is_header_ok && getline(ss, tmp_string))
 	{
-		tmp_string[tmp_string.length() - 4] = '\0';
+		me->remove_from_back(tmp_string, 4);
 		std::stringstream	stream(tmp_string);
 		std::string			tmp_string_2;
 		std::string			key_field;
-		getline(stream, key_field);
+		getline(stream, key_field, ' ');
 		for (size_t i = 0; i < key_field[i]; ++i)
 			key_field[i] = tolower(key_field[i]);
-		getline(stream, tmp_string_2, '\r');
+		getline(stream, tmp_string_2);
 		request_headers[key_field] = tmp_string_2; 
 	}
 	if (request_headers.count("transfer-encoding"))
@@ -280,6 +338,7 @@ void	client::request::parse_chunked(bool size_or_data, size_t pos)
 client::response::response()
 {
 	content_length_input_file = std::string::npos;
+	received_from_input_file = 0;
 }
 
 void	client::response::generate_header(void)
@@ -339,6 +398,7 @@ void	client::response::get_method(void)
 					else
 					{
 						generate_header();
+						content_length_input_file = path_stat.st_size;
 						me->answer_response = response_header;
 						me->flags.response_body_sending = true;
 					}
@@ -346,9 +406,12 @@ void	client::response::get_method(void)
 			}
 			else if (S_ISDIR(path_stat.st_mode))
 			{
+
 				size_t	index_size = me->config_data->all_locations[me->location_key].index.size();
-				if (me->final_path[me->final_path.size() - 1] == '/')
-					me->final_path += '/';						
+				if (me->final_path[me->final_path.length() - 1] != '/')
+				{
+					me->final_path += '/';		
+				}			
 				if (index_size)
 				{
 					std::vector<std::string> &index_files = me->config_data->all_locations[me->location_key].index;
@@ -366,16 +429,17 @@ void	client::response::get_method(void)
 								}
 								else
 								{
-									input_file.open(me->final_path);
+									input_file.open(tmp_final_path);
 									if (!input_file.is_open())
 									{
-
+										
 									}
 									else
 									{
 										generate_header();
 										me->flags.response_body_sending = true;
 										me->answer_response = response_header;
+										content_length_input_file = path_stat_2.st_size;
 									}
 								}
 							}
@@ -385,8 +449,17 @@ void	client::response::get_method(void)
 					if (!me->flags.response_body_sending)
 					{
 						me->code_status = -100; // later
-						me->answer_response = response_error();
+						me->answer_response =  "error";// response_error();
+						me->flags.response_finished = true;
 					}
+				}
+				else if (me->config_data->all_locations[me->location_key].directory_listing)
+				{
+				}
+				else
+				{
+					me->answer_response = "error 403 forbiden\n";
+					me->flags.response_finished = true;
 				}
 			}
 		}
@@ -402,15 +475,46 @@ void	client::response::get_method(void)
 		input_file.read(buf, SIZE_READ - 1);
 		buf[input_file.gcount()] = '\0';
 		received_from_input_file += input_file.gcount();
-		me->flags.request_finished = received_from_input_file == content_length_input_file;
-		if (me->flags.request_finished)
+		me->flags.response_finished = received_from_input_file == content_length_input_file;
+		if (me->flags.response_finished)
+		{
 			input_file.close();
+		}
 		me->answer_response = buf;
 	}
 }
 
 void	client::response::post_method(void)
 {
+	location	&valid_location = me->config_data->all_locations[me->location_key];
+
+	if (!me->flags.start_reading_cgi_output)
+	{
+		if (!valid_location.cgi.empty())
+		{
+
+			me->flags.start_reading_cgi_output = true;
+
+		}
+		else
+		{
+			
+		}
+
+	}
+	else
+	{
+		char	buf[SIZE_READ];
+		input_file.read(buf, SIZE_READ - 1);
+		buf[input_file.gcount()] = '\0';
+		received_from_input_file += input_file.gcount();
+		me->flags.response_finished = received_from_input_file == content_length_input_file;
+		if (me->flags.response_finished)
+		{
+			input_file.close();
+		}
+		me->answer_response = buf;
+	}
 }
 
 std::string	client::response::response_error(void)

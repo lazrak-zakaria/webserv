@@ -30,7 +30,7 @@
 #include <sstream>
 #include <fstream>
 
-#define SIZE_READ 2048
+#define SIZE_READ 8
 
 
 #endif

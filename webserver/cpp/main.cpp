@@ -19,6 +19,7 @@ int main()
 
 	loc[1].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
 	loc[1].methods.push_back("GET"); // turn methode to map later;
+	loc[1].index.push_back("myimage");
 	
 	loc[2].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
 	loc[2].methods.push_back("POST"); // turn methode to map later;
@@ -40,6 +41,7 @@ int main()
 
 
 	client clienta;
+	clienta.set_config_data(&server1);
 	std::ifstream ifs("../request.txt");
 
 	while (1)
@@ -53,10 +55,12 @@ int main()
 			clienta.serve_client(buf);
 			// std::cout << "here\n";
 		}
-		else
+		else if (!clienta.is_response_finished())
 		{
-			break;
+			// sleep(1);
 			std::cout << clienta.serve_client("");
+			//break;
 		}
+		else break;
 	}
 }
