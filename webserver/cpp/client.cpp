@@ -100,8 +100,17 @@ void		client::remove_from_back(std::string &s, int n)
 		s.pop_back();
 }
 
-const std::string	&client::serve_client(const std::string data)
+const std::string	&client::serve_client(const std::string data, int recvd)
 {
+	if (flags.is_request_body)
+	{
+		request.received_body_size += recvd;
+		if (request.received_body_size > config_data->limit_body_size)
+		{
+			flags.request_finished = true;
+			code_status = 413;
+		}
+	}
 	if (!flags.request_finished)
 	{
 		request.parse(data);
@@ -113,6 +122,10 @@ const std::string	&client::serve_client(const std::string data)
 		{
 			
 			response.get_method();
+		}
+		else if (request.method == "POST")
+		{
+			response.post_method();
 		}
 		return answer_response;
 	}
@@ -132,17 +145,58 @@ client::request::request()
 
 void	client::request::parse(const std::string &request_data)
 {
+	
 	if (me->flags.is_request_body)
 	{
 		location &valid_location = me->config_data->all_locations[me->location_key]; 
 		if (!valid_location.cgi.empty() 
 				|| valid_location.upload_store)
 		{
+
 			//open file if cgi add file to delete later
+			if (!me->flags.tmp_file_open)
+			{
+				std::string tmp_name = "fileXXXXXX";
+				std::string	tmp;
+				if (valid_location.upload_store)
+				{
+					me->final_path += (me->final_path[me->final_path.length() - 1] != '/') ? "/" : ""; 
+					tmp = me->final_path + tmp_name;
+					me->code_status = 201;
+				}
+				else
+				{
+					tmp = "./Temporary/";
+					tmp += tmp_name;
+				}
+				char *a = new char[tmp.length() + 1];
+				memcpy(a, tmp.c_str(), tmp.length() + 1);
+				int fd = mkstemp64(a);
+				if (fd == -1)
+				{
+					me->code_status = 500;
+					me->flags.request_finished = true;
+					delete []a;
+					return ;
+				}
+				close(fd);
+				file_name = a;
+				output_file.open(a);
+				delete []a;
+				if (!output_file.is_open())
+				{
+					me->code_status = 500;
+					me->flags.request_finished = true;
+					return ;
+				}
+				me->flags.tmp_file_open = true;
+				if (!valid_location.cgi.empty())
+					output_file << request_header << "\r\n";
+			}
 			if (me->flags.is_chunked)
 			{
-			
-				request_body += request_data;
+				if (!me->code_status)
+					request_body += request_data;
 				parse_chunked_data();
 			}
 			else
@@ -152,7 +206,14 @@ void	client::request::parse(const std::string &request_data)
 					output_file << request_body;
 					request_body = "";
 				}
-				output_file << request_data;
+				if (!request_data.empty())
+				{
+					output_file << request_data;
+				}
+				if (received_body_size >= content_length)
+				{
+					me->flags.request_finished = true;
+				}
 			}
 		}
 		else
@@ -169,7 +230,8 @@ void	client::request::parse(const std::string &request_data)
 			return ;
 		me->flags.is_request_body = true;
 		request_body = request_header.substr(pos + 8);
-		parse_header();
+		request_header = request_header.substr(0, pos + 4);
+		parse_header();		
 		if (request_headers.count("content-length"))
 		{
 			if (content_length > me->config_data->limit_body_size)
@@ -179,12 +241,17 @@ void	client::request::parse(const std::string &request_data)
 				return ;
 			}
 		}
+		print_header();
 		me->detect_final_location();
+
 		if (method != "POST")
 		{
 			me->flags.request_finished = true;
 		}
-
+		if (!request_body.empty())
+		{
+			parse("");
+		}
 	}
 }
 
@@ -252,7 +319,9 @@ void	client::request::parse_uri(std::string &uri)
 
 void	client::request::parse_header(void)
 {
-	me->remove_from_back(request_header, 4);
+	// std::string			request_header = request_header;
+	// std::cout << request_header << "++\n"; exit(0);
+	// me->remove_from_back(request_header, 4);
 	std::stringstream	ss(request_header);
 	std::string			tmp_string;
 
@@ -271,6 +340,7 @@ void	client::request::parse_header(void)
 			key_field[i] = tolower(key_field[i]);
 		getline(stream, tmp_string_2);
 		request_headers[key_field] = tmp_string_2; 
+		// print_header();
 	}
 	if (request_headers.count("transfer-encoding"))
 	{
@@ -284,9 +354,11 @@ void	client::request::parse_header(void)
 			me->flags.request_finished = true;
 		}
 	}
-	else if (request_headers.count("content-length"))
+	else if (request_headers.count("content-length:"))
 	{
-		content_length = atoi(request_headers["content-length"].c_str());
+
+		content_length = atoi(request_headers["content-length:"].c_str());
+		std::cout << content_length << "++\n";
 	}
 	else if (method != "POST" && (request_headers.count("transfer-encoding")
 			|| request_headers.count("content-length")))
@@ -493,17 +565,19 @@ void	client::response::get_method(void)
 void	client::response::post_method(void)
 {
 	location	&valid_location = me->config_data->all_locations[me->location_key];
-
 	if (!me->flags.start_reading_cgi_output)
 	{
 		if (!valid_location.cgi.empty())
 		{
-
-			me->flags.start_reading_cgi_output = true;
+			// me->cgi.execute_cgi();
+			// if (me->code_status == 500 || me->code_status == 404)
+			// 	me->answer_response = response_error();
+			// me->flags.start_reading_cgi_output = true;
 		}
 		else
 		{
-			
+			// me->answer_response = response_error(); // not an error
+			me->flags.response_finished = true;
 		}
 
 	}
@@ -530,8 +604,111 @@ std::string	client::response::response_error(void)
 
 /**********				cgi				**********/
 
+namespace timeout
+{
+    int child_done = 0;
+    int timeout = 0;
+    void child_handler(int sig)
+    {
+        child_done = 1;
+    }
+
+    void alarm_handler(int sig)
+    {
+        timeout = 1;
+    }
+
+    void    siglisten()
+    {
+        signal(SIGALRM, alarm_handler);
+        signal(SIGCHLD, child_handler);
+    }
+// https://stackoverflow.com/questions/40223722/how-to-stop-a-child-process-if-not-completed-after-a-timeout
+    int   settimeout(int t, pid_t pid)
+    {
+        alarm(t);  // install an alarm to be fired after TIME_LIMIT
+        pause();
+        if (timeout)
+        {
+            int result = waitpid(pid, NULL, WNOHANG);
+            if (result == 0)
+                kill(pid, 9); // child still running, so kill it
+            // else he terminate normally
+			return 0;
+		}
+        else if (child_done)
+        {
+			wait(NULL); //printf("child finished normally\n");
+			return 1;
+		}
+		return 1;
+	}
+};
+
+// http://isp.vsi.ru/library/Perl/CGI/ch6.htm
 void	client::cgi::execute_cgi(void)
 {
+	env_variables["SERVER_NAME: "] = me->config_data->host;
+	env_variables["SERVER_PROTOCOL: "] = "HTTP/1.1";
+	// env_variables["SERVER_PORT"] = me->config_data->port;
+	env_variables["REQUEST_METHOD: "] = me->request.method;
+	// env_variables["PATH_INFO"];
+	if (me->request.request_headers.count("content-length"))
+		env_variables["CONTENT_LENGTH: "] = me->request.request_headers["content-length"];
+	if (me->request.request_headers.count("content-type"))
+	{
+		env_variables["CONTENT_TYPE: "] = me->request.request_headers["content-type"];
+	}
+	if (!me->request.query_string.empty())
+		env_variables["QUERY_STRING: "] =  me->request.query_string;
+
+
+
+	std::string toexec__[2];
+	/*
+		make sure final path not end with /
+
+	*/
+	size_t	pos = me->final_path.find_last_of('/') + 1;
+	std::string	scriptname = me->final_path.substr(pos);
+	toexec__[1] = scriptname;
+	pos = scriptname.find_last_of('.');
+	if (pos == std::string::npos)
+	{
+		me->code_status = 404;
+		return ;
+	}
+	toexec__[0] = scriptname.substr(pos+1).c_str();
+
+	char a[] = "./Temporary/fileXXXXXX";
+	int fd = mkstemp64(a);
+	if (fd == -1)
+	{
+		me->code_status = 500;
+		return ;
+	}
+	output_file_name = a;
+	pid_t child_pid = fork();
+	if (!child_pid)
+	{
+		char **env= new char*[env_variables.size() + 1];
+		size_t	i = 0;
+		std::map<std::string , std::string>::iterator it;
+		for (it = env_variables.begin(); it != env_variables.end(); ++it)
+		{
+			std::string tmp = it->first + it->second;
+			env[i++] = strdup(tmp.c_str());
+		}
+		env[i] = NULL;
+		freopen64(me->request.file_name.c_str(), "r", stdin);//check
+		freopen64(a, "w", stdout);//check
+		std::string  correct_directory = me->final_path.substr(me->final_path.find_last_of('/'));
+		chdir(correct_directory.c_str());//check
+		char *texec[3] = {strdup(toexec__[0].c_str()), strdup(toexec__[1].c_str()), NULL};
+		execve(texec[0], texec, env);
+		exit(0);
+	}
+	timeout::settimeout(2, child_pid);
 
 }
 

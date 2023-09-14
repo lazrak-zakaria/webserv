@@ -26,6 +26,7 @@ class client
 			size_t								received_body_size;
 
 			std::ofstream						output_file;
+			std::string							file_name; // output file tha tcgi will open to read
 			std::vector<std::string>			files_to_delete;
 
 			std::string							method;
@@ -73,8 +74,9 @@ class client
 
 		struct cgi
 		{
-			std::map<std::string, std::string> env_variables;
-			void	execute_cgi(void);
+			std::map<std::string, std::string>	env_variables;
+			std::string							output_file_name;
+			void								execute_cgi(void);
 
 			client								*me;
 		} cgi;
@@ -87,7 +89,7 @@ class client
 			bool	is_header_ok;
 			bool	is_request_body;
 			bool	is_chunked;
-
+			bool	tmp_file_open;
 			bool	start_reading_cgi_output;
 
 			bool	response_body_sending;
@@ -108,10 +110,11 @@ class client
 		void				set_mime_status_code(mime_and_status_code *m);
 		bool				is_response_finished(void) const;
 		bool				is_request_finished(void) const;
-		const std::string	&serve_client(const std::string data);
+		const std::string	&serve_client(const std::string data, int recvd);
 
 		client();
 		~client();
 };
 
 #endif
+

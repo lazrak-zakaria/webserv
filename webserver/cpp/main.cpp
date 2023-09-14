@@ -8,7 +8,7 @@ int main()
 	server1.host = "127.0.0.1";
 	server1.port = 8090;
 	server1.server_name = "z";
-
+	server1.limit_body_size = 10000000000;
 	server1.root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
 
 	std::vector<location> loc(4);
@@ -22,10 +22,10 @@ int main()
 	loc[1].methods.push_back("GET"); // turn methode to map later;
 	loc[1].index.push_back("myimage");
 	
-	loc[2].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+	loc[2].root = "/nfs/homes/zlazrak/Desktop/wbs/webserver";
 	loc[2].methods.push_back("POST"); // turn methode to map later;
 	loc[2].methods.push_back("DELETE"); // turn methode to map later;
-
+	loc[2].upload_store = true;
 
 	loc[3].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
 	loc[3].methods.push_back("POST"); // turn methode to map later;
@@ -37,14 +37,14 @@ int main()
 
 	server1.all_locations["/"] = loc[0];
 	server1.all_locations["/images/"] = loc[1];
-	server1.all_locations["/upload"] = loc[2];
+	server1.all_locations["/Upload"] = loc[2];
 	server1.all_locations["/cgi-bin"] = loc[3];
 
 
 	client clienta;
 	clienta.set_config_data(&server1);
 	clienta.set_mime_status_code(&mime);
-	std::ifstream ifs("../request.txt");
+	std::ifstream ifs("../request1.txt");
 
 	while (1)
 	{
@@ -54,13 +54,14 @@ int main()
 		buf[ifs.gcount()] = '\0'; // mandatory;
 		if (!clienta.is_request_finished())
 		{
-			clienta.serve_client(buf);
+			clienta.serve_client(buf, ifs.gcount());
 			// std::cout << "here\n";
 		}
 		else if (!clienta.is_response_finished())
 		{
+
 			// sleep(1);
-			std::cout << clienta.serve_client("");
+			std::cout << clienta.serve_client("", 0);
 			//break;
 		}
 		else break;
