@@ -1,11 +1,18 @@
-#include <stdio.h>
-#include "wb/header.hpp"
-#include <libgen.h>
-int main ()
-{
-	std::string path = "./wb/cpp/cgi.cpp";
+#include <iostream>
+#include <cstdio>
 
-	char *a = dirname(strdup(path.c_str()));
-	std::cout << a << "\n";
-  return 0;
+using namespace std;
+
+int main()
+{
+	char oldname[] = "file_old.txt";
+	char newname[] = "file_new.txt";
+	
+	/*	Deletes the file if exists */
+	if (rename(oldname, newname) != 0)
+		perror("Error renaming file");
+	else
+		cout << "File renamed successfully";
+	
+	return 0;
 }

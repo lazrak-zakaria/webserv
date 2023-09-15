@@ -154,7 +154,6 @@ void	client::request::parse(std::string &request_data)
 		if (!valid_location.cgi.empty() 
 				|| valid_location.upload_store)
 		{
-
 			//open file if cgi add file to delete later
 			if (!me->flags.tmp_file_open)
 			{
@@ -192,16 +191,23 @@ void	client::request::parse(std::string &request_data)
 					return ;
 				}
 				me->flags.tmp_file_open = true;
-				if (!valid_location.cgi.empty())
-				{
-					output_file << request_header << "\r\n";
-				}
+				// if (!valid_location.cgi.empty())
+				// {
+				// 	output_file << request_header << "\r\n";
+				// }
 			}
 			if (me->flags.is_chunked)
 			{
-				if (!me->code_status)
+				// if (!me->code_status)
 					request_body += request_data;
 				parse_chunked_data();
+			}
+			else if (me->flags.is_multipart)
+			{
+				std::cout << request_body << "\n++\n"; sleep(1);// exit(0); 
+				// if (!me->code_status)
+					request_body += request_data;
+				parse_form_data();
 			}
 			else
 			{
@@ -253,9 +259,10 @@ void	client::request::parse(std::string &request_data)
 				return ;
 			}
 		}
-		print_header();
+		
+			// std::cout << "++\n"; exit(0);
 		me->detect_final_location();
-
+		print_header();
 		if (method != "POST")
 		{
 			me->flags.request_finished = true;
@@ -270,14 +277,14 @@ void	client::request::parse(std::string &request_data)
 
 void	client::request::print_header()
 {
-	std::cout << "method: " << method << "\n";
-	std::cout << "path: " << path << "\n";
-	std::cout << "querystaring: " << query_string << "\n";
-	std::cout << "http-version: " << http_version << "\n";
+	std::cout << "method: |" << method << "|\n";
+	std::cout << "path: |" << path << "|\n";
+	std::cout << "querystaring: |" << query_string << "|\n";
+	std::cout << "http-version: |" << http_version << "|\n";
 
 	for (auto it = request_headers.begin(); it != request_headers.end(); ++it)
 	{
-		std::cout << it->first << " " << it->second << "\n"; 
+		std::cout << "|" << it->first << "| |" << it->second << "|\n"; 
 	}
 }
 
@@ -355,19 +362,22 @@ void	client::request::parse_header(void)
 		request_headers[key_field] = tmp_string_2; 
 		// print_header();
 	}
-	if (request_headers.count("content-type"))
+	if (request_headers.count("content-type:"))
 	{
-		std::string	&content_type = request_headers["content-type"];
+		std::string	&content_type = request_headers["content-type:"];
 		if (content_type.find("multipart/form-data") != std::string::npos)
 		{
 			size_t	pos_boundary = content_type.find("boundary=");
 			pos_boundary += 9;
-			char final_char_boundary = content_type[pos_boundary + 1] == '\"' ? '\"' : '\r';
+			char final_char_boundary = content_type[pos_boundary + 1] == '\"' ? '\"' : '\0';
 			if (final_char_boundary == '\"') pos_boundary++;
 			boundary = content_type.substr(pos_boundary, content_type.find(final_char_boundary, pos_boundary));
+			me->flags.tmp_file_open = true; // to open file from the multipart;
+			me->flags.is_multipart = true;
+			// std::cout << "------------------------------------->: |" << boundary << "|\n"; exit(0);
 		}
 	}
-	if (request_headers.count("transfer-encoding"))
+	if (request_headers.count("transfer-encoding:"))
 	{
 		if (request_headers["transfer-encoding"] == "chunked")
 		{
@@ -433,6 +443,80 @@ void	client::request::parse_chunked(bool size_or_data, size_t pos)
 			parse_chunked(size_or_data ,pos);
 }
 
+void	client::request::parse_form_data()
+{
+	size_t	body_length = request_body.length();
+
+	//header multipart here
+	if (!me->flags.multipart_header && body_length >= boundary.length())
+	{
+		size_t	multipart_header_pos = request_body.find("\\r\\n\\r\\n");
+		if (multipart_header_pos != std::string::npos)
+		{
+			if (request_body.find(boundary + "--")!= std::string::npos)
+			{
+				output_file.close();
+				me->flags.request_finished = true;
+				request_body = "";
+				return ;
+			}
+			if (request_body.find(boundary) != std::string::npos
+				&& request_body.find("filename=") != std::string::npos)
+			{
+				size_t	cont_ty_pos = request_body.find("Content-Type: ");
+				std::string	mimetype =  request_body.substr(cont_ty_pos + 14, request_body.find('\r', cont_ty_pos));
+				if (output_file.is_open())
+					output_file.close();
+				std::string tmp_name = "fileXXXXXX";
+				me->final_path += (me->final_path[me->final_path.length() - 1] != '/') ? "/" : ""; 
+				tmp_name = me->final_path + tmp_name;
+				std::string	suffix = me->mime_status_code->mime_reverse.count(mimetype) ? me->mime_status_code->mime_reverse[mimetype] : "";
+				tmp_name += suffix;
+				me->code_status = 201;
+				char *a = new char[tmp_name.length() + 1];
+				memcpy(a, tmp_name.c_str(), tmp_name.length() + 1);
+				int fd = mkstemps64(a, suffix.length());	
+				if (fd == -1)
+				{
+					me->code_status = 500;
+					me->flags.request_finished = true;
+					delete []a;
+					return ;
+				}
+				close(fd);
+				//rename(a, file_name.c_str());
+				output_file.open(file_name.c_str());
+				delete []a;
+				if (!output_file.is_open())
+				{
+					me->code_status = 500;
+					me->flags.request_finished = true;
+					return ;
+				}
+			}
+			request_body.erase(0, multipart_header_pos + 4);
+			me->flags.multipart_header = true;
+		}
+
+	}
+	if (me->flags.multipart_header)
+	{
+		size_t	position_crlf = request_body.find("\r\n");
+		if (position_crlf != std::string::npos)
+		{
+			std::string	tmp = request_body.substr(position_crlf);
+			output_file << tmp;
+			request_body = request_body.substr(position_crlf + 2);
+			me->flags.multipart_header = false;
+		}
+		else if (body_length > boundary.size())
+		{
+			std::string	tmp = request_body.substr(0, body_length - boundary.size());
+			output_file << tmp;
+			request_body = request_body.substr(tmp.length());
+		}
+	}
+}
 
 /**********				response				**********/
 

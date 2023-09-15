@@ -25,8 +25,8 @@ int main()
 	loc[2].root = "/nfs/homes/zlazrak/Desktop/wbs/webserver";
 	loc[2].methods.push_back("POST"); // turn methode to map later;
 	loc[2].methods.push_back("DELETE"); // turn methode to map later;
-	// loc[2].upload_store = true;
-	loc[2].cgi[".py"] = "/usr/bin/python3";
+	loc[2].upload_store = true;
+	// loc[2].cgi[".py"] = "/usr/bin/python3";
 
 	loc[3].root = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
 	loc[3].methods.push_back("POST"); // turn methode to map later;
@@ -45,7 +45,7 @@ int main()
 	client clienta;
 	clienta.set_config_data(&server1);
 	clienta.set_mime_status_code(&mime);
-	std::ifstream ifs("../request1.txt");
+	std::ifstream ifs("../request2.txt");
 
 	while (1)
 	{

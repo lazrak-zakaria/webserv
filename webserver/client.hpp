@@ -43,6 +43,7 @@ class client
 			
 			void	parse_chunked_data(void);
 			void	parse_chunked(bool size_data, size_t pos);
+			void	parse_form_data();
 			
 			client								*me;
 			
@@ -92,6 +93,7 @@ class client
 			bool	is_request_body;
 			bool	is_chunked;
 			bool	is_multipart;
+			bool	multipart_header;
 			bool	tmp_file_open;
 			bool	start_reading_cgi_output;
 
