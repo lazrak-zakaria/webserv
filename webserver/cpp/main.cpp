@@ -45,7 +45,7 @@ int main()
 	client clienta;
 	clienta.set_config_data(&server1);
 	clienta.set_mime_status_code(&mime);
-	std::ifstream ifs("../request2.txt");
+	std::ifstream ifs("../request.txt");
 
 	while (1)
 	{

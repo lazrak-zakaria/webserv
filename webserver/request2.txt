@@ -1,6 +1,6 @@
 POST /Upload HTTP/1.1\r\n
 Host: example.com\r\n
-Content-Type: multipart/form-data; boundary=boundary123\r\n
+Content-Type: multipart/form-data; boundary="boundary123"\r\n
 Content-Length: 1500\r\n
 Connection: close\r\n\r\n
 --boundary123\r\n

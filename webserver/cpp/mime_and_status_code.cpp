@@ -148,4 +148,17 @@ mime_and_status_code::mime_and_status_code()
 	mime_reverse ["application/vnd.mozilla.xul+xml"]= ".xul";
 	mime_reverse ["application/zip"] = ".zip";
 	mime_reverse ["application/x-7z-compressed"]= ".7z";
+
+
+	errors[400] = "<!DOCTYPE html><html><head><title>Error 400 - Bad Request</title></head><body><h1>Error 400 - Bad Request</h1></body></html>"; 
+	errors[403] = "<!DOCTYPE html><html><head><title>Error 403 - Forbidden</title></head><body><h1>Error 403 - Forbidden</h1></body></html>";
+	errors[404] = "<!DOCTYPE html><html><head><title>Error 404 - Page Not Found</title></head><body><h1>Error 404 - Page Not Found</h1></body></html>";
+	errors[405] = "<!DOCTYPE html><html><head><title>Error 405 - Method Not Allowed</title></head><body><h1>Error 405 - Method Not Allowed</h1></body></html>";
+	errors[408] = "<!DOCTYPE html><html><head><title>Error 408 - Request Timeout</title></head><body><h1>Error 408 - Request Timeout</h1></body></html>";
+	errors[411] = "<!DOCTYPE html><html><head><title>Error 411 - Length Required</title></head><body><h1>Error 411 - Length Required</h1></body></html>";
+	errors[413] = "<!DOCTYPE html><html><head><title>Error 413 - Payload Too Large</title></head><body><h1>Error 413 - Payload Too Large</h1></body></html>";
+	errors[414] = "<!DOCTYPE html><html><head><title>Error 414 - URI Too Long</title></head><body><h1>Error 414 - URI Too Long</h1></body></html>";
+	errors[500] = "<!DOCTYPE html><html><head><title>Error 500 - Internal Server Error</title></head><body><h1>Error 500 - Internal Server Error</h1></body></html>";
+	errors[501] = "<!DOCTYPE html><html><head><title>Error 501 - Not Implemented</title></head><body><h1>Error 501 - Not Implemented</h1></body></html>";
+	errors[505] = "<!DOCTYPE html><html><head><title>Error 505 - HTTP Version Not Supported</title></head><body><h1>Error 505 - HTTP Version Not Suppor505</h1></body></html>";
 }

@@ -369,9 +369,11 @@ void	client::request::parse_header(void)
 		{
 			size_t	pos_boundary = content_type.find("boundary=");
 			pos_boundary += 9;
-			char final_char_boundary = content_type[pos_boundary + 1] == '\"' ? '\"' : '\0';
+			char final_char_boundary = content_type[pos_boundary] == '\"' ? '\"' : '\0';
+			// std::cout << final_char_boundary << "|\n"; exit(0);
 			if (final_char_boundary == '\"') pos_boundary++;
-			boundary = content_type.substr(pos_boundary, content_type.find(final_char_boundary, pos_boundary));
+			boundary = content_type.substr(pos_boundary, content_type.find(final_char_boundary, pos_boundary) - pos_boundary);
+
 			me->flags.tmp_file_open = true; // to open file from the multipart;
 			me->flags.is_multipart = true;
 			// std::cout << "------------------------------------->: |" << boundary << "|\n"; exit(0);
@@ -703,10 +705,15 @@ void	client::response::post_method(void)
 		}
 		else
 		{
-			// me->answer_response = response_error(); // not an error
+			// me->answer_response = response_error(); // not always an error
 			me->flags.response_finished = true;
 		}
 
+	}
+	else if (!input_file.is_open())
+	{
+		// me->answer_response = response_error(); // not always an error
+		me->flags.response_finished = true;
 	}
 	else
 	{
@@ -725,8 +732,14 @@ void	client::response::post_method(void)
 
 std::string	client::response::response_error(void)
 {
-
-	return "";
+	std::stringstream ss;
+	ss << "HTTP/1.1 " << me->code_status << " " << me->mime_status_code->status_code[me->code_status] << "\r\n";
+	ss << "Content-Type: " << "text/html" << "\r\n";
+	ss << "Content-Length: " << me->mime_status_code->errors[me->code_status].size() << "\r\n";
+	ss << "Connection: " << "close" << "\r\n" ; //later check if should check request
+	ss << "\r\n";
+	ss <<  me->mime_status_code->errors[me->code_status] << "\r\n";
+	return ss.str();
 }
 
 /**********				cgi				**********/
@@ -839,3 +852,7 @@ void	client::cgi::execute_cgi(void)
 
 }
 
+/*
+<!DOCTYPE html><html><head><title>Error 404 - Page Not Found</title></head><body><h1>Error 404</h1></body></html>
+
+*/
