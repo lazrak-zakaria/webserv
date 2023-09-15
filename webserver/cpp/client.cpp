@@ -204,7 +204,7 @@ void	client::request::parse(std::string &request_data)
 			}
 			else if (me->flags.is_multipart)
 			{
-				std::cout << request_body << "\n++\n"; sleep(1);// exit(0); 
+				// std::cout << request_body << "\n++\n"; sleep(1);// exit(0); 
 				// if (!me->code_status)
 					request_body += request_data;
 				parse_form_data();
@@ -262,7 +262,7 @@ void	client::request::parse(std::string &request_data)
 		
 			// std::cout << "++\n"; exit(0);
 		me->detect_final_location();
-		print_header();
+		// print_header();
 		if (method != "POST")
 		{
 			me->flags.request_finished = true;
@@ -450,21 +450,29 @@ void	client::request::parse_form_data()
 	//header multipart here
 	if (!me->flags.multipart_header && body_length >= boundary.length())
 	{
-		size_t	multipart_header_pos = request_body.find("\\r\\n\\r\\n");
+		size_t	multipart_header_pos = request_body.find("\\r\\n");
 		if (multipart_header_pos != std::string::npos)
 		{
+			 //exit(5);
 			if (request_body.find(boundary + "--")!= std::string::npos)
 			{
+			//  std::cout << "{\n" << request_body << "\n}\n\n\n"; 
+				std::cout << "++"<< "\n";
+				// exit(6);
 				output_file.close();
 				me->flags.request_finished = true;
 				request_body = "";
 				return ;
 			}
-			if (request_body.find(boundary) != std::string::npos
+			multipart_header_pos = request_body.find("\\r\\n\\r\\n");
+			if (multipart_header_pos != std::string::npos && request_body.find(boundary) != std::string::npos
 				&& request_body.find("filename=") != std::string::npos)
 			{
+			 std::cout << "{\n" << request_body << "\n}\n\n\n"; 
+
 				size_t	cont_ty_pos = request_body.find("Content-Type: ");
-				std::string	mimetype =  request_body.substr(cont_ty_pos + 14, request_body.find('\r', cont_ty_pos));
+				std::string	mimetype =  request_body.substr(cont_ty_pos + 14, multipart_header_pos - (cont_ty_pos + 14));
+				std::cout << "-------------------------------------------------" << mimetype <<"----\n";
 				if (output_file.is_open())
 					output_file.close();
 				std::string tmp_name = "fileXXXXXX";
@@ -485,31 +493,42 @@ void	client::request::parse_form_data()
 				}
 				close(fd);
 				//rename(a, file_name.c_str());
-				output_file.open(file_name.c_str());
+				tmp_name = a;
+				output_file.open(tmp_name.c_str());
 				delete []a;
 				if (!output_file.is_open())
 				{
+
 					me->code_status = 500;
 					me->flags.request_finished = true;
 					return ;
 				}
 			}
-			request_body.erase(0, multipart_header_pos + 4);
-			me->flags.multipart_header = true;
+			if (multipart_header_pos != std::string::npos)
+			{
+				request_body.erase(0, multipart_header_pos + 8);
+				me->flags.multipart_header = true;
+			}
+			// !me->flags.multipart_header
 		}
 
 	}
 	if (me->flags.multipart_header)
 	{
-		size_t	position_crlf = request_body.find("\r\n");
+		size_t	position_crlf = request_body.find("\\r\\n");
 		if (position_crlf != std::string::npos)
 		{
-			std::string	tmp = request_body.substr(position_crlf);
-			output_file << tmp;
-			request_body = request_body.substr(position_crlf + 2);
+			if (output_file.is_open())
+			{
+				// std::cout << request_body << "\n"; sleep(2);
+				std::string	tmp = request_body.substr(0, position_crlf);
+				output_file << tmp;
+				output_file.close();
+			}
+			request_body = request_body.substr(position_crlf + 4);
 			me->flags.multipart_header = false;
 		}
-		else if (body_length > boundary.size())
+		else if (body_length > boundary.size() && output_file.is_open())
 		{
 			std::string	tmp = request_body.substr(0, body_length - boundary.size());
 			output_file << tmp;
