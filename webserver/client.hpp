@@ -20,6 +20,7 @@ class client
 		struct request
 		{
 			std::map<std::string, std::string>	request_headers;
+			std::string							boundary;
 			std::string							request_header;
 			std::string							request_body;
 			size_t								content_length;
@@ -34,8 +35,9 @@ class client
 			std::string							path;
 			std::string							query_string;
 
-
-			void	parse(const std::string &request_data);
+			std::string							ty;
+		
+			void	parse(std::string &request_data);
 			void	parse_uri(std::string &uri);
 			void	parse_header(void);
 			
@@ -89,6 +91,7 @@ class client
 			bool	is_header_ok;
 			bool	is_request_body;
 			bool	is_chunked;
+			bool	is_multipart;
 			bool	tmp_file_open;
 			bool	start_reading_cgi_output;
 
@@ -110,7 +113,7 @@ class client
 		void				set_mime_status_code(mime_and_status_code *m);
 		bool				is_response_finished(void) const;
 		bool				is_request_finished(void) const;
-		const std::string	&serve_client(const std::string data, int recvd);
+		const std::string	&serve_client(std::string data, int recvd);
 
 		client();
 		~client();

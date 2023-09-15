@@ -100,7 +100,7 @@ void		client::remove_from_back(std::string &s, int n)
 		s.pop_back();
 }
 
-const std::string	&client::serve_client(const std::string data, int recvd)
+const std::string	&client::serve_client(std::string data, int recvd)
 {
 	if (flags.is_request_body)
 	{
@@ -118,9 +118,11 @@ const std::string	&client::serve_client(const std::string data, int recvd)
 	}
 	else
 	{
+		if (request.output_file.is_open())
+			request.output_file.close();
+			exit(0);
 		if (request.method == "GET")
 		{
-			
 			response.get_method();
 		}
 		else if (request.method == "POST")
@@ -143,7 +145,7 @@ client::request::request()
 	received_body_size = 0;
 }
 
-void	client::request::parse(const std::string &request_data)
+void	client::request::parse(std::string &request_data)
 {
 	
 	if (me->flags.is_request_body)
@@ -166,7 +168,7 @@ void	client::request::parse(const std::string &request_data)
 				}
 				else
 				{
-					tmp = "./Temporary/";
+					tmp = ".././Temporary/";
 					tmp += tmp_name;
 				}
 				char *a = new char[tmp.length() + 1];
@@ -191,7 +193,9 @@ void	client::request::parse(const std::string &request_data)
 				}
 				me->flags.tmp_file_open = true;
 				if (!valid_location.cgi.empty())
+				{
 					output_file << request_header << "\r\n";
+				}
 			}
 			if (me->flags.is_chunked)
 			{
@@ -208,11 +212,19 @@ void	client::request::parse(const std::string &request_data)
 				}
 				if (!request_data.empty())
 				{
+					//later see if ishould remove \r\n from back body
+					// i think i should not if cgi;
+					if (received_body_size >= content_length)
+					{
+						if (valid_location.cgi.empty() )
+						{
+							size_t t = received_body_size - content_length;
+							while (t--)
+								request_data.pop_back();
+						}
+						me->flags.request_finished = true;
+					} 
 					output_file << request_data;
-				}
-				if (received_body_size >= content_length)
-				{
-					me->flags.request_finished = true;
 				}
 			}
 		}
@@ -250,7 +262,8 @@ void	client::request::parse(const std::string &request_data)
 		}
 		if (!request_body.empty())
 		{
-			parse("");
+			received_body_size = request_body.size();
+			parse(ty);
 		}
 	}
 }
@@ -342,6 +355,18 @@ void	client::request::parse_header(void)
 		request_headers[key_field] = tmp_string_2; 
 		// print_header();
 	}
+	if (request_headers.count("content-type"))
+	{
+		std::string	&content_type = request_headers["content-type"];
+		if (content_type.find("multipart/form-data") != std::string::npos)
+		{
+			size_t	pos_boundary = content_type.find("boundary=");
+			pos_boundary += 9;
+			char final_char_boundary = content_type[pos_boundary + 1] == '\"' ? '\"' : '\r';
+			if (final_char_boundary == '\"') pos_boundary++;
+			boundary = content_type.substr(pos_boundary, content_type.find(final_char_boundary, pos_boundary));
+		}
+	}
 	if (request_headers.count("transfer-encoding"))
 	{
 		if (request_headers["transfer-encoding"] == "chunked")
@@ -356,9 +381,8 @@ void	client::request::parse_header(void)
 	}
 	else if (request_headers.count("content-length:"))
 	{
-
 		content_length = atoi(request_headers["content-length:"].c_str());
-		std::cout << content_length << "++\n";
+		// std::cout << content_length << "++\n";
 	}
 	else if (method != "POST" && (request_headers.count("transfer-encoding")
 			|| request_headers.count("content-length")))
