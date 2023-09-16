@@ -45,13 +45,13 @@ int main()
 	client clienta;
 	clienta.set_config_data(&server1);
 	clienta.set_mime_status_code(&mime);
-	std::ifstream ifs("../request.txt");
+	std::ifstream ifs("../request2.txt");
 
 	while (1)
 	{
 		std::string	tmp ;
-		char buf[20];
-		ifs.read(buf, 19);
+		char buf[2000];
+		ifs.read(buf, 1999);
 		buf[ifs.gcount()] = '\0'; // mandatory;
 		if (!clienta.is_request_finished())
 		{

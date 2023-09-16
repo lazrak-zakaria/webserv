@@ -49,7 +49,7 @@ bool	client::is_request_finished(void) const
 bool		client::start_with(const std::string &location_directive, const std::string &path)
 {
 	size_t	location_length = location_directive.length();
-	return (path.substr(0, location_length) == location_directive); 
+	return (path.substr(0, location_length) == location_directive); // more checks
 }
 
 void		client::detect_final_location(void)
@@ -90,8 +90,13 @@ void		client::detect_final_location(void)
 	}
 	else
 	{
-		final_path = request.path;
+		final_path = request.path; // i should add it to the root of server;
 	}
+}
+
+bool		client::is_status_ok(void) const
+{
+	return (code_status && code_status != 200 && code_status != 201);
 }
 
 void		client::remove_from_back(std::string &s, int n)
@@ -456,7 +461,7 @@ void	client::request::parse_form_data()
 		if (multipart_header_pos != std::string::npos)
 		{
 			 //exit(5);
-			if (request_body.find(boundary + "--")!= std::string::npos)
+			if (request_body.find(boundary + "--") != std::string::npos && request_body.find("filename=") == std::string::npos)
 			{
 			//  std::cout << "{\n" << request_body << "\n}\n\n\n"; 
 				std::cout << "++"<< "\n";
@@ -467,43 +472,48 @@ void	client::request::parse_form_data()
 				return ;
 			}
 			multipart_header_pos = request_body.find("\\r\\n\\r\\n");
-			if (multipart_header_pos != std::string::npos && request_body.find(boundary) != std::string::npos
-				&& request_body.find("filename=") != std::string::npos)
+			if (multipart_header_pos != std::string::npos)
 			{
-			 std::cout << "{\n" << request_body << "\n}\n\n\n"; 
 
-				size_t	cont_ty_pos = request_body.find("Content-Type: ");
-				std::string	mimetype =  request_body.substr(cont_ty_pos + 14, multipart_header_pos - (cont_ty_pos + 14));
-				std::cout << "-------------------------------------------------" << mimetype <<"----\n";
-				if (output_file.is_open())
-					output_file.close();
-				std::string tmp_name = "fileXXXXXX";
-				me->final_path += (me->final_path[me->final_path.length() - 1] != '/') ? "/" : ""; 
-				tmp_name = me->final_path + tmp_name;
-				std::string	suffix = me->mime_status_code->mime_reverse.count(mimetype) ? me->mime_status_code->mime_reverse[mimetype] : "";
-				tmp_name += suffix;
-				me->code_status = 201;
-				char *a = new char[tmp_name.length() + 1];
-				memcpy(a, tmp_name.c_str(), tmp_name.length() + 1);
-				int fd = mkstemps64(a, suffix.length());	
-				if (fd == -1)
+				std::string	request_header_multipart = request_body.substr(0, multipart_header_pos);
+				if (request_header_multipart.find(boundary) != std::string::npos
+					&& request_header_multipart.find("filename=") != std::string::npos)
 				{
-					me->code_status = 500;
-					me->flags.request_finished = true;
+					std::cout << "{\n" << request_header_multipart << "\n}\n\n\n"; 
+
+					size_t	cont_ty_pos = request_header_multipart.find("Content-Type: ");
+					std::string	mimetype =  request_header_multipart.substr(cont_ty_pos + 14, multipart_header_pos - (cont_ty_pos + 14));
+					std::cout << "-------------------------------------------------" << mimetype <<"----\n";
+					if (output_file.is_open())
+						output_file.close();
+					std::string tmp_name = "fileXXXXXX";
+					me->final_path += (me->final_path[me->final_path.length() - 1] != '/') ? "/" : ""; 
+					tmp_name = me->final_path + tmp_name;
+					std::string	suffix = me->mime_status_code->mime_reverse.count(mimetype) ? me->mime_status_code->mime_reverse[mimetype] : "";
+					tmp_name += suffix;
+					me->code_status = 201;
+					char *a = new char[tmp_name.length() + 1];
+					memcpy(a, tmp_name.c_str(), tmp_name.length() + 1);
+					int fd = mkstemps64(a, suffix.length());	
+					if (fd == -1)
+					{
+						me->code_status = 500;
+						me->flags.request_finished = true;
+						delete []a;
+						return ;
+					}
+					close(fd);
+					//rename(a, file_name.c_str());
+					tmp_name = a;
+					output_file.open(tmp_name.c_str());
 					delete []a;
-					return ;
-				}
-				close(fd);
-				//rename(a, file_name.c_str());
-				tmp_name = a;
-				output_file.open(tmp_name.c_str());
-				delete []a;
-				if (!output_file.is_open())
-				{
+					if (!output_file.is_open())
+					{
 
-					me->code_status = 500;
-					me->flags.request_finished = true;
-					return ;
+						me->code_status = 500;
+						me->flags.request_finished = true;
+						return ;
+					}
 				}
 			}
 			if (multipart_header_pos != std::string::npos)
@@ -529,6 +539,8 @@ void	client::request::parse_form_data()
 			}
 			request_body = request_body.substr(position_crlf + 4);
 			me->flags.multipart_header = false;
+			if (request_body.find("\\r\\n"))
+				parse_form_data();
 		}
 		else if (body_length > boundary.size() && output_file.is_open())
 		{

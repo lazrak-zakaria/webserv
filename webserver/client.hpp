@@ -106,7 +106,7 @@ class client
 		void		remove_from_back(std::string &s, int n);
 		void		detect_final_location(void);
 		bool		start_with(const std::string &location_directive, const std::string &path);
-
+		bool		is_status_ok(void) const;
 		client(const client &);
 		client & operator = (const client &);
 
