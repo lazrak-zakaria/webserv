@@ -1,5 +1,7 @@
 #include "../client.hpp"
 #include "../mime_and_status_code.hpp"
+#include "../server.hpp"
+#include "../webserver.hpp"
 
 int main()
 {
@@ -42,29 +44,16 @@ int main()
 	server1.all_locations["/cgi-bin"] = loc[3];
 
 
-	client clienta;
-	clienta.set_config_data(&server1);
-	clienta.set_mime_status_code(&mime);
-	std::ifstream ifs("../request2.txt");
+	// client clienta;
+	// clienta.set_config_data(&server1);
+	// clienta.set_mime_status_code(&mime);
+	// std::ifstream ifs("../request.txt");
 
-	while (1)
-	{
-		std::string	tmp ;
-		char buf[2000];
-		ifs.read(buf, 1999);
-		buf[ifs.gcount()] = '\0'; // mandatory;
-		if (!clienta.is_request_finished())
-		{
-			clienta.serve_client(buf, ifs.gcount());
-			// std::cout << "here\n";
-		}
-		else if (!clienta.is_response_finished())
-		{
-
-			// sleep(1);
-			std::cout << clienta.serve_client("", 0);
-			//break;
-		}
-		else break;
-	}
+	server	sv;
+	sv.set_config_data(&server1);
+	sv.set_mime_status_code(&mime);
+	sv.socket_bind_listen();
+	std::map<int, server*> sec;
+	sec[sv.get_fd_sock()] = &sv;
+	webserver::run(sec);
 }

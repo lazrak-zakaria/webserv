@@ -6,7 +6,7 @@
 class	webserver
 {
 	public:
-		static void	run(std::map<int, server> &servers_config);
+		static void	run(std::map<int, server*> &servers_config);
 
 };
 

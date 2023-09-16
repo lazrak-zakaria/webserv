@@ -69,8 +69,12 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 				exit(0); // just testing
 			}
 			buf[collected] = '\0';
-			std::cout << buf << "\n";
-			client_obj.serve_client(buf);
+			// std::cout << buf << "\n";
+			std::string	tmp;
+			int i = 0;
+			while (i < collected)
+				tmp.push_back(buf[i]);
+			client_obj.serve_client(tmp, collected);
 			// if (client_obj.http_request.finished_flag)
 			// {
 				FD_CLR(client_fd_sock, &read_set);
@@ -79,7 +83,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 		}
 		else if (FD_ISSET(client_fd_sock, &temp_write_set))
 		{
-			const std::string &answer = client_obj.serve_client("");
+			const std::string &answer = client_obj.serve_client("", 0);
 			int		sent = send(client_fd_sock, answer.c_str(), answer.size(), 0);
 			if (answer.size() != sent)
 			{
@@ -90,6 +94,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 			}
 			if (client_obj.is_response_finished())
 			{
+				client_obj.clear();
 				FD_CLR(client_fd_sock, &write_set);
 				FD_SET(client_fd_sock, &read_set);
 			}
@@ -97,7 +102,20 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 	}
 }
 
+void	server::set_config_data(server_config	*c)
+{
+	config_data = c;
+}
 
+void	server::set_mime_status_code(mime_and_status_code	*m)
+{
+	mime_status_code = m;
+}
+
+int		server::get_fd_sock()
+{
+	return fd_sock;
+}
 /*
 multiple servers
 

@@ -44,7 +44,8 @@ class client
 			void	parse_chunked_data(void);
 			void	parse_chunked(bool size_data, size_t pos);
 			void	parse_form_data();
-			
+
+			void	req_clear();
 			client								*me;
 			
 
@@ -71,7 +72,7 @@ class client
 			std::string	response_error(void);
 
 			client								*me;
-
+			void		res_clear();
 			response();
 		} response;
 
@@ -81,6 +82,7 @@ class client
 			std::string							output_file_name;
 			void								execute_cgi(void);
 
+			void								cgi_clear();
 			client								*me;
 		} cgi;
 
@@ -116,7 +118,7 @@ class client
 		bool				is_response_finished(void) const;
 		bool				is_request_finished(void) const;
 		const std::string	&serve_client(std::string data, int recvd);
-
+		void				clear();
 		client();
 		~client();
 };
