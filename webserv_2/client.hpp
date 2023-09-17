@@ -63,7 +63,7 @@ class client
 			size_t								received_from_input_file;
 			std::ifstream						input_file;
 			
-			void			generate_header(void);
+			void			generate_header(std::string &);
 			void			generate_directory_listing(void);
 			void			get_method(void);
 			void			post_method(void);
@@ -103,6 +103,7 @@ class client
 
 			bool	response_finished;
 			bool	request_finished;
+			bool	remove_me;
 		} flags;
 
 		void		remove_from_back(std::string &s, int n);
@@ -117,6 +118,7 @@ class client
 		void				set_mime_status_code(mime_and_status_code *m);
 		bool				is_response_finished(void) const;
 		bool				is_request_finished(void) const;
+		bool				is_remove_me();
 		const std::string	serve_client(std::string data, int recvd);
 		void				clear();
 		client();

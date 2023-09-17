@@ -18,8 +18,24 @@ void	client::response::res_clear()
 	input_file.close();
 }
 
-void	client::response::generate_header(void)
+void	client::response::generate_header(std::string &ph)
 {
+	std::stringstream ss;
+	ss << "HTTP/1.1 OK 200\r\n";
+	
+	size_t	pos = ph.find_last_of('.');
+	std::string c;
+	if (pos != std::string::npos)
+	{
+		std::string s = ph.substr(pos+1);
+		c = me->mime_status_code->mime.count(s) ? me->mime_status_code->mime[s] :  "application/octet-stream";
+	}
+	else
+		c = "application/octet-stream";
+	ss << "Content-Type: " << c << "\r\n";
+	ss << "Content-Length: " << content_length_input_file << "\r\n";
+	ss << "Connection: " << "Keep-Alive\r\n\r\n";
+	me->answer_response = ss.str();
 
 }
 
@@ -49,8 +65,68 @@ void	client::response::get_method(void)
 	else
 	{
 
-		
-		
+		struct	stat sb;
+		if (!stat(me->final_path.c_str(), &sb))
+		{
+			if(S_ISREG(sb.st_mode))
+			{
+				input_file.open(me->final_path.c_str(), std::ios::binary);
+				if (!input_file.is_open())
+				{
+
+					me->code_status = 403;
+					me->answer_response = response_error();
+					me->flags.response_finished = true;
+				}
+				else
+				{
+					std::stringstream ss;
+					ss << "HTTP/1.1 OK 200\r\n";
+					if (me->final_path == "/nfs/homes/zlazrak/Desktop/wbs/webfiles/index.html")
+						ss << "Content-Type: " << "text/html\r\n";
+					else 
+						ss << "Content-Type: " << "image/png\r\n";
+
+					input_file.seekg (0, input_file.end);
+					content_length_input_file = input_file.tellg();
+					input_file.seekg (0, input_file.beg);
+
+					ss << "Content-Length: " << content_length_input_file << "\r\n";
+					ss << "Connection: " << "Keep-Alive\r\n\r\n";
+					me->answer_response = ss.str();
+					me->flags.response_body_sending = true;
+				}
+			}
+			else if (S_ISDIR(sb.st_mode))
+			{
+				me->final_path += '/' + me->config_data->all_locations[me->location_key].index[0];
+
+				/******************/
+				input_file.open(me->final_path.c_str(), std::ios::binary);
+				if (!input_file.is_open())
+				{
+
+					me->code_status = 403;
+					me->answer_response = response_error();
+					me->flags.response_finished = true;
+				}
+				else
+				{
+					input_file.seekg (0, input_file.end);
+					content_length_input_file = input_file.tellg();
+					input_file.seekg (0, input_file.beg);
+					generate_header(me->final_path);
+					me->flags.response_body_sending = true;
+				/****************/
+				}
+			}
+			else
+			{
+				me->code_status = 403;
+				me->answer_response = response_error();
+				me->flags.response_finished = true;
+			}
+		}
 
 		/*
 		{
@@ -90,8 +166,9 @@ std::string	client::response::response_error(void)
 	ss << "HTTP/1.1 " << me->code_status << " " << me->mime_status_code->status_code[me->code_status] << "\r\n";
 	ss << "Content-Type: " << "text/html" << "\r\n";
 	ss << "Content-Length: " << me->mime_status_code->errors[me->code_status].size() << "\r\n";
-	ss << "Connection: " << "close" << "\r\n" ; //later check if should check request
+	ss << "Connection: " << "Close" << "\r\n" ; //later check if should check request
 	ss << "\r\n";
 	ss <<  me->mime_status_code->errors[me->code_status] << "\r\n";
+	me->flags.remove_me = true;
 	return ss.str();
 }

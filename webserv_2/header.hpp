@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
+#include <set>
 
 #define SIZE_READ 8
 

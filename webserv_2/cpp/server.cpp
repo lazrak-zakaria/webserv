@@ -108,11 +108,21 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 			if (client_obj.is_response_finished())
 			{
 				// exit(2);
-				client_obj.clear();
+
 				FD_CLR(client_fd_sock, &write_set);
+				if (client_obj.is_remove_me())
+				{
+					invalid_sock.insert(it->first);
+					continue;
+				}
+				client_obj.clear();
 				FD_SET(client_fd_sock, &read_set);
 			}
 		}
+	}
+	for (std::set<int>::iterator it = invalid_sock.begin(); it != invalid_sock.end(); ++it)
+	{
+		server_clients.erase(*it);
 	}
 }
 

@@ -93,13 +93,18 @@ void		client::detect_final_location(void)
 	
 	if (!config_data->all_locations[location_key].root.empty())
 	{
-		std::string &tmp = config_data->all_locations[location_key].root;
-		final_path = tmp + request.path;
+		final_path = config_data->all_locations[location_key].root;
+		if (final_path[final_path.size() - 1] != '/' && request.path.size() > 0 && request.path[0] != '/')
+			final_path += '/';
+		final_path += request.path;
 	}
 	else if (!config_data->all_locations[location_key].alias.empty())
 	{
-		std::string &tmp = config_data->all_locations[location_key].alias;
-		final_path = tmp + '/' + request.path.substr(location_key.length());
+		std::string tmp = request.path.substr(location_key.length());
+		final_path = config_data->all_locations[location_key].alias;
+		if (final_path[final_path.size() - 1] != '/' && tmp.size() > 0 && tmp[0] != '/')
+			final_path += '/';
+		final_path += tmp;
 	}
 	else
 	{
@@ -107,6 +112,11 @@ void		client::detect_final_location(void)
 		final_path = tmp + request.path;
 	}
 	// std::cout << "{" << final_path << "}\n";
+}
+
+bool				client::is_remove_me()
+{
+	return flags.remove_me;
 }
 
 bool		client::is_status_ok(void) const

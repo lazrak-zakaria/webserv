@@ -50,8 +50,8 @@ int main(int ac, char **av)
 	// std::ifstream ifs("../request.txt");
 
 	server	sv;
-	sv.set_config_data(&server1);
 	sv.set_mime_status_code(&mime);
+	sv.set_config_data(&server1);
 	sv.socket_bind_listen();
 	std::map<int, server*> sec;
 	sec[sv.get_fd_sock()] = &sv;
