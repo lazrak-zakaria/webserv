@@ -32,7 +32,6 @@ void	client::request::req_clear()
 
 void	client::request::parse(std::string &request_data)
 {
-
 	if (me->flags.is_request_body)
 	{
 		location &valid_location = me->config_data->all_locations[me->location_key]; 
@@ -67,7 +66,7 @@ void	client::request::parse(std::string &request_data)
 				}
 				close(fd);
 				file_name = a;
-				output_file.open(a);
+				output_file.open(a, std::ios::binary);
 				delete []a;
 				if (!output_file.is_open())
 				{
@@ -98,7 +97,7 @@ void	client::request::parse(std::string &request_data)
 			{
 				if (!request_body.empty())
 				{
-					output_file << request_body;
+					output_file.write(request_body.c_str(), request_body.size());
 					request_body = "";
 				}
 				if (!request_data.empty())
@@ -147,6 +146,8 @@ void	client::request::parse(std::string &request_data)
 		
 		me->detect_final_location();
 		// print_header();
+		// std::cout << request_header << "$$\n"; exit(0);
+
 		if (method != "POST")
 		{
 			me->flags.request_finished = true;
@@ -224,18 +225,17 @@ void	client::request::parse_uri(std::string &uri)
 void	client::request::parse_header(void)
 {
 	// std::string			request_header = request_header;
-	// std::cout << request_header << "++\n"; exit(0);
 	// me->remove_from_back(request_header, 4);
 	std::stringstream	ss(request_header);
 	std::string			tmp_string;
 
 	getline(ss, tmp_string);
-	me->remove_from_back(tmp_string, 4);
+	me->remove_from_back(tmp_string, 1);
 	parse_uri(tmp_string);
 	bool	&is_header_ok = me->flags.is_header_ok;
 	while (is_header_ok && getline(ss, tmp_string))
 	{
-		me->remove_from_back(tmp_string, 4);
+		me->remove_from_back(tmp_string, 1);
 		std::stringstream	stream(tmp_string);
 		std::string			tmp_string_2;
 		std::string			key_field;
@@ -290,6 +290,7 @@ void	client::request::parse_header(void)
 	{
 		me->flags.request_finished = true;
 	}
+
 }
 
 
