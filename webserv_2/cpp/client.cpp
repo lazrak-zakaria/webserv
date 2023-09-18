@@ -134,20 +134,24 @@ void		client::remove_from_back(std::string &s, int n)
 
 const std::string	client::serve_client(std::string data, int recvd)
 {
+	// if (!recvd)
+	// {
+	// 	std::cout << request.request_header << "\n"; exit(5);
+	// }
 	if (!flags.request_finished)
 	{
 		request.parse(data);
 	}
 	else
 	{
-		// if (request.method == "GET")
-		// {	
+		if (request.method == "GET")
+		{	
 			response.get_method();
-		// }
-		// else if (request.method == "POST")
-		// {
-		// 	response.post_method();
-		// }
+		}
+		else if (request.method == "POST")
+		{
+			response.post_method();
+		}
 	}
 	return answer_response;
 }

@@ -3,6 +3,10 @@
 #include "../server.hpp"
 #include "../webserver.hpp"
 
+
+// https://stackoverflow.com/questions/76412255/how-to-fix-error-141-when-using-select-and-send-in-c-web-server-for-multip
+	// exit code 141
+
 int main(int ac, char **av)
 {
 	server_config	server1;
@@ -17,6 +21,7 @@ int main(int ac, char **av)
 
 	loc[0].alias = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
 	loc[0].index.push_back("index.html");
+	loc[0].index.push_back("smile.png");
 	loc[0].methods.push_back("GET");
 	loc[0].methods.push_back("POST");
 
@@ -40,7 +45,7 @@ int main(int ac, char **av)
 
 	server1.all_locations["/"] = loc[0];
 	server1.all_locations["/images/"] = loc[1];
-	server1.all_locations["/Upload"] = loc[2];
+	server1.all_locations["/Uploadaewaewa"] = loc[2];
 	server1.all_locations["/cgi-bin"] = loc[3];
 
 

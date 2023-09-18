@@ -139,6 +139,8 @@ const std::string	client::serve_client(std::string data, int recvd)
 		if (request.method == "GET")
 		{				
 			response.get_method();
+			if (flags.response_finished)
+				answer_response += "\r\n";
 		}
 		else if (request.method == "POST")
 		{

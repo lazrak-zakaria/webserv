@@ -69,15 +69,16 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 			// 	FD_CLR(client_fd_sock, &read_set);
 			if (collected == -1)
 			{
-				server_clients.erase(it->first);
+				// server_clients.erase(it->first);
+				invalid_sock.insert(it->first);
 				FD_CLR(client_fd_sock, &read_set);
 				std::cout << "drop client\n";
-
+				continue ;
 				//should drop client
 				// exit(0); // just testing
 			}
 			buf[collected] = '\0';
-			// std::cout << buf << "\n";
+			std::cout << buf << "\n";
 			std::string	tmp;
 			int i = 0;
 			while (i < collected)
@@ -91,13 +92,19 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 		}
 		else if (FD_ISSET(client_fd_sock, &temp_write_set))
 		{
-			std::cout << "SSSEE\n";
-			std::string answer = client_obj.serve_client("", 0);
+			// std::cout << "SSSEE\n";
+			std::string answer = client_obj.serve_client("", -1);
 			if(client_obj.is_response_finished())
-				answer += "\r\n";
+			{
+				answer.push_back('\r');
+				answer.push_back('\n');
+			}
 			// std::cout << answer << "\n";
 			int		sent = send(client_fd_sock, answer.c_str(), answer.size(), 0);
-			
+			if (sent == -1)
+			{
+				std::cout << "141\n"; exit(7);
+			}
 			if (answer.size() != sent)
 			{
 				std::cerr << "client close connection\n";
@@ -112,7 +119,10 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 				FD_CLR(client_fd_sock, &write_set);
 				if (client_obj.is_remove_me())
 				{
+					// FD_CLR(client_fd_sock, &write_set);
 					invalid_sock.insert(it->first);
+					close(it->first);
+
 					continue;
 				}
 				client_obj.clear();

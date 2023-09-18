@@ -361,7 +361,7 @@ void	client::request::parse_form_data()
 				{
 					std::cout << "{\n" << request_header_multipart << "\n}\n\n\n"; 
 
-					size_t	cont_ty_pos = request_header_multipart.find("Content-Type: ");
+					size_t cont_ty_pos = request_header_multipart.find("Content-Type: ");
 					std::string	mimetype =  request_header_multipart.substr(cont_ty_pos + 14, multipart_header_pos - (cont_ty_pos + 14));
 					std::cout << "-------------------------------------------------" << mimetype <<"----\n";
 					if (output_file.is_open())

@@ -1,7 +1,150 @@
-If a Transfer-Encoding header field
-       is present in a request and the chunked transfer coding is not
-       the final encoding, the message body length cannot be determined
-       reliably; the server MUST respond with the 400 (Bad Request)
-       status code and then close the connection.
 
-3.3.3.  Message Body Length  
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Praesent eget neque tempus, condimentum ante dignissim, auctor eros.
+    Nam laoreet quam pulvinar enim luctus, ac convallis metus rhoncus.
+    Ut sed purus in odio tincidunt maximus quis sit amet nunc.
+
+    Nunc a ex in massa mollis accumsan eget non nisl.
+    Vivamus a mauris a leo blandit luctus.
+    Curabitur lacinia lorem sed ex semper, ut elementum nibh porttitor.
+    Aenean convallis nisi viverra, pellentesque sapien ac, mollis erat.
+
+    Morbi pellentesque diam at lectus efficitur vulputate.
+    Nam eget purus sed nulla ornare volutpat.
+    Etiam sed orci consequat, pretium nisl quis, aliquet mi.
+    Aliquam eu sem placerat, imperdiet nisl et, auctor mi.
+
+    Aenean egestas ex vitae imperdiet pretium.
+    Nullam sodales mauris feugiat, consequat tellus quis, aliquam mi.
+    Vestibulum at nunc luctus, ullamcorper felis sit amet, accumsan sapien.
+    Curabitur auctor erat vel libero imperdiet venenatis.
+    Fusce quis sapien accumsan, auctor mauris ac, dictum justo.
+
+    Morbi sed dolor non tortor aliquet pharetra in quis est.
+    Ut sed est molestie, finibus nunc vitae, posuere ipsum.
+    Fusce commodo lorem eget nisi pretium, sit amet venenatis sapien consequat.
+    Mauris faucibus mauris eget turpis aliquet lacinia eget id ante.
+
+    Aenean nec nulla suscipit, aliquam quam sit amet, convallis lorem.
+    Praesent aliquet velit ut quam rhoncus, eget blandit diam ornare.
+    Phasellus elementum sapien lacinia feugiat vulputate.
+    Nulla eu erat ac sem sollicitudin pharetra nec et dui.
+    Fusce lacinia tortor non placerat porta.
+
+    Praesent ut urna tempus, egestas felis vulputate, luctus lectus.
+    Cras quis neque a erat pharetra auctor.
+    Sed id sapien et libero posuere semper.
+    Suspendisse luctus nisi vitae neque accumsan, sit amet egestas dolor rhoncus.
+
+    Nam venenatis lacus sit amet euismod ultricies.
+    Sed blandit quam sit amet neque dignissim, pretium rutrum elit consectetur.
+    Sed non lacus vehicula, posuere neque vel, bibendum erat.
+
+    Curabitur semper ex aliquam maximus dictum.
+    Praesent molestie mi a mattis posuere.
+    Nunc in nisl sit amet ipsum ornare rutrum.
+    Cras interdum quam non ultrices consequat.
+
+    Pellentesque condimentum est id commodo accumsan.
+    Fusce quis quam ac massa mollis egestas.
+    Proin porta erat vel orci posuere, nec cursus enim elementum.
+    Proin quis velit sagittis, semper ante eget, lobortis lacus.
+    Suspendisse sed sapien non felis vestibulum aliquam vel id tortor.
+
+    Morbi et tortor id sem imperdiet tristique vel auctor dui.
+    Duis blandit augue ac eros sodales tempus.
+    Vivamus imperdiet purus eget convallis tincidunt.
+
+    Integer euismod lacus non felis lacinia, in sagittis turpis elementum.
+    Fusce dictum tellus eu ullamcorper porta.
+    Mauris ullamcorper quam vitae nunc hendrerit, vel fringilla quam porttitor.
+    Vivamus sagittis enim id ligula auctor pharetra a et velit.
+
+    Quisque egestas mauris quis ante commodo, sit amet viverra ipsum condimentum.
+    Praesent sed lacus cursus, luctus libero non, pharetra metus.
+    Donec vitae nibh vitae augue viverra placerat a vel nunc.
+
+    Proin vitae mauris cursus nibh accumsan tristique.
+    Mauris vel dui in turpis posuere finibus.
+    Etiam viverra justo vitae pulvinar porttitor.
+    Vivamus a turpis eu lorem tempor euismod.
+    Sed vitae urna a risus porta tristique id nec mauris.
+
+    Maecenas egestas enim quis quam efficitur, ultrices molestie purus ornare.
+    Nullam gravida dolor non dui blandit rutrum.
+    Duis at urna commodo, ultrices eros sit amet, sodales orci.
+    Nunc vel lectus suscipit, pellentesque ante et, sagittis sapien.
+    Suspendisse viverra nibh et mauris sodales commodo.
+
+    Nulla tristique augue at auctor congue.
+    Curabitur et tellus at nisi viverra malesuada id nec magna.
+    Nullam porta nunc id ligula lobortis fermentum.
+    Pellentesque convallis nunc ac magna egestas molestie.
+    Curabitur sit amet lorem non sapien ornare rhoncus.
+
+    In malesuada magna vel massa varius accumsan.
+    Curabitur vitae magna sed velit porttitor tristique non vitae tellus.
+    Curabitur a ligula laoreet, volutpat nulla sed, aliquam odio.
+    Aliquam suscipit risus vel arcu pulvinar, sed viverra velit blandit.
+    Morbi tincidunt ligula id odio mollis, quis pharetra ex mattis.
+    Nullam vehicula nulla id interdum rutrum.
+
+    Proin gravida est faucibus, semper mi eu, consequat ante.
+    Sed ac ex ut lacus lacinia egestas quis et augue.
+    Ut vulputate ligula et fermentum vehicula.
+    Vivamus tincidunt lacus dictum ornare fringilla.
+    Etiam posuere mauris vitae felis consectetur pellentesque.
+    Maecenas pulvinar eros vel sem fringilla tincidunt.
+
+    Aenean eu tortor a magna tempus lobortis id non massa.
+    Nam sed augue sit amet elit elementum aliquam sed sed libero.
+    Ut faucibus dolor eget mauris lobortis ultrices.
+    Ut maximus lorem sit amet lorem laoreet finibus.
+
+    Sed eget neque quis libero egestas sodales a vitae eros.
+    Sed lacinia dolor ac dignissim pretium.
+
+    Donec eleifend purus nec fermentum tristique.
+    In vitae velit scelerisque, facilisis tellus eu, luctus orci.
+    Pellentesque consequat elit eget elit tincidunt facilisis.
+
+    Maecenas eget elit at erat egestas luctus quis vel justo.
+    Donec aliquam nulla eget ligula ornare tincidunt.
+    Fusce euismod ipsum a erat luctus vulputate.
+    Ut quis urna elementum, ornare nulla ac, pellentesque eros.
+    Suspendisse eu lacus sit amet tortor eleifend consectetur.
+
+    Integer vitae ex nec felis sagittis bibendum.
+    Aliquam lacinia odio sit amet ligula egestas, volutpat rhoncus purus tincidunt.
+    Proin sed libero nec lectus vehicula pulvinar in non justo.
+    Curabitur in sapien sit amet mauris egestas pharetra sed vel nisl.
+
+    Ut varius odio ac pulvinar volutpat.
+    Etiam non nunc ullamcorper, interdum est non, malesuada felis.
+    Cras non nisi et mi imperdiet vulputate vitae vel dui.
+
+    Aliquam ut odio porta neque viverra auctor.
+
+    Quisque sit amet justo aliquet, consequat sem id, pellentesque metus.
+    Mauris et leo ultricies, vehicula velit eget, consequat odio.
+    Pellentesque pellentesque arcu a lorem lobortis, non pretium sem interdum.
+    Nam at ante gravida, congue ipsum sed, porta libero.
+    Quisque viverra diam nec magna ultrices, id tristique sem ornare.
+
+    Nam pretium libero non massa efficitur pretium.
+    Vivamus at odio tincidunt, blandit ligula ac, malesuada justo.
+    Vestibulum non lorem ultricies, euismod risus sit amet, sodales ligula.
+
+    Etiam id turpis id nisi vehicula varius nec non leo.
+    Aenean pellentesque nibh a nibh porttitor pharetra.
+    Nam id tellus ac quam feugiat lobortis a sit amet lectus.
+    Vestibulum rhoncus nibh sodales, finibus justo et, sollicitudin lorem.
+    Donec at ligula at orci dapibus placerat.
+    Integer pulvinar erat vel neque pretium, a fringilla eros laoreet.
+
+    Sed tristique risus eu aliquet varius.
+
+    Suspendisse tristique erat accumsan, sodales nisl ac, porta libero.
+    Fusce scelerisque turpis et ipsum fermentum, eu fermentum sem mollis.
+    Etiam eu dolor iaculis arcu dignissim vehicula.
+    Praesent volutpat nisl sit amet iaculis finibus.

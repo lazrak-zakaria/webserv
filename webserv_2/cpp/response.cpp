@@ -80,28 +80,70 @@ void	client::response::get_method(void)
 				}
 				else
 				{
-					std::stringstream ss;
-					ss << "HTTP/1.1 OK 200\r\n";
-					if (me->final_path == "/nfs/homes/zlazrak/Desktop/wbs/webfiles/index.html")
-						ss << "Content-Type: " << "text/html\r\n";
-					else 
-						ss << "Content-Type: " << "image/png\r\n";
-
 					input_file.seekg (0, input_file.end);
 					content_length_input_file = input_file.tellg();
 					input_file.seekg (0, input_file.beg);
-
-					ss << "Content-Length: " << content_length_input_file << "\r\n";
-					ss << "Connection: " << "Keep-Alive\r\n\r\n";
-					me->answer_response = ss.str();
+					generate_header(me->final_path);
 					me->flags.response_body_sending = true;
 				}
 			}
 			else if (S_ISDIR(sb.st_mode))
 			{
-				me->final_path += '/' + me->config_data->all_locations[me->location_key].index[0];
+				if (me->config_data->all_locations[me->location_key].index.size())
+				{
+					size_t	i = 0;
+					for ( ; i < me->config_data->all_locations[me->location_key].index.size(); ++i)
+					{
+						std::string	tmp_path = me->final_path + '/' + me->config_data->all_locations[me->location_key].index[i];
+						std::cout << tmp_path << "\n";
+						struct	stat sb_2;
+						if (!stat(tmp_path.c_str(), &sb_2))
+						{
+							if(S_ISREG(sb_2.st_mode))
+							{
+								input_file.open(tmp_path.c_str(), std::ios::binary);
+								if (!input_file.is_open())
+								{
 
-				/******************/
+									me->code_status = 403;
+									me->answer_response = response_error();
+									me->flags.response_finished = true;
+								}
+								else
+								{
+									input_file.seekg (0, input_file.end);
+									content_length_input_file = input_file.tellg();
+									input_file.seekg (0, input_file.beg);
+									generate_header(tmp_path);
+									me->flags.response_body_sending = true;
+									break;
+								}
+							}
+						}
+					}
+					if (me->flags.response_body_sending != true)
+					{
+						me->code_status = 403;
+						me->answer_response = response_error();
+						me->flags.response_finished = true;
+					}
+				}
+				else if (me->config_data->all_locations[me->location_key].directory_listing)
+				{
+
+				}
+				else
+				{
+
+				}
+				
+				
+				
+				
+				/*
+				me->final_path += '/' + me->config_data->all_locations[me->location_key].index[1];
+
+				/******************
 				input_file.open(me->final_path.c_str(), std::ios::binary);
 				if (!input_file.is_open())
 				{
@@ -117,8 +159,9 @@ void	client::response::get_method(void)
 					input_file.seekg (0, input_file.beg);
 					generate_header(me->final_path);
 					me->flags.response_body_sending = true;
-				/****************/
+				/******************
 				}
+				*/
 			}
 			else
 			{
@@ -126,6 +169,12 @@ void	client::response::get_method(void)
 				me->answer_response = response_error();
 				me->flags.response_finished = true;
 			}
+		}
+		else
+		{
+			me->code_status = 404;
+			me->answer_response = response_error();
+			me->flags.response_finished = true;
 		}
 
 		/*
@@ -157,7 +206,9 @@ void	client::response::get_method(void)
 
 void	client::response::post_method(void)
 {
-
+	me->code_status = 404;
+	me->answer_response = response_error();
+	me->flags.response_finished = true;
 }
 
 std::string	client::response::response_error(void)
