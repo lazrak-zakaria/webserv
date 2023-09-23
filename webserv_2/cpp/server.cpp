@@ -123,7 +123,7 @@ void	server::handling_ready_sockets(fd_set &temp_read_set, fd_set &temp_write_se
 					invalid_sock.insert(it->first);
 					close(it->first);
 
-					continue;
+					continue;	
 				}
 				client_obj.clear();
 				FD_SET(client_fd_sock, &read_set);

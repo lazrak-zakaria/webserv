@@ -36,7 +36,10 @@ namespace timeout
         {
             int result = waitpid(pid, NULL, WNOHANG);
             if (result == 0)
-                kill(pid, 9); // child still running, so kill it
+            {
+				kill(pid, 9);
+				// waitpid(pid, NULL, 0); cuz a killed process should be waited;
+			}// child still running, so kill it
             // else he terminate normally
 			return 0;
 		}
