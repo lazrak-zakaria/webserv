@@ -33,7 +33,8 @@ class Client
 	
 			Client								*me;
 
-			void	parseHeader(void);
+			void	parseRequest(std::string &requestData, int received);
+			void	parseHeader(size_t crlf);
 			bool	isUriValid(const char &c) const;
 			bool	isFieldNameValid(const char &c) const;
 			bool	isFieldValueValid(const char &c) const;
@@ -46,17 +47,19 @@ class Client
 
 		} _request;
 
-		
+
 		struct Flags
 		{
 			bool	isRequestBody;
 			bool	isChunked;
 			bool	isMultipart;
-
+			bool	inMultipartHeader;
 		} _flags;
 
 		bool	isLocationMatched(const std::string &locationDirective, const std::string &p);
 		void	detectFinalLocation(void);
+
+
 	public:
 
 		void	test();

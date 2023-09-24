@@ -23,7 +23,7 @@ bool	Client::Request::isFieldValueValid(const char &c) const
 	return (isalnum(c) || memchr(token, c, sizeof(token)));
 }
 
-void	Client::Request::parseHeader(void)
+void	Client::Request::parseHeader(size_t crlf)
 {
 	enum 
 	{
@@ -44,7 +44,7 @@ void	Client::Request::parseHeader(void)
 	std::string	key, value;
 	u_int8_t	cursor = eMethode, currentState = eUri;
 	bool		charAfterCrLf = false;
-	for (size_t i = 0; i < requestHeader.size() && !me->_codeStatus; ++i)
+	for (size_t i = 0; i < crlf && !me->_codeStatus; ++i)
 	{
 		const char	&currentChar = requestHeader[i];
 
@@ -241,5 +241,52 @@ host: ca\r\n\
 key1:value1\r\n\r\n";
 
 
-	_request.parseHeader();
+	_request.parseHeader(94);
+}
+
+void	Client::Request::parseRequest(std::string &requestData, int received)
+{
+	if (me->_flags.isRequestBody)
+	{
+		if (received)
+			requestBody.append(requestData, received);
+		if (me->_flags.isChunked)
+			parseChunkedData();
+		else if (me->_flags.isMultipart)
+			parseMultipart();
+		else
+		{
+
+		}
+	}
+	else
+	{
+		size_t searchEndOfHeader = requestHeader.size();
+		searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0;
+		requestHeader.append(requestData, received);
+
+		size_t	posCrlf = requestHeader.find("\r\n\r\n", searchEndOfHeader);
+		if (posCrlf == std::string::npos)
+			return ;
+	
+		me->_flags.isRequestBody = true;
+		requestBody = requestHeader.substr(posCrlf + 4);
+		parseHeader(posCrlf);
+		me->detectFinalLocation();
+
+// https://stackoverflow.com/questions/20457437/does-stdstringclear-reclaim-the-memory-associated-with-a-string
+		if (!requestHeader.empty())
+			std::string().swap(requestHeader);
+		if (!requestBody.empty())
+		{
+			std::string ss;
+			receivedSize = requestBody.size();
+			parseRequest(ss, 0);
+		}
+	}
+}
+
+void	parseMultipart()
+{
+
 }
