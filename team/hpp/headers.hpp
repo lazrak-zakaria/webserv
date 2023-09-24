@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <dirent.h>
+#include <sys/time.h>
 
 #include <iostream>
 #include <string>

@@ -282,7 +282,7 @@ void	client::request::parse_form_data()
 		{
 			if (output_file.is_open())
 			{
-				std::cout << "--------------------------------------------------------------------------------------------------------------\n";
+				std::cout << "-------------------\n";
 				// std::cout << request_body << "\n"; sleep(2);
 				std::string	tmp = request_body.substr(0, position_crlf);
 				// std::cout << "//\n" <<  tmp << "//\n"; exit(8);
