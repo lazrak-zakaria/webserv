@@ -9,7 +9,6 @@ typedef struct location
 	std::string							redirection;
 	std::string							root;
 	std::string							alias;
-	std::string							redirection;
 	bool								autoIndex;
 	std::vector<std::string>			index;
 	// map< file extension , cgi program> 

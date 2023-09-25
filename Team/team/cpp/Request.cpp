@@ -2,6 +2,90 @@
 
 // https://stackoverflow.com/questions/20457437/does-stdstringclear-reclaim-the-memory-associated-with-a-string
 
+void	Client::Request::parseRequest()
+{
+	if (me->_flags.isRequestBody)
+	{
+		
+		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
+		{
+			if (outputFile.is_open() == 0)
+			{
+				std::string name;
+				me->generateRandomName(name);
+				name = std::string("/tmp/").append(name);
+				
+				outputFile.open(name.c_str(), std::ios::binary);
+				if (outputFile.is_open() == 0)
+				{
+					me->_codeStatus = 500;
+					me->_flags.isRequestFinished = true;
+					return ;
+				}
+			}
+
+			if (me->_flags.isChunked)
+				parseChunkedData();
+			else
+				outputFile.write(requestBody.c_str(), requestBody.size());
+		}
+		else if (me->_configData->allLocations[me->_locationKey].canUpload)
+		{	
+			if (!me->_flags.isMultipart && outputFile.is_open() == 0)
+			{
+				std::string name;
+				me->generateRandomName(name);
+				me->addSlashToFinalPath();
+				me->_finalPath.append(name);
+				
+				outputFile.open(me->_finalPath.c_str(), std::ios::binary);
+				if (outputFile.is_open() == 0)
+				{
+					me->_codeStatus = 500;
+					me->_flags.isRequestFinished = true;
+					return ;
+				}
+			}
+
+			if (me->_flags.isChunked)
+				parseChunkedData();
+			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
+				parseMultipart();
+			else
+				outputFile.write(requestBody.c_str(), requestBody.size());
+		}
+		else
+		{
+			me->_codeStatus = 403;
+			me->_flags.isRequestFinished = true;
+		}
+	}
+	else
+	{
+		size_t searchEndOfHeader = requestHeader.size();
+		searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0; /*where to start searching*/
+
+		size_t	posCrlf = requestHeader.find("\r\n\r\n", searchEndOfHeader);
+		if (posCrlf == std::string::npos)
+			return ;
+	
+		me->_flags.isRequestBody = true;
+		requestBody = requestHeader.substr(posCrlf + 4);
+		parseHeader(posCrlf);
+		me->detectFinalLocation();
+
+		if (!requestHeader.empty())
+			std::string().swap(requestHeader);
+
+
+		if (!requestBody.empty())
+		{
+			receivedSize = requestBody.size();
+			parseRequest();
+		}
+	}
+}
+
 void	Client::Request::setMe(Client *m)
 {
 	me = m;
@@ -29,23 +113,16 @@ void	Client::Request::parseHeader(size_t crlf)
 {
 	enum 
 	{
-		eUri,
-		eMethode,
-		ePath,
-		eSlash,
-		eQuery,
-		eFragement,
-		eHttp,
-		eCr,
-		eLf,
-		eFieldName,
-		eFieldNameChar,
-		eFieldValue,
-		eFieldValueChar
+		eUri, eMethode, ePath, eSlash,
+		eQuery, eFragement, eHttp,
+		eCr, eLf, eFieldName, eFieldNameChar,
+		eFieldValue, eFieldValueChar
 	};
 	std::string	key, value;
 	u_int8_t	cursor = eMethode, currentState = eUri;
 	bool		charAfterCrLf = false;
+
+
 	for (size_t i = 0; i < crlf && !me->_codeStatus; ++i)
 	{
 		const char	&currentChar = requestHeader[i];
@@ -308,65 +385,6 @@ key1:value1\r\n\r\n";
 	_request.parseHeader(94);
 }
 
-void	Client::Request::parseRequest(std::string &requestData, int received)
-{
-	if (me->_flags.isRequestBody)
-	{
-		if (received)
-			requestBody.append(requestData, received);
-		
-		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
-		{
-			if (me->_flags.isChunked)
-				parseChunkedData();
-			else
-				outputFile.write(requestData.c_str(), received);
-		}
-		else if (me->_configData->allLocations[me->_locationKey].canUpload)
-		{		
-			if (me->_flags.isChunked)
-				parseChunkedData();
-			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
-				parseMultipart();
-			else
-				outputFile.write(requestData.c_str(), received);
-		}
-		else
-		{
-			me->_codeStatus = 403;
-			me->_flags.isRequestFinished = true;
-		}
-	}
-	else
-	{
-		size_t searchEndOfHeader = requestHeader.size();
-		searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0; /*where to start searching*/
-		requestHeader.append(requestData, received);
-
-		size_t	posCrlf = requestHeader.find("\r\n\r\n", searchEndOfHeader);
-		if (posCrlf == std::string::npos)
-			return ;
-	
-		me->_flags.isRequestBody = true;
-		requestBody = requestHeader.substr(posCrlf + 4);
-		parseHeader(posCrlf);
-		me->detectFinalLocation();
-
-		if (!requestHeader.empty())
-			std::string().swap(requestHeader);
-
-		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
-		{
-			// if ()
-		}
-		if (!requestBody.empty())
-		{
-			std::string ss;
-			receivedSize = requestBody.size();
-			parseRequest(ss, 0);
-		}
-	}
-}
 
 void	Client::Request::parseMultipart()
 {
@@ -594,4 +612,94 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			return false;
 		}
 	}
+
+	return true;
+}
+
+
+void	Client::Request::parseChunkedData()
+{
+	if (me->_flags.expectSizeRead)
+	{
+		if (size_t pos = requestBody.find("\r\n") && pos != std::string::npos)
+		{
+			std::string hexValue(requestBody, 0, pos);
+			
+			std::stringstream ss;
+			ss  << hexValue ; 
+			ss >> std::hex >> expectedBytesToRead ;
+
+			TotalDataProcessed += expectedBytesToRead;
+			if (TotalDataProcessed > me->_configData->limitBodySize)
+			{
+				std::cout << "413 Payload Too Large\n";
+				me->_codeStatus = 413;
+				return ;
+			}
+
+			if (expectedBytesToRead == 0)
+			{
+				me->_flags.isRequestFinished = true;
+				outputFile.close();
+				return ;
+			}
+
+			requestBody.erase(0, pos + 2);
+			readAmountSoFar = 0;
+			me->_flags.expectSizeRead = false;
+		}
+	}
+	else
+	{
+		size_t reqSize = requestBody.size();
+		std::string	contentToStore;
+
+
+		// /**/ this line is the idea
+		// for (size_t i = 0 ; readAmountSoFar < expectedBytesToRead && i < reqSize; ++readAmountSoFar , ++i)
+		// 		toWriteToFile.push_back(req[i]);
+		// /**/
+
+		if (!me->_flags.crlfRequired)
+		{
+			if (reqSize >= (expectedBytesToRead - readAmountSoFar))
+			{
+				contentToStore.append(requestBody, 0, (expectedBytesToRead - readAmountSoFar));
+
+				requestBody.erase(0, (expectedBytesToRead - readAmountSoFar));
+				readAmountSoFar = expectedBytesToRead = 0;
+				me->_flags.crlfRequired = true;
+			}
+			else
+			{
+				contentToStore.append(requestBody);
+				requestBody.erase(0, reqSize);
+				readAmountSoFar += reqSize;
+
+			}
+
+			outputFile.write(contentToStore.c_str(), contentToStore.size());
+		}
+
+
+		if (me->_flags.crlfRequired && requestBody.size() >= 2)
+		{
+			if (requestBody.compare(0, 2, "\r\n") == 0)
+			{
+				me->_flags.crlfRequired = false;
+				requestBody.erase(0, 2);
+			}
+			else
+			{
+				std::cout << "Error body should end with crlf\n";
+				me->_codeStatus = 400;
+			}
+
+			me->_flags.expectSizeRead = true;
+		}
+	}
+
+	//buffer still have data to be parsed
+	if ((me->_flags.expectSizeRead && requestBody.find("\r\n")) || (me->_flags.expectSizeRead == 0 && requestBody.empty() == 0))
+		parseChunkedData();
 }

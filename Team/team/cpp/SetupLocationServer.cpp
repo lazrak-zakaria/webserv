@@ -4,10 +4,8 @@
 #include "../hpp/Server.hpp"
 
 
-void	setLocation(std::map<int, Server*> &mp, Server &s, 	MimeAndError &mime)
+void	setLocation(std::map<int, Server*> &mp, ServerConfig	&server1, 	MimeAndError &mime)
 {
-	ServerConfig	server1;
-	MimeAndError	mime;
 	server1.host = "127.0.0.1";
 	server1.port = 9090;
 	server1.serverNames = "serv";

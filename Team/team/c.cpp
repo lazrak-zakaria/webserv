@@ -1,6 +1,4 @@
-#include <string>
-#include <iostream>
-#include <sstream>
+#include "./hpp/headers.hpp"
 
 std::string answer;
 
@@ -11,7 +9,6 @@ bool	crlfRequired;
 
 void	parseCh(std::string &req)
 {
-
 	if (expectSizeRead)
 	{
 		if (size_t pos = req.find("\r\n") && pos != std::string::npos)
@@ -47,7 +44,6 @@ void	parseCh(std::string &req)
 			{
 				contentToStore.append(req, 0, (expectedBytesToRead - readAmountSoFar));
 
-				std::cout << "*"<< req << "*" << (expectedBytesToRead - readAmountSoFar) << "*" << contentToStore <<"*XX\n";
 				req.erase(0, (expectedBytesToRead - readAmountSoFar));
 				readAmountSoFar = expectedBytesToRead = 0;
 				crlfRequired = true;
@@ -61,6 +57,7 @@ void	parseCh(std::string &req)
 			}
 			answer.append(contentToStore);
 		}
+
 
 		if (crlfRequired && req.size() >= 2)
 		{
@@ -76,7 +73,8 @@ void	parseCh(std::string &req)
 			expectSizeRead = true;
 		}
 	}
-	
+
+
 	if ((expectSizeRead && req.find("\r\n")) || (expectSizeRead == 0 && req.empty() == 0))
 		parseCh(req);
 	
@@ -87,11 +85,20 @@ void	parseCh(std::string &req)
 
 int  main()
 {
-	std::string a = "5\r\nabcde\r\n3\r\nabc";
-	// std::string a = "\r\ndat\r\n";
-	// std::string h = "abcde";
-	parseCh(a);
-	// answer.append(h, 0,3);
-	std::cout << "|" << answer << "|\n";
+	// std::string a = "5\r\nabcde\r\n3\r\nabc\r\n1\r\nT\r\n6\r\nxxx";
+	// // std::string a = "\r\ndat\r\n";
+	// // std::string h = "abcde";
+	// parseCh(a);
+	// // answer.append(h, 0,3);
+	// a.append("xxx\r\n");
+	// parseCh(a);
+	// std::cout << a << "|" << answer << "|\n";
+
+	std::ofstream a("./test.txt");
+	if (a.is_open())
+	{
+		std::cout << "here\n";
+		a << "HEY\n";
+	}
 	return 0;
 }

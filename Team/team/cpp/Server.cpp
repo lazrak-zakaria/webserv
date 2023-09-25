@@ -29,6 +29,8 @@ void	Server::socketBindListen()
 	// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
     addrServer.sin_addr.s_addr = INADDR_ANY;
     addrServer.sin_port = htons(configData->port);
+	int optval = 1;
+	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
     if (bind(fdSock, (struct sockaddr *) &addrServer,
               sizeof(addrServer)) < 0) 
     {
@@ -92,8 +94,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				std::cout << "drop client\n";
 				continue ;
 			}
-
-			buf[collected] = '\0';
+			
 			
 			/*
 				process request

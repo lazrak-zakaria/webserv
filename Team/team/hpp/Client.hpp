@@ -34,9 +34,13 @@ class Client
 			std::string							boundary;
 			std::string							contentType;
 	
+			size_t								readAmountSoFar;
+			size_t								expectedBytesToRead;
+			size_t								TotalDataProcessed;
+
 			Client								*me;
 
-			void	parseRequest(std::string &requestData, int received);
+			void	parseRequest();
 			void	parseHeader(size_t crlf);
 			bool	isUriValid(const char &c) const;
 			bool	isFieldNameValid(const char &c) const;
@@ -59,8 +63,6 @@ class Client
 			std::ifstream			inputFile;
 
 
-			size_t	readAmountSoFar;
-			size_t	expectedBytesToRead;
 
 
 			Client					*me;
@@ -81,6 +83,10 @@ class Client
 			bool	isMultipart;
 			bool	inMultipartBody;
 
+			/*chunked*/
+			bool	expectSizeRead;
+			bool	crlfRequired;
+
 			/*response*/
 			bool	canReadInputFile;
 			bool	isResponseFinished;
@@ -88,7 +94,7 @@ class Client
 
 		bool	isLocationMatched(const std::string &locationDirective, const std::string &p);
 		void	detectFinalLocation(void);
-
+		void	addSlashToFinalPath();
 
 	public:
 
@@ -100,7 +106,7 @@ class Client
 		bool	isRequestFinished() const;
 
 
-		void			readRequest(std::string &RequestData, size_t recevivedSize);
+		void			readRequest(const char * RequestData, int recevivedSize);
 		std::string		&serveResponse(void);
 };	
 

@@ -1,6 +1,12 @@
 #include "../hpp/Client.hpp"
 
 
+void	Client::addSlashToFinalPath()
+{
+	if (_finalPath[_finalPath.size() - 1] != '/')
+		_finalPath.push_back('/');
+}
+
 bool		Client::isLocationMatched(const std::string &locationDirective, const std::string &path)
 {
 	size_t	locationLength = locationDirective.length();
@@ -82,4 +88,24 @@ void	Client::generateRandomName(std::string &name) const
 				name.push_back((rand() + tm.tv_sec) % 26 + 'A');
 		}
 	}
+}
+
+void	Client::readRequest(const char * requestData, int receivedSize)
+{
+	if (_flags.isRequestBody)
+		_request.requestBody.append(requestData, receivedSize);
+	else
+		_request.requestHeader.append(requestData, receivedSize);
+
+	_request.parseRequest();
+}
+
+
+std::string		&Client::serveResponse(void)
+{
+
+	
+	if (_request.method == "POST")
+		_response.postMethodeResponse();
+	return _finalAnswer;
 }
