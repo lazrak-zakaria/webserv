@@ -62,7 +62,9 @@ class client
 
 			size_t								received_from_input_file;
 			std::ifstream						input_file;
-			
+
+
+
 			void			generate_header(std::string &);
 			void			generate_directory_listing(void);
 			void			get_method(void);

@@ -57,7 +57,15 @@ class Client
 			size_t					chunkedSize;
 
 			std::ifstream			inputFile;
+
+
+			size_t	readAmountSoFar;
+			size_t	expectedBytesToRead;
+
+
 			Client					*me;
+
+
 			void					postMethodeResponse();
 			void					responseError(void);
 			void					clearResponse();

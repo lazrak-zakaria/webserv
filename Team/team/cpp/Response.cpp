@@ -2,7 +2,6 @@
 
 void	Client::Response::postMethodeResponse()
 {
-
 	if (me->_flags.canReadInputFile)
 	{
 		char	buf[5002];
@@ -11,7 +10,7 @@ void	Client::Response::postMethodeResponse()
 		int	howMuchRead = inputFile.gcount();
 		std::stringstream ss;
 		ss<< std::hex << howMuchRead;
-		me->_finalAnswer = ss.str().append("\r\n");
+		me->_finalAnswer.append(ss.str().append("\r\n"));
 
 		buf[howMuchRead] = '\r';
 		buf[howMuchRead + 1] = '\n';
@@ -24,7 +23,6 @@ void	Client::Response::postMethodeResponse()
 			inputFile.close();
 			me->_flags.isResponseFinished = true;
 		}
-
 		return ;
 	}
 
@@ -34,7 +32,6 @@ void	Client::Response::postMethodeResponse()
 	}
 	else
 	{
-
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 		{
 			/*run cgi and get response based on it*/
