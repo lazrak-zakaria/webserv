@@ -60,6 +60,8 @@ bool	Client::Request::isFieldValueValid(const char &c) const
 
 void	Client::Request::parseRequest()
 {
+	PARSE_REQUEST:
+
 	if (me->_flags.isRequestBody)
 	{
 
@@ -88,7 +90,6 @@ void	Client::Request::parseRequest()
 				parseChunkedData();
 			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
 			{
-				
 				parseMultipart();
 			}
 			else
@@ -121,9 +122,6 @@ void	Client::Request::parseRequest()
 			me->_flags.isRequestFinished = true;
 			return ;
 		}
-
-
-
 	
 
 		me->_flags.isRequestBody = true;
@@ -135,7 +133,7 @@ void	Client::Request::parseRequest()
 		if (!requestBody.empty())
 		{
 			receivedSize = requestBody.size();
-			parseRequest();
+			goto PARSE_REQUEST;
 		}
 	}
 }
@@ -500,10 +498,8 @@ void	Client::Request::parseMultipart()
 		}
 		else if (requestBody.size() > boundary.size() + 10 && outputFile.is_open())
 		{
-			std::cout << "---------------------------------------------\n";
 			size_t sizeToWrite = requestBody.size() - boundary.size() + 10;
 			outputFile.write(requestBody.substr(0, sizeToWrite).c_str(), sizeToWrite);
-			std::cout << "(" <<requestBody.substr(0, sizeToWrite) << ")";
 			requestBody = requestBody.erase(0, sizeToWrite);
 		}
 	}
@@ -712,6 +708,89 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 
 void	Client::Request::parseChunkedData()
 {
+	START:
 
+	if (me->_flags.expectSizeRead)
+	{
+		if (size_t pos = requestBody.find("\r\n") && pos != std::string::npos)
+		{
+			std::string hexValue(requestBody, 0, pos);
+			
+			std::stringstream ss;
+			ss  << hexValue ; 
+			ss >> std::hex >> expectedBytesToRead ;
+
+			TotalDataProcessed += expectedBytesToRead;
+			if (TotalDataProcessed > me->_configData->limitBodySize)
+			{
+				std::cout << "413 Payload Too Large\n";
+				me->_codeStatus = 413;
+				return ;
+			}
+
+			if (expectedBytesToRead == 0)
+			{
+				me->_flags.isRequestFinished = true;
+				outputFile.close();
+				return ;
+			}
+
+			requestBody.erase(0, pos + 2);
+			readAmountSoFar = 0;
+			me->_flags.expectSizeRead = false;
+		}
+	}
+	else
+	{
+		size_t reqSize = requestBody.size();
+		std::string	contentToStore;
+
+
+		// /**/ this line is the idea
+		// for (size_t i = 0 ; readAmountSoFar < expectedBytesToRead && i < reqSize; ++readAmountSoFar , ++i)
+		// 		toWriteToFile.push_back(req[i]);
+		// /**/
+
+		if (!me->_flags.crlfRequired)
+		{
+			if (reqSize >= (expectedBytesToRead - readAmountSoFar))
+			{
+				contentToStore.append(requestBody, 0, (expectedBytesToRead - readAmountSoFar));
+
+				requestBody.erase(0, (expectedBytesToRead - readAmountSoFar));
+				readAmountSoFar = expectedBytesToRead = 0;
+				me->_flags.crlfRequired = true;
+			}
+			else
+			{
+				contentToStore.append(requestBody);
+				requestBody.erase(0, reqSize);
+				readAmountSoFar += reqSize;
+
+			}
+
+			outputFile.write(contentToStore.c_str(), contentToStore.size());
+		}
+
+
+		if (me->_flags.crlfRequired && requestBody.size() >= 2)
+		{
+ 			if (requestBody.compare(0, 2, "\r\n") == 0)
+			{
+				me->_flags.crlfRequired = false;
+				requestBody.erase(0, 2);
+			}
+			else
+			{
+				// std::cout << "Error body should end with crlf\n";
+				me->_codeStatus = 400;
+			}
+
+			me->_flags.expectSizeRead = true;
+		}
+	}
+
+	//buffer still have data to be parsed
+	if ((me->_flags.expectSizeRead && requestBody.find("\r\n")) || (me->_flags.expectSizeRead == 0 && requestBody.empty() == 0))
+		goto START;
 }
-

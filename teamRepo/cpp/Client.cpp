@@ -9,6 +9,7 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_response.me = this;
 
 	memset(&_flags, 0, sizeof(_flags));
+	_flags.expectSizeRead = true;
 }
 
 void	Client::clearClient()
