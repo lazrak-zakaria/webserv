@@ -2,32 +2,69 @@
 
 // https://stackoverflow.com/questions/20457437/does-stdstringclear-reclaim-the-memory-associated-with-a-string
 
+
+Client::Request::Request() :receivedSize(0), 
+						contentLength(0), readAmountSoFar(0), 
+						expectedBytesToRead(0), TotalDataProcessed(0)
+{
+}
+
+void	Client::Request::requestClear()
+{
+		method.clear();
+		path.clear();
+		query.clear();
+		requestHeader;
+		requestHeadersMap;
+
+		std::string().swap(requestBody);
+		receivedSize = 0;
+		outputFile.close();
+		outputFileName.clear();
+
+		contentLength = 0;
+		boundary.clear();
+		contentType.clear();
+	
+		readAmountSoFar = expectedBytesToRead = TotalDataProcessed = 0;
+}
+
+void	Client::Request::setMe(Client *m)
+{
+	me = m;
+}
+
+bool	Client::Request::isUriValid(const char &c) const
+{
+	static char token[] = "-._~:/?#[]@!$&'()*+,;=%";
+	return (isalnum(c) || memchr(token, c, sizeof(token)));
+}
+
+bool	Client::Request::isFieldNameValid(const char &c) const
+{
+	static char token[] = "-_";
+	return (isalnum(c) || memchr(token, c, sizeof(token)));
+}
+
+bool	Client::Request::isFieldValueValid(const char &c) const
+{
+	static char token[] = "- \t._~:/?#[]@!$&'()*+,;=%\"";
+	return (isalnum(c) || memchr(token, c, sizeof(token)));
+}
+
+
+
+
+
+
+
 void	Client::Request::parseRequest()
 {
 	if (me->_flags.isRequestBody)
 	{
-		
+
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 		{
-			if (outputFile.is_open() == 0)
-			{
-				std::string name;
-				me->generateRandomName(name);
-				name = std::string("/tmp/").append(name);
-				
-				outputFile.open(name.c_str(), std::ios::binary);
-				if (outputFile.is_open() == 0)
-				{
-					me->_codeStatus = 500;
-					me->_flags.isRequestFinished = true;
-					return ;
-				}
-			}
-
-			if (me->_flags.isChunked)
-				parseChunkedData();
-			else
-				outputFile.write(requestBody.c_str(), requestBody.size());
 		}
 		else if (me->_configData->allLocations[me->_locationKey].canUpload)
 		{	
@@ -50,33 +87,50 @@ void	Client::Request::parseRequest()
 			if (me->_flags.isChunked)
 				parseChunkedData();
 			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
+			{
+				
 				parseMultipart();
+			}
 			else
 				outputFile.write(requestBody.c_str(), requestBody.size());
 		}
-		else
-		{
-			me->_codeStatus = 403;
-			me->_flags.isRequestFinished = true;
-		}
+
 	}
 	else
 	{
-		size_t searchEndOfHeader = requestHeader.size();
-		searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0; /*where to start searching*/
+		size_t searchEndOfHeader = 0;//requestHeader.size();
+		// searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0; /*where to start searching*/
 
-		size_t	posCrlf = requestHeader.find("\r\n\r\n", searchEndOfHeader);
+
+		size_t	posCrlf = requestHeader.find("\r\n\r\n");
 		if (posCrlf == std::string::npos)
 			return ;
 	
+
+
+		parseHeader(posCrlf + 4);
+		if (me->_codeStatus)
+		{
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
+
+		me->detectFinalLocation();
+		if (me->_codeStatus)
+		{
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
+
+
+
+	
+
 		me->_flags.isRequestBody = true;
 		requestBody = requestHeader.substr(posCrlf + 4);
-		parseHeader(posCrlf);
-		me->detectFinalLocation();
 
 		if (!requestHeader.empty())
 			std::string().swap(requestHeader);
-
 
 		if (!requestBody.empty())
 		{
@@ -86,28 +140,6 @@ void	Client::Request::parseRequest()
 	}
 }
 
-void	Client::Request::setMe(Client *m)
-{
-	me = m;
-}
-
-bool	Client::Request::isUriValid(const char &c) const
-{
-	static char token[] = "-._~:/?#[]@!$&'()*+,;=%";
-	return (isalnum(c) || memchr(token, c, sizeof(token)));
-}
-
-bool	Client::Request::isFieldNameValid(const char &c) const
-{
-	static char token[] = "-_";
-	return (isalnum(c) || memchr(token, c, sizeof(token)));
-}
-
-bool	Client::Request::isFieldValueValid(const char &c) const
-{
-	static char token[] = "- \t._~:/?#[]@!$&'()*+,;=%";
-	return (isalnum(c) || memchr(token, c, sizeof(token)));
-}
 
 void	Client::Request::parseHeader(size_t crlf)
 {
@@ -127,6 +159,7 @@ void	Client::Request::parseHeader(size_t crlf)
 	{
 		const char	&currentChar = requestHeader[i];
 
+
 		switch (currentState)
 		{
 		case eUri:
@@ -144,7 +177,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 				case eSlash:
 					if (currentChar != '/')
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					path.push_back(currentChar);
 					cursor = ePath;
 					break;
@@ -158,7 +191,7 @@ void	Client::Request::parseHeader(size_t crlf)
 					else if (currentChar == ' ')
 						cursor = eHttp;
 					else
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					break;
 				case eQuery:
 					if (currentChar == ' ')
@@ -168,7 +201,7 @@ void	Client::Request::parseHeader(size_t crlf)
 					else if (isUriValid(currentChar))
 						query.push_back(currentChar);
 					else
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					break;
 				case eFragement:
 					if (currentChar == ' ')
@@ -176,7 +209,7 @@ void	Client::Request::parseHeader(size_t crlf)
 					else if (isUriValid(currentChar))
 						continue;
 					else
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					break;
 		
 				case eHttp:
@@ -185,14 +218,14 @@ void	Client::Request::parseHeader(size_t crlf)
 					for (u_int8_t j = 0; j < 8 && i < requestHeader.size(); ++i, ++j)
 						tmp.push_back(requestHeader[i]);
 					if (tmp != "HTTP/1.1" || requestHeader[i] != '\r')
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					cursor = eLf;
 				}
 					break;
 
 				case eLf:
 					if (currentChar != '\n')
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					currentState = eFieldName;
 					cursor = eFieldNameChar;
 				}
@@ -215,12 +248,11 @@ void	Client::Request::parseHeader(size_t crlf)
 				else if (currentChar == '\r' && charAfterCrLf)
 					cursor = eLf;
 				else
-					me->_codeStatus = 400;
+					goto BAD_REQUEST;
 				break;
 			case eLf:
 				if(currentChar != '\n')
-					me->_codeStatus = 400;
-				// goto done;
+					goto BAD_REQUEST;
 			}
 			break;
 		case eFieldValue:
@@ -238,15 +270,11 @@ void	Client::Request::parseHeader(size_t crlf)
 						charAfterCrLf = true;
 					}
 					else
-					{
-
-						std::cout <<"++-\n";
-						me->_codeStatus = 400;
-					}
+						goto BAD_REQUEST;
 					break;
 				case eLf:
 					if (currentChar != '\n')
-						me->_codeStatus = 400;
+						goto BAD_REQUEST;
 					else
 					{
 						cursor = eFieldNameChar;
@@ -257,8 +285,16 @@ void	Client::Request::parseHeader(size_t crlf)
 		}
 	}
 
+	if (method.compare("POST") && method.compare("GET") && method.compare("DELETE"))
+	{
+		me->_codeStatus = 501;
+		goto BAD_REQUEST;
+	}
+
+	
 	if (!requestHeadersMap.count("host") || requestHeadersMap["host"].size() != 1)
-		me->_codeStatus = 400;
+		goto BAD_REQUEST;
+	
 
 	if (requestHeadersMap.count("content-length"))
 	{
@@ -276,12 +312,11 @@ void	Client::Request::parseHeader(size_t crlf)
 			while (k < contentLengthTmp.size() && contentLengthTmp[k] == ' ')
 				++k;
 			if (k != contentLengthTmp.size())
-			{
-				me->_codeStatus = 400;
-			}
+				goto BAD_REQUEST;
 			if (tmp.size() > 19)
 			{
 				me->_codeStatus = 413;
+				goto BAD_REQUEST;
 			}
 			contentLength = atoi(tmp.c_str());			
 		}
@@ -289,6 +324,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	if (requestHeadersMap.count("transfer-encoding"))
 	{
+				// std::cout << "here\n";
 		std::string &transferEncoding = *(--requestHeadersMap["transfer-encoding"].end());
 		std::string	tmp;
 		
@@ -301,7 +337,7 @@ void	Client::Request::parseHeader(size_t crlf)
 		if (i != transferEncoding.size() || tmp != "chunked")
 		{
 			me->_codeStatus = 501;
-			return ;
+				goto BAD_REQUEST;
 		}
 
 		me->_flags.isChunked = true;
@@ -318,85 +354,94 @@ void	Client::Request::parseHeader(size_t crlf)
 			contentType.push_back(contentTypeTmp[i]);
 		for (; contentTypeTmp[i] == ' '; ++i) ;
 
-		if (contentType != "multipart/form-data;")
+		if (contentType.compare(0, 20,"multipart/form-data;") == 0)
 		{
-			if (i != contentTypeTmp.size())
-				me->_codeStatus = 400;
-			return ;
+			if (contentTypeTmp.compare(i, 9, "boundary=") != 0)
+				goto BAD_REQUEST;
+			i += 9;
+			if (contentTypeTmp[i] == '\"'){
+				for (++i; contentTypeTmp[i] != '\"' && i < contentTypeTmp.size(); ++i)
+					boundary.push_back(contentTypeTmp[i]);
+				if (i == contentTypeTmp.size())
+					goto BAD_REQUEST;
+				++i;
+			}
+			else {
+				for (; contentTypeTmp[i] != ' ' && i < contentTypeTmp.size(); ++i)
+					boundary.push_back(contentTypeTmp[i]);
+			}
+			for (; contentTypeTmp[i] == ' '; ++i) ;
+			if (i != contentTypeTmp.size() || boundary.empty())
+				goto BAD_REQUEST;
+			me->_flags.isMultipart = true;
+
+			firstBoundary = std::string("--").append(boundary).append("\r\n");
+			endBoundary = std::string("--").append(boundary).append("--\r\n");
 		}
 
-		if (contentTypeTmp.compare(i, 9, "boundary=") != 0)
-		{
-			me->_codeStatus = 400;
-			return ;
-		}
+		if (i != contentTypeTmp.size())
+				goto BAD_REQUEST;
 
-		i += 10;
-		if (contentTypeTmp[i] == '\"'){
-			for (; contentTypeTmp[i] != '\"' && i < contentTypeTmp.size(); ++i)
-				boundary.push_back(contentTypeTmp[i]);
-		}
-		else {
-			for (; contentTypeTmp[i] != ' ' && i < contentTypeTmp.size(); ++i)
-				boundary.push_back(contentTypeTmp[i]);
-		}
-
-		for (; contentTypeTmp[i] == ' '; ++i) ;
-		if (i != contentTypeTmp.size() || boundary.empty())
-		{
-			me->_codeStatus = 501;
-			return ;
-		}
-		me->_flags.isMultipart = true;
+		/**/
+		// std::cout << contentType << "["<< boundary<< "]\n";
+		
+		/**/
 	}
 
-	// done:
-	if (me->_codeStatus == 400 || me->_codeStatus == 413)
+	
+	if (requestHeadersMap.count("transfer-encoding"))
+	{
+		if (requestHeadersMap.count("content-length"))
+			goto BAD_REQUEST;
+	}
+
+	if (requestHeadersMap.count("content-type"))
+	{
+		if (requestHeadersMap.count("transfer-encoding") && requestHeadersMap.count("content-length"))
+			goto BAD_REQUEST;
+	}
+
+
+
+	/***********************************************************************************/
+/*	if (me->_codeStatus)
 		std::cout << "Error\n";
 	else
 	{
 		std::cout << "Method: " << method << "\n";
 		std::cout << "Path: " << path << "\n";
 		std::cout << "Query: " << query << "\n";
+		std::cout << "bpundary: " << boundary << "\n";
 
 		for (auto it = requestHeadersMap.begin(); it != requestHeadersMap.end(); ++it)
 		{
-			std::cout << it->first << "|\t" ;
+			std::cout << it->first << "|\t|" ;
 			for (auto j = it->second.begin(); j != it->second.end(); ++j)
 				std::cout << *j << "|\t";
 			std::cout << "\n";
 		}
-	}
-	exit(0);
-}
-
-void	Client::test()
-{
-		_request.me = this;
-		_codeStatus = 0;
-	_request.requestHeader = "GET /ggg?rr HTTP/1.1\r\n\
-kEy:  value\r\n\
-Content-length: 544444\r\n\
-host: c\r\n\
-host: ca\r\n\
-key1:value1\r\n\r\n";
+	}*/
+	/***********************************************************************************/
 
 
-	_request.parseHeader(94);
+
+
+	return ;
+
+	BAD_REQUEST:
+		me->_codeStatus = me->_codeStatus ? me->_codeStatus : 400;
+		std::cout << "Error bad request " << me->_codeStatus << "\n";
 }
 
 
 void	Client::Request::parseMultipart()
 {
+	MULTIPART_START:
 	size_t	bodyLength = requestBody.size();
 
-	//parse multipartHeader
 	if (!me->_flags.inMultipartBody && bodyLength >= boundary.length())
 	{
-		std::string firstBoundary  = std::string("--").append(boundary);
-		std::string	finalBoundary = firstBoundary.append("--\r\n");
-		size_t		finalBoundaryLine = requestBody.find(firstBoundary);
-
+		size_t		finalBoundaryLine = requestBody.find(endBoundary);
 		if (finalBoundaryLine != std::string::npos)
 		{
 			if (requestBody.find("filename=") == std::string::npos)
@@ -411,74 +456,78 @@ void	Client::Request::parseMultipart()
 		size_t	multipartCompleteHeader = requestBody.find("\r\n\r\n");
 		if (multipartCompleteHeader != std::string::npos)
 		{
-			size_t		firstBoundaryLine = requestBody.find(firstBoundary.append("\r\n"));
+			size_t		firstBoundaryLine = requestBody.find(firstBoundary);
 			if (firstBoundaryLine != std::string::npos)
 			{
-				if (parseMultipartHeader(firstBoundaryLine + 2, multipartCompleteHeader + 4) == false)
+				if (parseMultipartHeader(firstBoundary.size(), multipartCompleteHeader + 4) == false)
 				{
 					if (me->_codeStatus != 500)
 						me->_codeStatus = 400;
+					exit(4);
 					me->_flags.isRequestFinished = true;
 					return ;
 				}
+			}
+			else
+			{
+				me->_codeStatus = 400;
+				me->_flags.isRequestFinished = true;
+				return ;
 			}
 			requestBody.erase(0, multipartCompleteHeader + 4);
 			me->_flags.inMultipartBody = true;
 		}
 	}
 
-
-	// write body to file
 	bool	bodyEnd = false;
 	if (me->_flags.inMultipartBody)
 	{
-		std::string crlfAndBoundary =  std::string("\r\n").append("--").append(boundary) ;
+		std::string crlfAndBoundary = std::string("\r\n").append("--").append(boundary);
 		size_t	isBoundaryFound = requestBody.find(crlfAndBoundary);
 
 		if (isBoundaryFound != std::string::npos)
 		{
+			// std::cout << requestBody.substr(0, isBoundaryFound) << "}\n";
 			if (outputFile.is_open())
 			{
 				outputFile.write(requestBody.substr(0, isBoundaryFound).c_str(), isBoundaryFound);
 				outputFile.close();
 			}
-			requestBody = requestBody.substr(isBoundaryFound);
+			requestBody = requestBody.erase(0, isBoundaryFound+2);
+			// std::cout << requestBody << ":\n";
 			me->_flags.inMultipartBody = false;
 			bodyEnd = true;
 		}
-		else if (bodyLength > boundary.size() + 10 && outputFile.is_open())
+		else if (requestBody.size() > boundary.size() + 10 && outputFile.is_open())
 		{
-			size_t sizeToWrite = bodyLength - boundary.size() + 10;
+			std::cout << "---------------------------------------------\n";
+			size_t sizeToWrite = requestBody.size() - boundary.size() + 10;
 			outputFile.write(requestBody.substr(0, sizeToWrite).c_str(), sizeToWrite);
-			requestBody = requestBody.substr(sizeToWrite);
+			std::cout << "(" <<requestBody.substr(0, sizeToWrite) << ")";
+			requestBody = requestBody.erase(0, sizeToWrite);
 		}
 	}
 
 
 	if (requestBody.find("\r\n") && bodyEnd)
-		parseMultipart();
+		goto MULTIPART_START;
+
 }
 
 
-// https://datatracker.ietf.org/doc/html/rfc7578#section-4.2
 bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderCrlf)
 {
 	enum
 	{
-		eContentDisposition,
-		eName,
-		eCheck,
-		eFilename,
-		eCr,
-		eLf,
-		eContentTypeOptional,
-		eFinish
+		eContentDisposition, eName, eCheck, eFilename,
+		eCr, eLf, eContentTypeOptional, eFinish
 	};
 
-	std::string	contentType;
-	bool		isFileNameEmpty = true;
 	u_int8_t	cursor = eContentDisposition;
+	bool		isFileNameEmpty = true;
 	bool		optionalContentType = 0;
+	std::string	contentType;
+
 	for (int i = start; i < multipartHeaderCrlf; ++i)
 	{
 		switch (cursor)
@@ -486,10 +535,14 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		case eContentDisposition:
 		{
 			std::string tmp;
-			for ( ; i < 42 && i < multipartHeaderCrlf; ++i)
+			for (int j = 0; j < 37 && i < multipartHeaderCrlf; ++i, ++j)
 				tmp.push_back(tolower(requestBody[i]));
 			if (tmp != "content-disposition: form-data; name=")
+			{
+
 				return false;
+			}
+			--i;
 			cursor = eName;
 		}
 		break;
@@ -497,12 +550,16 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		case eName:
 		{
 			if (requestBody[i++] != '\"')
+			{
 				return false;
+			}
 			for (; i < multipartHeaderCrlf; ++i)
 				if (requestBody[i] == '\"')
 					break;
 			if (requestBody[i] != '\"')
+			{
 				return 0;
+			}
 			cursor = eCheck;
 		}
 		break;
@@ -512,25 +569,38 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			if (requestBody[i] == '\r')
 			{
 				if (requestBody[i + 1] != '\n')
+				{
 					return false;
+				}
+				++i;
 				cursor = eFinish;
 			}
-			else if (requestBody[i] != ';')
+			else if (requestBody[i] == ';')
+			{
 				cursor = eFilename;
+				if (requestBody[++i] != ' ')
+				{
+					return false;
+				}
+			}
 			else
+			{
+
 				return 0;
+			}
 		}
 		break;
 
 		case eFilename:
 		{
-			if (requestBody[i++] != ' ')
-				return false;
-			if (requestBody.compare(i, 8, "filename=") == 0)
+			if (requestBody.compare(i, 9, "filename=") == 0)
 			{
-				i += 8;
+				i += 9;
+				
 				if (requestBody[i++] != '\"')
+				{
 					return false;
+				}
 				for (; i < multipartHeaderCrlf; ++i)
 				{
 					if (requestBody[i] == '\"')
@@ -538,9 +608,15 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 					isFileNameEmpty = false;
 				}
 				if (requestBody[i] != '\"')
+				{
 					return false;
+				}
 				cursor = eCr;
 				optionalContentType = true;
+			}
+			else
+			{
+				return false;
 			}
 		}
 		break;
@@ -548,7 +624,9 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		case eCr:
 		{
 			if (requestBody[i] != '\r')
+			{
 				return false;
+			}
 			cursor = eLf;
 		}
 		break;
@@ -569,11 +647,14 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			for (; j < 12 && i < multipartHeaderCrlf; ++i, ++j)
 				tmp.push_back(tolower(requestBody[i]));
 			if (tmp == "\r\n")
+			{
 				return true;
+			}
 			if (tmp != "content-type")
 				return false;
 			else
 			{
+				++i;
 				while (i < multipartHeaderCrlf)
 				{
 					if (requestBody[i] == '\r')
@@ -581,18 +662,25 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 					contentType.push_back(requestBody[i++]);
 				}
 			}
-			--i;
+			if (requestBody.compare(i, 2, "\r\n") != 0)
+			{
+				return false;
+			}
+			i++;
 			cursor = eFinish;
 		}
 		break;
 
 		case eFinish:
 		{
-			if (requestBody.compare(i, 2, "\r\n") == 0)
-				return true;
-			return false;
+			if (requestBody.compare(i, 2, "\r\n") != 0)
+			{
+				std::cout << requestBody << "XX\n";
+				return false;
+			}
+			++i;
 		}
-			break;
+		break;
 		}
 	}
 
@@ -602,8 +690,9 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		me->generateRandomName(tmpFileName);
 		
 		std::string tmpPath = me->_finalPath + tmpFileName;
-		/*should i check if it exist ?*/
+		// /*should i check if it exist ?*/
 
+		std::cout << tmpPath << "\n";
 		outputFile.open(tmpPath, std::ios::binary);
 		if (outputFile.is_open() == 0)
 		{
@@ -611,7 +700,11 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			me->_codeStatus = 500;
 			return false;
 		}
+		me->_flags.multicanw = true;
+		std::cout << "CREAT FILE\n";
 	}
+	else 
+		me->_flags.multicanw = false;
 
 	return true;
 }
@@ -619,90 +712,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 
 void	Client::Request::parseChunkedData()
 {
-	START:
 
-	if (me->_flags.expectSizeRead)
-	{
-		if (size_t pos = requestBody.find("\r\n") && pos != std::string::npos)
-		{
-			std::string hexValue(requestBody, 0, pos);
-			
-			std::stringstream ss;
-			ss  << hexValue ; 
-			ss >> std::hex >> expectedBytesToRead ;
-
-			TotalDataProcessed += expectedBytesToRead;
-			if (TotalDataProcessed > me->_configData->limitBodySize)
-			{
-				std::cout << "413 Payload Too Large\n";
-				me->_codeStatus = 413;
-				return ;
-			}
-
-			if (expectedBytesToRead == 0)
-			{
-				me->_flags.isRequestFinished = true;
-				outputFile.close();
-				return ;
-			}
-
-			requestBody.erase(0, pos + 2);
-			readAmountSoFar = 0;
-			me->_flags.expectSizeRead = false;
-		}
-	}
-	else
-	{
-		size_t reqSize = requestBody.size();
-		std::string	contentToStore;
-
-
-		// /**/ this line is the idea
-		// for (size_t i = 0 ; readAmountSoFar < expectedBytesToRead && i < reqSize; ++readAmountSoFar , ++i)
-		// 		toWriteToFile.push_back(req[i]);
-		// /**/
-
-		if (!me->_flags.crlfRequired)
-		{
-			if (reqSize >= (expectedBytesToRead - readAmountSoFar))
-			{
-				contentToStore.append(requestBody, 0, (expectedBytesToRead - readAmountSoFar));
-
-				requestBody.erase(0, (expectedBytesToRead - readAmountSoFar));
-				readAmountSoFar = expectedBytesToRead = 0;
-				me->_flags.crlfRequired = true;
-			}
-			else
-			{
-				contentToStore.append(requestBody);
-				requestBody.erase(0, reqSize);
-				readAmountSoFar += reqSize;
-
-			}
-
-			outputFile.write(contentToStore.c_str(), contentToStore.size());
-		}
-
-
-		if (me->_flags.crlfRequired && requestBody.size() >= 2)
-		{
-			if (requestBody.compare(0, 2, "\r\n") == 0)
-			{
-				me->_flags.crlfRequired = false;
-				requestBody.erase(0, 2);
-			}
-			else
-			{
-				std::cout << "Error body should end with crlf\n";
-				me->_codeStatus = 400;
-			}
-
-			me->_flags.expectSizeRead = true;
-		}
-	}
-
-	//buffer still have data to be parsed
-	if ((me->_flags.expectSizeRead && requestBody.find("\r\n")) || (me->_flags.expectSizeRead == 0 && requestBody.empty() == 0))
-		goto START;
 }
 

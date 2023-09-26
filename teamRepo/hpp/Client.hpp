@@ -32,6 +32,8 @@ class Client
 
 			size_t								contentLength;
 			std::string							boundary;
+			std::string							firstBoundary;
+			std::string							endBoundary;
 			std::string							contentType;
 	
 			size_t								readAmountSoFar;
@@ -50,9 +52,11 @@ class Client
 			bool	parseMultipartHeader(size_t start, size_t crlfPos);
 			void	parseChunkedData();
 
-
+			void	requestClear();
 			void	setMe(Client *);
 
+
+			Request();
 		} _request;
 
 		struct Response
@@ -70,7 +74,7 @@ class Client
 
 			// void					postMethodeResponse();
 			// void					responseError(void);
-			// void					clearResponse();
+			void					responseClear();
 		} _response;
 
 		struct Flags
@@ -82,7 +86,7 @@ class Client
 			bool	isChunked;
 			bool	isMultipart;
 			bool	inMultipartBody;
-
+			bool	multicanw;
 			/*chunked*/
 			bool	expectSizeRead;
 			bool	crlfRequired;
@@ -97,6 +101,9 @@ class Client
 		void	addSlashToFinalPath();
 
 	public:
+
+		Client();
+		void	clearClient();
 
 		void	test();
 		void	generateRandomName(std::string &name) const;

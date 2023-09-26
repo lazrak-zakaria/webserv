@@ -1,6 +1,37 @@
 #include "../hpp/Client.hpp"
 
 
+Client::Client() : _configData(NULL), _mimeError(NULL) , 
+	_codeStatus(0)
+
+{
+	_request.me = this;
+	_response.me = this;
+
+	memset(&_flags, 0, sizeof(_flags));
+}
+
+void	Client::clearClient()
+{
+		_finalPath.clear();
+		_locationKey.clear();
+		_finalAnswer.clear();
+		_codeStatus = 0;
+
+		_request.requestClear();
+}
+
+void	Client::setConfigData(ServerConfig	*c)
+{
+	_configData = c;
+}
+
+void	Client::setMimeError(MimeAndError	*m)
+{
+	_mimeError = m;
+}
+
+
 void	Client::addSlashToFinalPath()
 {
 	if (_finalPath[_finalPath.size() - 1] != '/')
@@ -9,14 +40,17 @@ void	Client::addSlashToFinalPath()
 
 bool		Client::isLocationMatched(const std::string &locationDirective, const std::string &path)
 {
+
 	size_t	locationLength = locationDirective.length();
 
 	bool	pathMatchingLocation = strncmp(path.c_str(), locationDirective.c_str(), locationLength) == 0;
-	bool	completeMatching = !path[locationLength];
-	bool	pathHaveSlash = path[locationLength - 1] == '/'; 
 
-	return (pathMatchingLocation && (completeMatching || pathHaveSlash));
+	bool	completeMatching = pathMatchingLocation && !path[locationLength];
+	bool	locationHaveSlash = pathMatchingLocation && locationDirective[locationLength-1] == '/';
+
+	return (completeMatching || locationHaveSlash);
 }
+
 
 
 void	Client::detectFinalLocation(void)
@@ -27,47 +61,40 @@ void	Client::detectFinalLocation(void)
 	for (it = _configData->allLocations.begin(); it != _configData->allLocations.end(); ++it)
 	{
 		if (isLocationMatched(it->first, _request.path))
-			locationSet.push_back(it->first);
-	}
-
-
-	if (locationSet.empty())
-	{
-		_codeStatus = 404;
-		return;
-	}
-
-	size_t	finalLocation = locationSet[0].size();
-	size_t	finalLocationIndex = 0;
-
-	for (size_t i = 1; i < locationSet.size(); ++i)
-	{
-		if (locationSet[i].size() > finalLocation)
 		{
-			finalLocation = locationSet[i].size();
-			finalLocationIndex = i;
+			if (_locationKey.size() < it->first.size())
+				_locationKey = it->first;
 		}
 	}
 
-	_locationKey = locationSet[finalLocationIndex];
+	if (_locationKey.empty())
+	{
+		_codeStatus = 404;
+		return ;
+	}
 
 	if (!_configData->allLocations[_locationKey].root.empty())
 	{
 		_finalPath = _configData->allLocations[_locationKey].root;
-		if (_finalPath[_finalPath.size() - 1] != '/' && _request.path.size() > 0 && _request.path[0] != '/')
-			_finalPath += '/';
+		// if (_finalPath[_finalPath.size() - 1] != '/' && _request.path.size() > 0 && _request.path[0] != '/')
+		// 	_finalPath += '/';
+		std::cout << "__"<< _request.path << "\n";
+		std::cout << "__"<< _finalPath << "\n";
+		
 		_finalPath += _request.path;
 	}
 	else if (!_configData->allLocations[_locationKey].alias.empty())
 	{
 		std::string tmp = _request.path.substr(_locationKey.length());
+
 		_finalPath = _configData->allLocations[_locationKey].alias;
-		if (_finalPath[_finalPath.size() - 1] != '/' && tmp.size() > 0 && tmp[0] != '/')
-			_finalPath.push_back('/');
+
 		_finalPath.append(tmp);
 	}
 	else
-		_finalPath = "./default/index.html";
+	{
+		/*what ?*/
+	}
 }
 
 
@@ -98,8 +125,10 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 	else
 		_request.requestHeader.append(requestData, receivedSize);
 
+	// std::cout << requestData << "\n";
 	_request.parseRequest();
 }
+
 
 std::string		&Client::serveResponse(void)
 {
@@ -107,3 +136,7 @@ std::string		&Client::serveResponse(void)
 	// 	_response.postMethodeResponse();
 	return _finalAnswer;
 }
+
+
+
+
