@@ -32,11 +32,37 @@ void	Client::setMimeError(MimeAndError	*m)
 	_mimeError = m;
 }
 
+bool	Client::isPathExist(std::string path)
+{
+	struct stat sb;
+	return stat(path.c_str(), &sb) == 0;
+}
 
 void	Client::addSlashToFinalPath()
 {
 	if (_finalPath[_finalPath.size() - 1] != '/')
 		_finalPath.push_back('/');
+}
+
+
+bool	Client::isMatchedWithCgi(std::string &file)
+{
+	size_t pos = file.find_last_of('.');
+	if (pos != std::string::npos)
+	{
+		std::string	extension = file.substr(pos);
+		std::cout << extension << "||\n";
+		std::map<std::string, std::string>& cgi = _configData->allLocations[_locationKey].cgi;
+
+		std::map<std::string, std::string>::iterator it;
+		
+		for (it = cgi.begin(); it != cgi.end(); ++it)
+		{
+			if (extension == it->first)
+				return true;
+		}
+	}
+	return 0;
 }
 
 bool		Client::isLocationMatched(const std::string &locationDirective, const std::string &path)
@@ -139,10 +165,12 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 
 std::string		&Client::serveResponse(void)
 {
-	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus != 301)
+	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus != 301 && _codeStatus)
 		_response.responseError();
 	else if (_request.method == "POST")
+	{
 		_response.postMethodeResponse();
+	}
 	return _finalAnswer;
 }
 

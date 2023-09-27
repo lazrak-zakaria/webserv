@@ -68,7 +68,7 @@ class Client
 
 
 
-
+			
 			Client					*me;
 
 			void					sendFileToFinalAnswer();
@@ -76,6 +76,7 @@ class Client
 			void					postMethodeResponse();
 			void					generateResponseErrorHeader(void);
 			void					responseClear();
+			void					setResponseFinished(u_int8_t);
 			std::string				getContentTypeOfFile(std::string &f);
 		} _response;
 
@@ -96,12 +97,16 @@ class Client
 			/*response*/
 			bool	canReadInputFile;
 			bool	isResponseFinished;
+
+			/*cgi*/
+			bool	isCgiRunning;
 		} _flags;
 
 		bool	isLocationMatched(const std::string &locationDirective, const std::string &p);
 		void	detectFinalLocation(void);
 		void	addSlashToFinalPath();
-
+		bool	isMatchedWithCgi(std::string &file);
+		bool	isPathExist(std::string path);
 	public:
 
 		Client();

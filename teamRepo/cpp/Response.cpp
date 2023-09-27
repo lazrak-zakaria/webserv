@@ -1,5 +1,10 @@
 #include "../hpp/Client.hpp"
 
+void	Client::Response::setResponseFinished(u_int8_t code)
+{
+	me->_codeStatus = code;
+	me->_flags.isResponseFinished = true;
+}
 
 void	Client::Response::sendFileToFinalAnswer()
 {
@@ -30,6 +35,10 @@ void	Client::Response::postMethodeResponse()
 {
 	if (me->_flags.canReadInputFile)
 		sendFileToFinalAnswer();
+	else if (me->_flags.isCgiRunning)
+	{
+
+	}
 	else
 	{
 		if (me->_configData->allLocations[me->_locationKey].canUpload) // add more flags
@@ -41,14 +50,84 @@ void	Client::Response::postMethodeResponse()
 
 			me->_finalAnswer = ss.str();
 			me->_flags.isRequestFinished = true;
+			return ;
 		}
 
-		
-		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
+		struct stat sb;
+		if (stat(me->_finalPath.c_str(), &sb) == 0)
 		{
-			/*run cgi and get response based on it*/
+			if (S_ISDIR(sb.st_mode))
+			{
+				/*end with slash */
+				/*later*/
+
+					if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
+					{
+						me->addSlashToFinalPath();
+						if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
+						{
+							std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
+							size_t i = 0;
+							for (; i < indexes.size(); ++i)
+							{
+								if (me->isMatchedWithCgi(indexes[i]) && me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
+									break;
+							}
+							if (i == indexes.size())
+							{
+								goto END_RESPONSE;;
+							}
+							else
+							{
+								// me->_finalPath.append(indexes[i]);
+								/* run cgi*/
+								std::cout << "i will run cgi\n"; exit(0);
+							}
+
+						}
+						else
+						{
+							goto END_RESPONSE;
+						}
+					}
+					else
+					{
+						goto END_RESPONSE;
+					}
+			}
+			else if (S_ISREG(sb.st_mode))
+			{
+					if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
+					{
+						if (me->isMatchedWithCgi(me->_finalPath))
+						{
+							std::cout << me->_finalPath<< "--\n";
+						}
+						else
+						{
+							goto END_RESPONSE;
+						}
+					}
+					else
+					{
+						goto END_RESPONSE;
+					}
+			}
+		}
+		else
+		{
+			me->_codeStatus = 404;
+			me->_flags.isResponseFinished = true;
 		}
 	}
+
+	return ;
+
+
+	END_RESPONSE:
+		me->_codeStatus = 403;
+		me->_flags.isResponseFinished = true;
+		std::cout << "ERROR\n";
 }
 
 void	Client::Response::responseError()

@@ -60,10 +60,9 @@ void	Client::Request::parseRequest()
 
 	if (me->_flags.isRequestBody)
 	{
-
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 		{
-			/*open temporary file to store */
+			/* open temporary file to store */
 		}
 		else if (me->_configData->allLocations[me->_locationKey].canUpload)
 		{	
@@ -142,7 +141,15 @@ void	Client::Request::parseRequest()
 			me->_flags.isRequestFinished = true;
 			return ;
 		}
-	
+
+		struct stat sb;
+		if (me->isPathExist(me->_finalPath) == false)
+		{
+			me->_flags.isRequestFinished = true;
+			me->_codeStatus = 404;
+			std::cout << "I WILL STOP YOU HERE\n";
+			return;
+		}
 
 		me->_flags.isRequestBody = true;
 		requestBody = requestHeader.substr(posCrlf + 4);

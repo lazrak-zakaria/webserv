@@ -25,7 +25,7 @@ class ServerConfig
 		int									port;
 		std::string							host;
 		std::string							serverNames; //vector
-		// std::vector<std::string>			index;
+		std::vector<std::string>			index;
 		// std::string							root;
 		std::map<u_int8_t, std::string>			errorPages;
 		std::map<std::string, location>		allLocations;
