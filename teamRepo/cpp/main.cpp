@@ -60,7 +60,7 @@ abcde\r\n\
 
 
 	c.readRequest(as.c_str(), as.size());
-	 c.serveResponse();
+	c.serveResponse();
 	// std::cout << c.serveResponse() << "\n"
 	// c.readRequest(b.c_str(), b.size());
 	return 0;

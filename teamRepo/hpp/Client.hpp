@@ -80,6 +80,20 @@ class Client
 			std::string				getContentTypeOfFile(std::string &f);
 		} _response;
 
+
+		struct Cgi
+		{
+			pid_t		processPid;
+			size_t		timeStart;
+
+			std::string	inputFileCGi;
+			std::string	outputFileCGi;
+			
+			std::string cgiKeyProgram;
+			Client 		*me;
+			void	executeCgi();
+		} _cgi;
+
 		struct Flags
 		{
 			/*request*/

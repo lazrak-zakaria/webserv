@@ -63,6 +63,29 @@ void	Client::Request::parseRequest()
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 		{
 			/* open temporary file to store */
+			if (outputFile.is_open() == 0)
+			{
+				std::string name;
+				me->generateRandomName(name);
+				name = std::string("./../tmp/").append(name);
+				outputFile.open(me->_finalPath.c_str(), std::ios::binary);
+				if (outputFile.is_open() == 0)
+				{
+					me->_codeStatus = 500;
+					me->_flags.isRequestFinished = true;
+					return ;
+				}
+				me->_cgi.inputFileCGi = name;
+			}
+			else
+			{
+				if (me->_flags.isChunked)
+					parseChunkedData();
+				else
+					outputFile.write(requestBody.c_str(), requestBody.size());
+			}
+
+
 		}
 		else if (me->_configData->allLocations[me->_locationKey].canUpload)
 		{	
