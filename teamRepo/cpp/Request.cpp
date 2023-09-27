@@ -54,10 +54,6 @@ bool	Client::Request::isFieldValueValid(const char &c) const
 
 
 
-
-
-
-
 void	Client::Request::parseRequest()
 {
 	PARSE_REQUEST:
@@ -67,15 +63,38 @@ void	Client::Request::parseRequest()
 
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 		{
+			/*open temporary file to store */
 		}
 		else if (me->_configData->allLocations[me->_locationKey].canUpload)
 		{	
 			if (!me->_flags.isMultipart && outputFile.is_open() == 0)
 			{
+				struct stat sb;
+				if (stat(me->_finalPath.c_str(), &sb) == 0)
+				{
+					if (S_ISDIR(sb.st_mode))
+						me->addSlashToFinalPath();
+					else
+					{
+						me->_codeStatus = 403;
+						me->_flags.isRequestFinished = true;
+						return ;
+					}
+				}
+				else
+				{
+					me->_codeStatus = 404;
+					me->_flags.isRequestFinished = true;
+					return ;
+				}
+
 				std::string name;
 				me->generateRandomName(name);
 				me->addSlashToFinalPath();
-				me->_finalPath.append(name);
+				std::string extension = me->_mimeError->mimeReverse.count(contentType) ? 
+												me->_mimeError->mimeReverse[contentType] : "";
+				me->_finalPath.append(name.append(extension));
+				outputFileName = name;
 				
 				outputFile.open(me->_finalPath.c_str(), std::ios::binary);
 				if (outputFile.is_open() == 0)
@@ -84,6 +103,7 @@ void	Client::Request::parseRequest()
 					me->_flags.isRequestFinished = true;
 					return ;
 				}
+				me->_codeStatus = 201;
 			}
 
 			if (me->_flags.isChunked)
@@ -127,8 +147,8 @@ void	Client::Request::parseRequest()
 		me->_flags.isRequestBody = true;
 		requestBody = requestHeader.substr(posCrlf + 4);
 
-		if (!requestHeader.empty())
-			std::string().swap(requestHeader);
+		
+		std::string().swap(requestHeader);
 
 		if (!requestBody.empty())
 		{
@@ -289,7 +309,12 @@ void	Client::Request::parseHeader(size_t crlf)
 		goto BAD_REQUEST;
 	}
 
-	
+	if (method.compare("POST") && (requestHeadersMap.count("content-length") || requestHeadersMap.count("transfer-encoding")))
+	{
+		me->_codeStatus = 413;
+		goto BAD_REQUEST;
+	}
+
 	if (!requestHeadersMap.count("host") || requestHeadersMap["host"].size() != 1)
 		goto BAD_REQUEST;
 	
@@ -380,11 +405,9 @@ void	Client::Request::parseHeader(size_t crlf)
 		if (i != contentTypeTmp.size())
 				goto BAD_REQUEST;
 
-		/**/
 		// std::cout << contentType << "["<< boundary<< "]\n";
-		
-		/**/
 	}
+
 
 	
 	if (requestHeadersMap.count("transfer-encoding"))
@@ -522,7 +545,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 	u_int8_t	cursor = eContentDisposition;
 	bool		isFileNameEmpty = true;
 	bool		optionalContentType = 0;
-	std::string	contentType;
+	std::string	contentTypeTmp;
 
 	for (int i = start; i < multipartHeaderCrlf; ++i)
 	{
@@ -655,7 +678,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				{
 					if (requestBody[i] == '\r')
 						break;
-					contentType.push_back(requestBody[i++]);
+					contentTypeTmp.push_back(requestBody[i++]);
 				}
 			}
 			if (requestBody.compare(i, 2, "\r\n") != 0)
@@ -684,8 +707,11 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 	{
 		std::string	tmpFileName;
 		me->generateRandomName(tmpFileName);
-		
-		std::string tmpPath = me->_finalPath + tmpFileName;
+		outputFileName = tmpFileName;
+		std::string extension = me->_mimeError->mimeReverse.count(contentTypeTmp) ? 
+												me->_mimeError->mimeReverse[contentTypeTmp] : "";
+
+		std::string tmpPath = me->_finalPath + tmpFileName + extension;
 		// /*should i check if it exist ?*/
 
 		std::cout << tmpPath << "\n";
@@ -696,6 +722,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			me->_codeStatus = 500;
 			return false;
 		}
+		me->_codeStatus = 201;
 		me->_flags.multicanw = true;
 		std::cout << "CREAT FILE\n";
 	}

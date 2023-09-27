@@ -71,17 +71,19 @@ class Client
 
 			Client					*me;
 
-
-			// void					postMethodeResponse();
-			// void					responseError(void);
+			void					sendFileToFinalAnswer();
+			void					responseError();					
+			void					postMethodeResponse();
+			void					generateResponseErrorHeader(void);
 			void					responseClear();
+			std::string				getContentTypeOfFile(std::string &f);
 		} _response;
 
 		struct Flags
 		{
 			/*request*/
 			bool	isRequestFinished;
-	
+
 			bool	isRequestBody;
 			bool	isChunked;
 			bool	isMultipart;

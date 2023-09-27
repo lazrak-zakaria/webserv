@@ -2,7 +2,13 @@
 
 int main()
 {
-	std::string a = "aabb";
-	if (a.compare(2, 2, "bb") == 0)
-		std::cout << "F\n";
+	struct stat sb;
+	if (stat("./test", &sb) == 0)
+	{
+		if (S_ISDIR(sb.st_mode))
+		{
+			
+		}
+	}
+	return 0;
 }

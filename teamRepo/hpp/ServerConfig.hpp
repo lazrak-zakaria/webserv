@@ -5,7 +5,7 @@
 
 typedef struct location
 {
-	std::vector<std::string>			allowedMethods;
+	std::set<std::string>			allowedMethods;
 	std::string							redirection;
 	std::string							root;
 	std::string							alias;
@@ -27,7 +27,7 @@ class ServerConfig
 		std::string							serverNames; //vector
 		// std::vector<std::string>			index;
 		// std::string							root;
-		std::map<std::string, std::string>	error_pages;
+		std::map<u_int8_t, std::string>			errorPages;
 		std::map<std::string, location>		allLocations;
 		size_t								limitBodySize;
 

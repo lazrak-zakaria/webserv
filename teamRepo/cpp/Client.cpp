@@ -41,7 +41,6 @@ void	Client::addSlashToFinalPath()
 
 bool		Client::isLocationMatched(const std::string &locationDirective, const std::string &path)
 {
-
 	size_t	locationLength = locationDirective.length();
 
 	bool	pathMatchingLocation = strncmp(path.c_str(), locationDirective.c_str(), locationLength) == 0;
@@ -71,6 +70,13 @@ void	Client::detectFinalLocation(void)
 	if (_locationKey.empty())
 	{
 		_codeStatus = 404;
+		return ;
+	}
+
+
+	if (_configData->allLocations[_locationKey].allowedMethods.count(_request.method) == 0)
+	{
+		_codeStatus = 405;
 		return ;
 	}
 
@@ -133,8 +139,10 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 
 std::string		&Client::serveResponse(void)
 {
-	// if (_request.method == "POST")
-	// 	_response.postMethodeResponse();
+	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus != 301)
+		_response.responseError();
+	else if (_request.method == "POST")
+		_response.postMethodeResponse();
 	return _finalAnswer;
 }
 
