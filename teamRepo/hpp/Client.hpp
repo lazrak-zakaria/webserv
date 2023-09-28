@@ -17,6 +17,9 @@ class Client
 		std::string		_finalAnswer;
 		u_int16_t		_codeStatus;
 
+		size_t			_timeLastAction;
+
+
 		struct Request
 		{
 			std::string											method;
@@ -40,6 +43,7 @@ class Client
 			size_t								expectedBytesToRead;
 			size_t								TotalDataProcessed;
 
+			size_t								requestTimeStart;
 			Client								*me;
 
 			void	parseRequest();
@@ -66,14 +70,17 @@ class Client
 
 			std::ifstream			inputFile;
 
-
+			std::string				location301;
 
 			
 			Client					*me;
 
+			void					postMethodeResponse();
+			void					postMethodeResponseDirectory();
+			void					postMethodeResponseFile();
+	
 			void					sendFileToFinalAnswer();
 			void					responseError();					
-			void					postMethodeResponse();
 			void					generateResponseErrorHeader(void);
 			void					responseClear();
 			void					setResponseFinished(u_int8_t);
@@ -90,8 +97,11 @@ class Client
 			std::string	outputFileCGi;
 			
 			std::string cgiKeyProgram;
+			void		checkCgiTimeout();
+
+
 			Client 		*me;
-			void	executeCgi();
+			void		executeCgi();
 		} _cgi;
 
 		struct Flags
@@ -111,7 +121,7 @@ class Client
 			/*response*/
 			bool	canReadInputFile;
 			bool	isResponseFinished;
-
+			bool	isHeaderResponseSent;
 			/*cgi*/
 			bool	isCgiRunning;
 		} _flags;
@@ -121,6 +131,7 @@ class Client
 		void	addSlashToFinalPath();
 		bool	isMatchedWithCgi(std::string &file);
 		bool	isPathExist(std::string path);
+		size_t	getTimeNow();
 	public:
 
 		Client();

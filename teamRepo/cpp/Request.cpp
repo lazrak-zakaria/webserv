@@ -68,7 +68,7 @@ void	Client::Request::parseRequest()
 				std::string name;
 				me->generateRandomName(name);
 				name = std::string("./../tmp/").append(name);
-				outputFile.open(me->_finalPath.c_str(), std::ios::binary);
+				outputFile.open(name, std::ios::binary);
 				if (outputFile.is_open() == 0)
 				{
 					me->_codeStatus = 500;
@@ -77,13 +77,12 @@ void	Client::Request::parseRequest()
 				}
 				me->_cgi.inputFileCGi = name;
 			}
+
+			if (me->_flags.isChunked)
+				parseChunkedData();
 			else
-			{
-				if (me->_flags.isChunked)
-					parseChunkedData();
-				else
-					outputFile.write(requestBody.c_str(), requestBody.size());
-			}
+				outputFile.write(requestBody.c_str(), requestBody.size());
+
 
 
 		}
@@ -144,12 +143,20 @@ void	Client::Request::parseRequest()
 		size_t searchEndOfHeader = 0;//requestHeader.size();
 		// searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0; /*where to start searching*/
 
+		if (!requestTimeStart)
+			requestTimeStart = me->getTimeNow();
 
 		size_t	posCrlf = requestHeader.find("\r\n\r\n");
 		if (posCrlf == std::string::npos)
-			return ;
-	
+		{
 
+			if (me->getTimeNow() - requestTimeStart > 10)
+			{
+				me->_codeStatus = 408;
+				me->_flags.isRequestFinished = true;
+			}
+			return ;
+		}
 
 		parseHeader(posCrlf + 4);
 		if (me->_codeStatus)
@@ -165,6 +172,14 @@ void	Client::Request::parseRequest()
 			return ;
 		}
 
+		/*code for redirection will be here*/
+		if (me->_configData->allLocations[me->_locationKey].redirection.empty() == 0)
+		{
+			me->_codeStatus = 301;
+			me->_response.location301 =  me->_configData->allLocations[me->_locationKey].redirection;
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
 		struct stat sb;
 		if (me->isPathExist(me->_finalPath) == false)
 		{

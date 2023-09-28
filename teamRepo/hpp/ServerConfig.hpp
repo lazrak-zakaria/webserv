@@ -26,8 +26,8 @@ class ServerConfig
 		std::string							host;
 		std::string							serverNames; //vector
 		std::vector<std::string>			index;
-		// std::string							root;
-		std::map<u_int8_t, std::string>			errorPages;
+		// std::string						root;
+		std::map<u_int8_t, std::string>		errorPages;
 		std::map<std::string, location>		allLocations;
 		size_t								limitBodySize;
 

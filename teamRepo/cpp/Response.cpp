@@ -8,8 +8,8 @@ void	Client::Response::setResponseFinished(u_int8_t code)
 
 void	Client::Response::sendFileToFinalAnswer()
 {
-	const int BUF_SIZE = 5000; 
-	char	buf[BUF_SIZE + 2];
+	const int 	BUF_SIZE = 5000; 
+	char		buf[BUF_SIZE + 2];
 	inputFile.read(buf, BUF_SIZE);
 
 	int	howMuchRead = inputFile.gcount();
@@ -27,9 +27,114 @@ void	Client::Response::sendFileToFinalAnswer()
 	{
 		me->_finalAnswer.append("0\r\n");
 		inputFile.close();
-		me->_flags.isResponseFinished = true;
+		me->_flags.isResponseFinished = true; /*make sure this flag is only here*/
 	}
 }
+
+
+void	Client::Response::postMethodeResponseDirectory()
+{
+
+	/*end with slash */
+	/* MR YOYAHYA SAID WE SHOULD SEND REDIRECTION */
+	// if (me->_finalPath[me->_finalPath.size() - 1] != '/') /* later 
+	// {
+	// 	me->_codeStatus = 301;
+	// 	location301 = me->_request.path;
+	// 	location301.push_back('/');
+	// 	return ;
+	// }
+
+
+	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
+	{
+		me->addSlashToFinalPath();
+		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
+		{
+			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
+			size_t i = 0;
+			for (; i < indexes.size(); ++i)
+			{
+				if (me->isMatchedWithCgi(indexes[i]) && me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
+				{
+					me->_finalPath.append(indexes[i]);
+					break;
+				}
+			}
+
+			/*no index match with cgi*/
+			if (i == indexes.size())
+			{
+				std::cout << "no index match or exist with cgi-s\n";
+				goto END_RESPONSE;;
+			}
+			else
+			{
+				// me->_finalPath.append(indexes[i]);
+				/* run cgi*/
+				std::cout << "-----\ni will run cgi\n"; 
+				std::cout << "script file: " << me->_finalPath << "|\n";
+				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
+				me->_cgi.executeCgi();
+
+				exit(0);
+			}
+
+		}
+		else
+		{
+			std::cout << "you requested a directory and did not provide any index \n";
+			goto END_RESPONSE;
+		}
+	}
+	else
+	{
+		std::cout << "you are doing a post request and you did not provide an upload nor cgi\n";
+		goto END_RESPONSE;
+	}
+
+
+	return;
+
+	END_RESPONSE:
+		me->_codeStatus = 403;
+		std::cout << "ERROR\n";
+}
+
+void	Client::Response::postMethodeResponseFile()
+{
+	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
+	{
+		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
+		{
+			/*run cgi */
+			std::cout << "-----\nfile i will run cgi\n"; 
+			std::cout << "script file: " << me->_finalPath << "|\n";
+			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
+		}
+		else
+		{
+			/*no cgi can run this*/
+			std::cout << "you requested a file and did not matched with any cgi\n";
+			goto END_RESPONSE;
+		}
+	}
+	else
+	{
+		/* WTF do you want*/
+		std::cout << "if you want a page do GET later i send you a file\n";
+		goto END_RESPONSE;
+	}
+
+	return ;
+
+	END_RESPONSE:
+		me->_codeStatus = 403;
+		std::cout << "ERROR\n";
+
+}
+
+
 
 void	Client::Response::postMethodeResponse()
 {
@@ -37,7 +142,7 @@ void	Client::Response::postMethodeResponse()
 		sendFileToFinalAnswer();
 	else if (me->_flags.isCgiRunning)
 	{
-
+		me->_cgi.checkCgiTimeout();
 	}
 	else
 	{
@@ -58,76 +163,19 @@ void	Client::Response::postMethodeResponse()
 		{
 			if (S_ISDIR(sb.st_mode))
 			{
-				/*end with slash */
-				/*later*/
-
-					if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
-					{
-						me->addSlashToFinalPath();
-						if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
-						{
-							std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
-							size_t i = 0;
-							for (; i < indexes.size(); ++i)
-							{
-								if (me->isMatchedWithCgi(indexes[i]) && me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
-									break;
-							}
-							if (i == indexes.size())
-							{
-								goto END_RESPONSE;;
-							}
-							else
-							{
-								// me->_finalPath.append(indexes[i]);
-								/* run cgi*/
-								std::cout << "i will run cgi\n"; exit(0);
-							}
-
-						}
-						else
-						{
-							goto END_RESPONSE;
-						}
-					}
-					else
-					{
-						goto END_RESPONSE;
-					}
+				postMethodeResponseDirectory();
 			}
 			else if (S_ISREG(sb.st_mode))
-			{
-					if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
-					{
-						if (me->isMatchedWithCgi(me->_finalPath))
-						{
-							std::cout << me->_finalPath<< "--\n";
-						}
-						else
-						{
-							goto END_RESPONSE;
-						}
-					}
-					else
-					{
-						goto END_RESPONSE;
-					}
-			}
+				postMethodeResponseFile();
+			else
+				me->_codeStatus = 403;
 		}
 		else
 		{
+			std::cout << "what you requested is not found\n";
 			me->_codeStatus = 404;
-			me->_flags.isResponseFinished = true;
 		}
 	}
-
-	return ;
-
-
-	END_RESPONSE:
-		me->_codeStatus = 403;
-		me->_flags.isResponseFinished = true;
-		std::cout << "ERROR\n";
 }
 
 void	Client::Response::responseError()
@@ -162,10 +210,14 @@ void	Client::Response::generateResponseErrorHeader(void)
 		for (int i = 0; tmp[i] ; ++i)
 			tmp[i] = tolower(tmp[i]);
 		if (tmp.find("close") != std::string::npos)
+		{
 			ss << "Connection: " << "close" << "\r\n";
+		}
 		else
+		{
 			ss << "Connection: " << "keep-alive" << "\r\n";
- 	}
+		}
+	}
 	else
 			ss << "Connection: " << "keep-alive" << "\r\n";
 	

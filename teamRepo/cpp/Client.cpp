@@ -7,7 +7,7 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 {
 	_request.me = this;
 	_response.me = this;
-
+	_cgi.me = this;
 	memset(&_flags, 0, sizeof(_flags));
 	_flags.expectSizeRead = true;
 }
@@ -44,6 +44,12 @@ void	Client::addSlashToFinalPath()
 		_finalPath.push_back('/');
 }
 
+size_t	Client::getTimeNow()
+{
+	struct timeval tmv;
+	gettimeofday(&tmv, NULL);
+	return tmv.tv_sec;
+}
 
 bool	Client::isMatchedWithCgi(std::string &file)
 {
@@ -59,7 +65,10 @@ bool	Client::isMatchedWithCgi(std::string &file)
 		for (it = cgi.begin(); it != cgi.end(); ++it)
 		{
 			if (extension == it->first)
+			{
+				_cgi.cgiKeyProgram = extension;
 				return true;
+			}
 		}
 	}
 	return 0;
@@ -165,8 +174,20 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 
 std::string		&Client::serveResponse(void)
 {
+
+	if (_flags.isResponseFinished) exit (10); /*debug*/
+
+
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus != 301 && _codeStatus)
-		_response.responseError();
+	{
+		if(_flags.isHeaderResponseSent)
+			_response.responseError();
+		else
+		{
+			_response.generateResponseErrorHeader();
+			_flags.isHeaderResponseSent = true;
+		}
+	}
 	else if (_request.method == "POST")
 	{
 		_response.postMethodeResponse();

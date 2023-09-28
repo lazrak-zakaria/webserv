@@ -48,10 +48,11 @@ int main()
 // --abcde12345--\r\n";
 
 
-	std::string as = "POST /ind.cphp HTTP/1.1\r\n\
+	std::string as = "POST / HTTP/1.1\r\n\
 host: value\r\n\
 ssss: \tvvvvvvvvvvvvvvvv\r\n\
 content-type: image/png\r\n\
+connection: close\r\n\
 Transfer-encoding: chunked\r\n\r\n\
 5\r\n\
 abcde\r\n\
@@ -60,8 +61,10 @@ abcde\r\n\
 
 
 	c.readRequest(as.c_str(), as.size());
-	c.serveResponse();
-	// std::cout << c.serveResponse() << "\n"
+	std::cout << c.serveResponse() << "\n";
+	std::cout << c.serveResponse() << "\n";
+	std::cout << c.serveResponse() << "\n";
+	std::cout << c.serveResponse() << "\n";
 	// c.readRequest(b.c_str(), b.size());
 	return 0;
 }

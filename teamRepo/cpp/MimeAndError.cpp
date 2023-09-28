@@ -151,10 +151,10 @@ MimeAndError::MimeAndError()
 
 
 	errors[400] = "./../error/error_pages/400.html"; 
-	errors[403] = "<!DOCTYPE html><html><head><title>Error 403 - Forbidden</title></head><body><h1>Error 403 - Forbidden</h1></body></html>";
+	errors[403] = "./../error/error_pages/403.html";;
 	errors[404] = "./../error/error_pages/404.html";
 	errors[405] = "./../error/error_pages/405.html";
-	errors[408] = "<!DOCTYPE html><html><head><title>Error 408 - Request Timeout</title></head><body><h1>Error 408 - Request Timeout</h1></body></html>";
+	errors[408] = "./../error/error_pages/408.html";;
 	errors[411] = "<!DOCTYPE html><html><head><title>Error 411 - Length Required</title></head><body><h1>Error 411 - Length Required</h1></body></html>";
 	errors[413] = "./../error/error_pages/413.html";
 	errors[414] = "./../error/error_pages/414.html";
