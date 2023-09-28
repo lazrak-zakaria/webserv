@@ -78,7 +78,11 @@ class Client
 			void					postMethodeResponse();
 			void					postMethodeResponseDirectory();
 			void					postMethodeResponseFile();
-	
+
+			void					getMethodResponse();
+			void					getMethodeResponseDirectory();
+			void					getMethodeResponseFile();
+
 			void					sendFileToFinalAnswer();
 			void					responseError();					
 			void					generateResponseErrorHeader(void);
@@ -143,6 +147,7 @@ class Client
 		void	setConfigData(ServerConfig	*c);
 		void	setMimeError(MimeAndError	*m);
 		bool	isRequestFinished() const;
+		bool	isResponseFinished() const;
 
 
 		void			readRequest(const char * RequestData, int recevivedSize);

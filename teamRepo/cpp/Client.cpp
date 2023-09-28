@@ -32,6 +32,11 @@ void	Client::setMimeError(MimeAndError	*m)
 	_mimeError = m;
 }
 
+bool	Client::isResponseFinished() const
+{
+	return _flags.isResponseFinished;
+}
+
 bool	Client::isPathExist(std::string path)
 {
 	struct stat sb;
@@ -177,8 +182,17 @@ std::string		&Client::serveResponse(void)
 
 	if (_flags.isResponseFinished) exit (10); /*debug*/
 
+	START:
 
-	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus != 301 && _codeStatus)
+	if (_codeStatus == 301)
+	{
+		std::stringstream ss;
+		ss << "HTTP/1.1 301 Moved Permanently\r\n";
+		ss << "Location: " << _response.location301 << "\r\n\r\n";
+		return (_finalAnswer = ss.str());
+	}
+
+	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
 		if(_flags.isHeaderResponseSent)
 			_response.responseError();
@@ -191,7 +205,16 @@ std::string		&Client::serveResponse(void)
 	else if (_request.method == "POST")
 	{
 		_response.postMethodeResponse();
+		if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
+			goto START;
 	}
+	else if (_request.method == "GET")
+	{
+		_response.getMethodResponse();
+		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)
+			goto START;
+	}
+
 	return _finalAnswer;
 }
 

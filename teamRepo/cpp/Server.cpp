@@ -84,12 +84,12 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 
 		if (FD_ISSET(clientFdSock, &tempReadSet))
 		{
-			char	buf[10000];
-			int		collected = recv(clientFdSock, buf, 9999, 0);
+			char	buf[4096];
+			int		collected = recv(clientFdSock, buf, 4096, 0);
 
 			if (collected == -1 || collected == 0)
 			{
-				invalidSockets.insert(clientFdSock);
+				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &readSet);
 				std::cout << "drop client\n";
 				continue ;
@@ -109,14 +109,28 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 		{
 			std::string &answer = clientObj.serveResponse();
 
-			if(client_obj.isRespo)
+			if(clientObj.isResponseFinished())
+				answer.append("\r\n");
+
+			int dataSent = send(clientFdSock, answer.c_str(), answer.size(), 0);
+
+			if (dataSent == -1 || dataSent != answer.size())
 			{
-				answer.push_back('\r');
-				answer.push_back('\n');
+				invalidSockets.push_back(clientFdSock);
+				FD_CLR(clientFdSock, &readSet);
+				std::cout << "drop client\n";
+				continue ;
+			}
+
+			if (clientObj.isResponseFinished())
+			{
+				FD_CLR(clientFdSock, &writeSet);
+				FD_SET(clientFdSock, &readSet);
 			}
 		}
 	}
-	for (std::set<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
+
+	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
 		close(*it);
 		serverClients.erase(*it);

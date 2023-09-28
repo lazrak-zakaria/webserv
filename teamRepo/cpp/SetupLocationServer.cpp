@@ -18,7 +18,7 @@ void	setLocation(std::map<int, Server*> &mp, ServerConfig	&server1, 	MimeAndErro
 	loc[0].index.push_back("index.html");
 	loc[0].index.push_back("smile.png");
 
-	loc[0].cgi.insert({".php", "php-cgi"});
+	// loc[0].cgi.insert({".php", "php-cgi"});
 
 	loc[0].allowedMethods.insert("GET");
 	loc[0].allowedMethods.insert("POST");

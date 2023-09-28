@@ -14,14 +14,13 @@ class Server
 		std::map<int, Client>	serverClients;
 		ServerConfig			*configData;
 		MimeAndError			*mimeError;
-		std::set<int>			invalidSockets;				
+		std::vector<int>		invalidSockets;
 	public:
 		void	socketBindListen();
 		int		maxSockClient() const;
 		void	acceptClient(fd_set &readSet);
 		void	processReadySockets(fd_set &tempReadSet, 
 						fd_set &tempWriteSet,fd_set &readSet, fd_set &writeSet);
-
 
 						
 		void	setConfigData(ServerConfig	*c);
