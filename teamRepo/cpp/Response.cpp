@@ -426,3 +426,234 @@ void	Client::Response::getMethodResponse()
 		}
 	}
 }
+
+
+
+
+// ---------------------------  GET --------------------------------//
+
+
+
+void Client::Response::GetMethodResponse()
+{
+	int st;
+	if (this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
+	{
+		// response 301;
+		std::cout << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
+	}
+	st = stat(this->me->_finalPath.c_str(), &this->me->_st);
+	if (st < 0)
+	{
+		perror("Error Stat Fail : ");
+		// respone 404;
+		return;
+	}
+	else if(S_ISDIR(this->me->_st.st_mode))
+	{
+		this->GetDirectory();
+	}
+	else if(S_ISREG(this->me->_st.st_mode))
+	{
+		this->GetFile();
+	}
+}
+
+void Client::Response::GetDirectory()
+{
+	std::string html;
+
+	if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
+	{
+		// response 301
+		std::cout << "Redirect to 301 url don't have / at the end url => " << this->me->_finalPath << std::endl;
+		return ;
+	}
+	else if(this->me->_configData->allLocations[this->me->_locationKey].index.empty())
+	{
+		std::cout << "index" << std::endl;
+		// fucntion here to check cgi and index if martch return if nothing match should continue check autoindex
+	}
+	if(this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
+	{
+		// sendheader OK
+		html = this->generatehtml(this->readdirectory(this->me->_finalPath));
+		this->me->_finalAnswer = html;
+	}
+	else
+	{
+		// responde 403
+		std::cout << "not autoindex and index" << std::endl;
+	}
+
+}
+
+std::vector<std::string>& Client::Response::readdirectory(std::string dir)
+{
+	std::vector<std::string> content;
+    struct dirent *dp;
+    DIR *odir = opendir(dir.c_str());
+    if (!odir)
+    {
+        perror("Error opendir fail: ");
+        //SendHeader(FORBIDDEN); // change to not response here because delete us readdirctory and no need to response when deleting subdirectory
+         return content;
+    }
+    while((dp = readdir(odir)) != NULL)
+    {
+        content.push_back(dp->d_name);
+    }
+	closedir(odir);
+    return (content);
+}
+
+std::string Client::Response::generatehtml(std::vector<std::string> &dir)
+{
+	std::string html;
+	std::vector<std::string>::iterator it = dir.begin();
+	if (it != dir.end())
+	{
+		std::cout << "6" << std::endl;
+		html += "<html><ul>";
+		while (it != dir.end())
+		{
+			html +=  "<li><a hraf=\"" + *it + "\">" + *it + "</a></li><br>";
+            it++;
+		}
+        html += "</ul></html>";
+	}
+	return html;
+}
+
+void Client::Response::GetFile()
+{
+	
+}
+
+
+//---------------------------- DELETE ------------------------//
+
+
+void Client::Response::DeleteMethodResponse()
+{
+	int st = stat(this->me->_finalPath.c_str(), &this->me->_st);
+	if (st < 0)
+	{
+		perror("Error Stat Fail: ");
+		//responde 404
+		return;
+	}
+	else if (S_ISREG(this->me->_st.st_mode))
+	{
+		if (this->me->_st.st_mode & S_IWUSR)
+		{
+			if (unlink(this->me->_finalPath.c_str()) == 0)
+			{
+				// responde 204 no content
+				std::cout << "204 no content" << std::endl;
+			}
+			else
+			{
+				perror("Error Unlink Fail: ");
+				// may respond 403
+			}
+		}
+		else
+		{
+			//responde 403 permission denied
+			std::cout << "403 permission" << std::endl;
+		}
+	}
+	else if (S_ISDIR(this->me->_st.st_mode))
+	{
+		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
+		{
+			//responde 409 conflict
+			std::cout << "409 conflict" << std::endl;
+		}
+		else if(this->me->_st.st_mode & S_IWUSR)
+		{
+			if (this->deletedir(this->me->_finalPath) == 0)
+			{
+				if (rmdir(this->me->_finalPath.c_str()) == -1)
+				{
+					perror("Error Rmdir Fail: ");
+					return ;
+				}
+				else
+				{
+					// responde 204 no content
+					std::cout << "204 no content" << std::endl;
+				}
+			}
+		}
+		else
+		{
+			// responde 403 permission denied
+			std::cout << "403 permission" << std::endl;
+		}
+	}
+}
+
+int Client::Response::deletedir(std::string path)
+{
+	std::vector<std::string> dir = this->readdirectory(path);
+	std::vector<std::string>::iterator it = dir.begin();
+	struct stat st;
+	int st_ret;
+	if (this->delflag == 1)
+		return ;
+	while(it != dir.end())
+	{
+		if(*it == "." || *it == "..")
+		{
+			it++;
+			continue;
+		}
+		*it = path + "/" + *it;
+		st_ret = stat(it->c_str(), &st);
+		if(st_ret == -1)
+		{
+			perror("Error Stat Fail: ");
+			this->delflag = 1;
+			return 1;
+		}
+		else if (S_ISREG(st.st_mode))
+		{
+			if (st.st_mode & S_IWUSR)
+			{
+				if (unlink(it->c_str()) == -1)
+				{
+					perror("Error Unlink Fail: ");
+					this->delflag = 1;
+					return 1;
+				}
+			}
+			else
+			{
+				perror("Error Permission: ");
+				this->delflag = 1;
+				return 1;
+			}
+		}
+		else if (S_ISDIR(st.st_mode))
+		{
+			if (st.st_mode & S_IWUSR)
+			{
+				this->deletedir(*it);
+				if (rmdir(it->c_str()) != 0)
+				{
+					perror("Error rmdir Fail: ");
+					this->delflag = 1;
+					return 1;
+				}
+			}
+			else
+			{
+				perror("Error Permission: ");
+				this->delflag = 1;
+				return 1;
+			}
+		}
+	}
+}
