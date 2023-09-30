@@ -81,9 +81,9 @@ class Client
 			void					postMethodeResponseDirectory();
 			void					postMethodeResponseFile();
 
-			void					getMethodResponse();
-			void					getMethodeResponseDirectory();
-			void					getMethodeResponseFile();
+			// void					getMethodResponse();
+			// void					getMethodeResponseDirectory();
+			// void					getMethodeResponseFile();
 
 			void					sendFileToFinalAnswer();
 			void					responseError();					
@@ -96,13 +96,14 @@ class Client
 			void GetMethodResponse();
 			void GetDirectory();
 			void GetFile();
-			std::vector<std::string>& readdirectory(std::string dir);
-			std::string generatehtml(std::vector<std::string>& dir);
-		
+			std::vector<std::string> readdirectory();
+			std::string generatehtml(std::vector<std::string> dir);
+			void SendChunkDir();
+
 			// delete
 			void DeleteMethodResponse();
 			int deletedir(std::string path);
-			int delflag;
+			std::vector<std::string> DelReadDir(std::string path);			int delflag;
 
 
 		} _response;
@@ -140,6 +141,7 @@ class Client
 
 			/*response*/
 			bool	canReadInputFile;
+			bool	CanReadInputDir;
 			bool	isResponseFinished;
 			bool	isHeaderResponseSent;
 			/*cgi*/
@@ -155,6 +157,7 @@ class Client
 	public:
 
 		Client();
+		~Client();
 		void	clearClient();
 
 		void	test();
