@@ -180,6 +180,8 @@ void	Client::Request::parseRequest()
 			me->_flags.isRequestFinished = true;
 			return ;
 		}
+
+
 		struct stat sb;
 		if (me->isPathExist(me->_finalPath) == false)
 		{
@@ -358,6 +360,16 @@ void	Client::Request::parseHeader(size_t crlf)
 	{
 		me->_codeStatus = 413;
 		goto BAD_REQUEST;
+	}
+
+	if (method.compare("POST") == 0)
+	{
+		if (requestHeadersMap.count("content-type") && requestHeadersMap.count("transfer-encoding") == 0
+					&& requestHeadersMap.count("content-length") == 0)
+		{
+			me->_codeStatus = 411;
+			goto BAD_REQUEST;
+		}
 	}
 
 	if (!requestHeadersMap.count("host") || requestHeadersMap["host"].size() != 1)
