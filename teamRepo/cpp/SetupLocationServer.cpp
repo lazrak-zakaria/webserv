@@ -13,15 +13,16 @@ void	setLocation(std::map<int, Server*> &mp, ServerConfig	&server1, 	MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/test/";
+	loc[0].alias = "/nfs/homes/yoyahya/Desktop/";
 	loc[0].index.push_back("ind.php");
-	loc[0].index.push_back("index.html");
+	loc[0].index.push_back("indeffx.html");
 	loc[0].index.push_back("smile.png");
-
+	loc[0].autoIndex = true;
 	// loc[0].cgi.insert({".php", "php-cgi"});
 
 	loc[0].allowedMethods.insert("GET");
 	loc[0].allowedMethods.insert("POST");
+	loc[0].allowedMethods.insert("DELETE");
 	// loc[0].canUpload = 1;
 
 

@@ -58,7 +58,7 @@ int main()
 // abcde\r\n\
 // 6\r\n\
 // 123456\r\n0\r\nggg";
-	std::string as = "GET /ind.php HTTP/1.1\r\n\
+	std::string as = "GET / HTTP/1.1\r\n\
 host: value\r\n\
 ssss: \tvvvvvvvvvvvvvvvv\r\n\
 content-type: image/png\r\n\
@@ -66,10 +66,13 @@ connection: close\r\n\r\n";
 
 
 	c.readRequest(as.c_str(), as.size());
+
 	std::cout << c.serveResponse() << "\n";
-	std::cout << c.serveResponse() << "\n";
-	std::cout << c.serveResponse() << "\n";
-	std::cout << c.serveResponse() << "\n";
+	// std::cout << c.serveResponse() << "\n";
+	// std::cout << c.serveResponse() << "\n";
+	// std::cout << c.serveResponse() << "\n";
+	// std::cout << c.serveResponse() << "\n";
+	// std::cout << c.serveResponse() << "\n";
 	// c.readRequest(b.c_str(), b.size());
 	return 0;
 }
