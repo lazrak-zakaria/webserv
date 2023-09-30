@@ -19,7 +19,7 @@ int main(int ac, char **av)
 
 	std::vector<location> loc(4);
 
-	loc[0].alias = "/nfs/homes/zlazrak/Desktop/wbs/webfiles";
+	loc[0].alias = "/nfs/homes/zlazrak/Desktop/ww/zakaria/webfiles";
 	loc[0].index.push_back("indexo.html");
 	loc[0].index.push_back("index.html");
 	loc[0].index.push_back("smile.png");

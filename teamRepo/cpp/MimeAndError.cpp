@@ -155,7 +155,7 @@ MimeAndError::MimeAndError()
 	errors[404] = "./../error/error_pages/404.html";
 	errors[405] = "./../error/error_pages/405.html";
 	errors[408] = "./../error/error_pages/408.html";;
-	errors[411] = "<!DOCTYPE html><html><head><title>Error 411 - Length Required</title></head><body><h1>Error 411 - Length Required</h1></body></html>";
+	errors[411] = "./../error/error_pages/411.html";
 	errors[413] = "./../error/error_pages/413.html";
 	errors[414] = "./../error/error_pages/414.html";
 	errors[500] = "./../error/error_pages/500.html";

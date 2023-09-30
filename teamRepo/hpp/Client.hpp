@@ -85,8 +85,12 @@ class Client
 			// void					getMethodeResponseDirectory();
 			// void					getMethodeResponseFile();
 
+			void					sendCgiHeaders();
+
+
 			void					sendFileToFinalAnswer();
-			void					responseError();					
+			void					responseError();
+			void					generate200Header();					
 			void					generateResponseErrorHeader(void);
 			void					responseClear();
 			void					setResponseFinished(u_int8_t);
@@ -111,15 +115,22 @@ class Client
 
 		struct Cgi
 		{
-			pid_t		processPid;
-			size_t		timeStart;
+
+			std::map<std::string, std::string>	cgiHeadersMap;
+			std::string							cgiHeader;
+			std::string							cgibody;
+			std::string							statusLine;
+			
+			pid_t								processPid;
+			size_t								timeStart;
 
 			std::string	inputFileCGi;
 			std::string	outputFileCGi;
 			
 			std::string cgiKeyProgram;
-			void		checkCgiTimeout();
-
+			void		checkCgiTimeout();	
+			void		parseCgiHeader();
+			void		sendCgiBodyToFinaleAnswer();
 
 			Client 		*me;
 			void		executeCgi();
@@ -144,8 +155,13 @@ class Client
 			bool	CanReadInputDir;
 			bool	isResponseFinished;
 			bool	isHeaderResponseSent;
+			
 			/*cgi*/
 			bool	isCgiRunning;
+			bool	isCgiFinished;     //set this flag if and only if cgi terminate properly
+			bool	isCgiHeaderSent;
+			bool	isCgiHaveContentLength;
+			bool	isCgi;
 		} _flags;
 
 		bool	isLocationMatched(const std::string &locationDirective, const std::string &p);

@@ -182,6 +182,7 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 std::string		&Client::serveResponse(void)
 {
 
+	_finalAnswer = "";
 	if (_flags.isResponseFinished) exit (10); /*debug*/
 
 	START:

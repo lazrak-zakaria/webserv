@@ -13,6 +13,7 @@ void	Client::Response::sendFileToFinalAnswer()
 	inputFile.read(buf, BUF_SIZE);
 
 	int	howMuchRead = inputFile.gcount();
+	
 	std::stringstream ss;
 	ss << std::hex << howMuchRead;
 	me->_finalAnswer = "";
@@ -111,6 +112,7 @@ void	Client::Response::postMethodeResponseFile()
 			std::cout << "-----\nfile i will run cgi\n"; 
 			std::cout << "script file: " << me->_finalPath << "|\n";
 			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
+			me->_cgi.executeCgi();
 		}
 		else
 		{
@@ -134,15 +136,31 @@ void	Client::Response::postMethodeResponseFile()
 
 }
 
-
+void	Client::Response::sendCgiHeaders()
+{
+	
+}
 
 void	Client::Response::postMethodeResponse()
 {
-	if (me->_flags.canReadInputFile)
-		sendFileToFinalAnswer();
-	else if (me->_flags.isCgiRunning)
+	// if (me->_flags.canReadInputFile && !me->_flags.isCgiFinished)
+	// 	sendFileToFinalAnswer();
+	if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
-		me->_cgi.checkCgiTimeout();
+		if (me->_flags.isCgiRunning)
+			me->_cgi.checkCgiTimeout();
+		if (me->_flags.isCgiFinished)
+		{
+			if (!me->_flags.isCgiHeaderSent)
+			{
+				me->_cgi.parseCgiHeader();
+				me->_flags.isCgiHeaderSent = true;
+			}
+			else
+			{
+				me->_cgi.sendCgiBodyToFinaleAnswer();
+			}
+		}
 	}
 	else
 	{
@@ -154,7 +172,7 @@ void	Client::Response::postMethodeResponse()
 			ss << "Location: " << me->_request.path + "/"+ me->_request.outputFileName << "\r\n\r\n";
 
 			me->_finalAnswer = ss.str();
-			me->_flags.isRequestFinished = true;
+			me->_flags.isResponseFinished = true;
 			return ;
 		}
 
@@ -191,7 +209,7 @@ std::string	Client::Response::getContentTypeOfFile(std::string &f)
 	size_t	pos = f.find_last_of('.');
 	if (pos != std::string::npos)
 	{
-		std::string extension = f.substr(pos);
+		std::string extension = f.substr(pos + 1);
 		if (me->_mimeError->mime.count(extension))
 			return me->_mimeError->mime[extension];
 	}
@@ -259,6 +277,39 @@ void	Client::Response::generateResponseErrorHeader(void)
 /*****************************************************************************************/
 /*****************************************************************************************/
 /*****************************************************************************************/
+
+void	Client::Response::generate200Header()
+{
+	std::stringstream ss;
+	ss << "HTTP/1.1 " << me->_codeStatus << " " << "OK" << "\r\n";
+	ss << "Transfer-Encoding: " << "chunked" << "\r\n";
+
+	if (me->_request.requestHeadersMap.count("connection"))
+	{
+		std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
+		for (int i = 0; tmp[i] ; ++i)
+			tmp[i] = tolower(tmp[i]);
+		if (tmp.find("close") != std::string::npos)
+		{
+			ss << "Connection: " << "close" << "\r\n";
+		}
+		else
+		{
+			ss << "Connection: " << "keep-alive" << "\r\n";
+		}
+	}
+	else
+			ss << "Connection: " << "keep-alive" << "\r\n";
+
+
+	ss << "Content-Type: " << getContentTypeOfFile(me->_finalPath) << "\r\n";
+
+
+	ss << "\r\n";
+	me->_flags.canReadInputFile = true;
+
+	me->_finalAnswer = ss.str();
+}			
 
 
 // void	Client::Response::getMethodeResponseDirectory()
@@ -725,8 +776,9 @@ void Client::Response::DeleteMethodResponse()
 				}
 				else
 				{
-					this->me->_codeStatus = 204;
-					std::cout << "204 no content" << std::endl;
+					me->_codeStatus = 200;
+					generate200Header();
+					me->_flags.canReadInputFile = true;
 				}
 			}
 		}
