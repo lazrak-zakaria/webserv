@@ -495,7 +495,7 @@ void	Client::Response::generate200Header()
 void Client::Response::GetMethodResponse()
 {
 	int st;
-	if (this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
+	if (!this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
 	{
 		// response 301;
 		std::cout << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
@@ -520,10 +520,10 @@ void Client::Response::GetMethodResponse()
 void Client::Response::GetDirectory()
 {
 	std::string html;
-	std::vector<std::string> IndexFile;
-	// std::vector<std::string>::iterator IFit = IndexFile.begin();
 	std::vector<std::string>::iterator Iit = this->me->_configData->allLocations[this->me->_locationKey].index.begin();
-	std::vector<std::string>::iterator FindIt;
+	struct stat st;
+	int Ret_St;
+
 	if (this->me->_finalPath.size() > 1 &&  this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
 	{
 		this->me->_codeStatus = 301;
@@ -542,17 +542,23 @@ void Client::Response::GetDirectory()
 				this->me->_codeStatus = 404;
 				return ;
 			}
+			this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
+			if (this->me->_ReadDirectory == NULL)
+			{
+				perror("Error readdir Fail: ");
+				this->me->_codeStatus = 403;
+				return ;
+			}
 			this->me->_flags.CanReadInputDir = true;
 		}
 		if (this->me->_flags.CanReadInputDir)
 		{
-			IndexFile = this->readdirectory();
-			while(IndexFile.size() &&  Iit != this->me->_configData->allLocations[this->me->_locationKey].index.end())
+			while(Iit != this->me->_configData->allLocations[this->me->_locationKey].index.end())
 			{
-				FindIt = std::find(IndexFile.begin(), IndexFile.end(), *Iit);
-				if (FindIt != IndexFile.end())
+				Ret_St = stat((this->me->_finalPath + *Iit).c_str() , &st);
+				if (Ret_St != -1)
 				{
-					if (this->me->isMatchedWithCgi(*FindIt))
+					if (this->me->isMatchedWithCgi(*Iit))
 					{
 						std::cout << "------------cgi---------" << std::endl;
 						this->me->_cgi.executeCgi();
@@ -583,18 +589,14 @@ void Client::Response::GetDirectory()
 			}
 			this->me->_flags.CanReadInputDir = false;
 		}
-
 		//should closedir if not cgi and index to be able to open it in autoindex
 		// closedir(this->me->_FdDirectory);
 	}
 	if (this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
 	{
-
-		std::cout << "------------" << this->me->_finalPath.c_str() << std::endl;
 		std::cout << "autoindex" << std::endl;
 		if (this->me->_flags.CanReadInputDir)
 		{
-			// std::cout << "++????????" << std::endl;
 			html = this->generatehtml(this->readdirectory());
 			this->me->_finalAnswer = html;
 			this->SendChunkDir();
@@ -634,18 +636,11 @@ std::vector<std::string> Client::Response::readdirectory()
 {
 	std::vector<std::string> content;
 	int i = 4;
-	this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
-	if (this->me->_ReadDirectory == NULL)
-	{
-		this->me->_flags.isResponseFinished = true;
-		return content;
-	}
     while(this->me->_ReadDirectory && i >= 0)
     {
 		if (this->me->_ReadDirectory && this->me->_ReadDirectory->d_name && this->me->_ReadDirectory->d_name[0])
         	content.push_back(this->me->_ReadDirectory->d_name);
 		this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
-		//std::cout << this->me->_ReadDirectory->d_name << "+++\n"; //segfult cout
 		i--;
     }
 	if (this->me->_ReadDirectory == NULL)
