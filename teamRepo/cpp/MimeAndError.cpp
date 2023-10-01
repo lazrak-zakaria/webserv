@@ -69,7 +69,9 @@ MimeAndError::MimeAndError()
 	mime["zip"] = "application/zip";
 	mime["7z"] = "application/x-7z-compressed";
 
-	statusCode[200] = "OK";
+	statusCode[200] = "200 OK";
+	statusCode[204] = "";
+	statusCode[301] = "301 Moved Permanently";
 	statusCode[201] = "Created";
 	statusCode[400] = "Bad Request";
 	statusCode[403] = "Forbidden";
