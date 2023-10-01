@@ -37,6 +37,11 @@ bool	Client::isResponseFinished() const
 	return _flags.isResponseFinished;
 }
 
+bool	Client::isRequestFinished() const
+{
+	return _flags.isRequestFinished;
+}
+
 bool	Client::isPathExist(std::string path)
 {
 	struct stat sb;
@@ -87,8 +92,8 @@ bool		Client::isLocationMatched(const std::string &locationDirective, const std:
 
 	bool	completeMatching = pathMatchingLocation && !path[locationLength];
 	bool	locationHaveSlash = pathMatchingLocation && locationDirective[locationLength-1] == '/';
-
-	return (completeMatching || locationHaveSlash);
+	bool	pathHaveSlash = pathMatchingLocation && path[locationLength] == '/';
+	return (completeMatching || locationHaveSlash || pathHaveSlash);
 }
 
 
@@ -181,7 +186,6 @@ std::string		&Client::serveResponse(void)
 {
 
 	_finalAnswer = "";
-	if (_flags.isResponseFinished) exit (10); /*debug*/
 
 	START:
 
@@ -196,7 +200,10 @@ std::string		&Client::serveResponse(void)
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
 		if(_flags.isHeaderResponseSent)
+		{
+
 			_response.responseError();
+		}
 		else
 		{
 			_response.generateResponseErrorHeader();

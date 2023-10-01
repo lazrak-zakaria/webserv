@@ -5,7 +5,7 @@
 
 Client::Request::Request() :receivedSize(0), 
 						contentLength(0), readAmountSoFar(0), 
-						expectedBytesToRead(0), TotalDataProcessed(0)
+						expectedBytesToRead(0), TotalDataProcessed(0), requestTimeStart(0)
 {
 }
 
@@ -43,7 +43,7 @@ bool	Client::Request::isUriValid(const char &c) const
 bool	Client::Request::isFieldNameValid(const char &c) const
 {
 	static char token[] = "-_";
-	return (isalnum(c) || memchr(token, c, sizeof(token)));
+	return (isalpha(c) || memchr(token, c, sizeof(token)));
 }
 
 bool	Client::Request::isFieldValueValid(const char &c) const
@@ -58,6 +58,11 @@ void	Client::Request::parseRequest()
 {
 	PARSE_REQUEST:
 
+	if (me->_codeStatus)
+	{
+		me->_flags.isRequestFinished  = true;
+		return ;
+	}
 	if (me->_flags.isRequestBody)
 	{
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
@@ -75,6 +80,7 @@ void	Client::Request::parseRequest()
 					me->_flags.isRequestFinished = true;
 					return ;
 				}
+				me->filesToDelete.push_back(name);
 				me->_cgi.inputFileCGi = name;
 			}
 
@@ -82,7 +88,6 @@ void	Client::Request::parseRequest()
 				parseChunkedData();
 			else
 				outputFile.write(requestBody.c_str(), requestBody.size());
-
 
 
 		}
@@ -187,8 +192,15 @@ void	Client::Request::parseRequest()
 		{
 			me->_flags.isRequestFinished = true;
 			me->_codeStatus = 404;
-			std::cout << "I WILL STOP YOU HERE\n";
+			std::cout << "I WILL STOP YOU HERE\n" << me->_finalPath << "\n";
 			return;
+		}
+
+		if (requestHeadersMap.count("content-length") && contentLength > me->_configData->limitBodySize)
+		{
+			me->_flags.isRequestFinished = true;
+			me->_codeStatus = 413;
+			return ;
 		}
 
 		me->_flags.isRequestBody = true;
@@ -218,7 +230,7 @@ void	Client::Request::parseHeader(size_t crlf)
 	std::string	key, value;
 	u_int8_t	cursor = eMethode, currentState = eUri;
 	bool		charAfterCrLf = false;
-
+	int			uriCounter = 0;
 
 	for (size_t i = 0; i < crlf && !me->_codeStatus; ++i)
 	{
@@ -245,6 +257,7 @@ void	Client::Request::parseHeader(size_t crlf)
 						goto BAD_REQUEST;
 					path.push_back(currentChar);
 					cursor = ePath;
+					uriCounter++;
 					break;
 				case ePath:
 					if (currentChar == '?')
@@ -257,6 +270,7 @@ void	Client::Request::parseHeader(size_t crlf)
 						cursor = eHttp;
 					else
 						goto BAD_REQUEST;
+					uriCounter++;
 					break;
 				case eQuery:
 					if (currentChar == ' ')
@@ -267,6 +281,7 @@ void	Client::Request::parseHeader(size_t crlf)
 						query.push_back(currentChar);
 					else
 						goto BAD_REQUEST;
+					uriCounter++;
 					break;
 				case eFragement:
 					if (currentChar == ' ')
@@ -275,15 +290,26 @@ void	Client::Request::parseHeader(size_t crlf)
 						continue;
 					else
 						goto BAD_REQUEST;
+					uriCounter++;
 					break;
 		
 				case eHttp:
 				{
+					if (uriCounter > 4000)
+					{
+						me->_codeStatus = 414;
+						goto BAD_REQUEST;
+					}
 					std::string	tmp;
 					for (u_int8_t j = 0; j < 8 && i < requestHeader.size(); ++i, ++j)
 						tmp.push_back(requestHeader[i]);
-					if (tmp != "HTTP/1.1" || requestHeader[i] != '\r')
+					if (tmp.compare(0, 4,"HTTP") || requestHeader[i] != '\r')
 						goto BAD_REQUEST;
+					if (tmp.compare(4, 4,"/1.1"))
+					{
+						me->_codeStatus = 505;
+						goto BAD_REQUEST;
+					}
 					cursor = eLf;
 				}
 					break;
@@ -398,7 +424,8 @@ void	Client::Request::parseHeader(size_t crlf)
 				me->_codeStatus = 413;
 				goto BAD_REQUEST;
 			}
-			contentLength = atoi(tmp.c_str());			
+			contentLength = atoi(tmp.c_str());	
+
 		}
 	}
 
@@ -509,6 +536,7 @@ void	Client::Request::parseHeader(size_t crlf)
 	BAD_REQUEST:
 		me->_codeStatus = me->_codeStatus ? me->_codeStatus : 400;
 		std::cout << "Error bad request " << me->_codeStatus << "\n";
+		me->_flags.isRequestFinished = true;
 }
 
 

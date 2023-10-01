@@ -160,5 +160,5 @@ MimeAndError::MimeAndError()
 	errors[414] = "./../error/error_pages/414.html";
 	errors[500] = "./../error/error_pages/500.html";
 	errors[501] = "./../error/error_pages/501.html";
-	errors[505] = "<!DOCTYPE html><html><head><title>Error 505 - HTTP Version Not Supported</title></head><body><h1>Error 505 - HTTP Version Not Suppor505</h1></body></html>";
+	errors[505] = "./../error/error_pages/505.html";
 }

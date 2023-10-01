@@ -19,6 +19,7 @@ class Client
 
 		size_t			_timeLastAction;
 
+		std::vector<std::string>			filesToDelete;
 
 		struct Request
 		{
@@ -42,6 +43,7 @@ class Client
 			size_t								readAmountSoFar;
 			size_t								expectedBytesToRead;
 			size_t								TotalDataProcessed;
+
 
 			size_t								requestTimeStart;
 			Client								*me;

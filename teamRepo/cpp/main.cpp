@@ -49,10 +49,10 @@ int main()
 // --abcde12345--\r\n";
 
 
-	std::string as = "POST /a.out HTTP/1.1\r\n\
+	std::string as = "POST / HTTP/1.1\r\n\
 host: value\r\n\
 ssss: \tvvvvvvvvvvvvvvvv\r\n\
-content-type: image/png\r\n\
+content-type: text/html\r\n\
 connection: close\r\n\
 Transfer-encoding: chunked\r\n\r\n\
 5\r\n\
@@ -61,18 +61,22 @@ abcde\r\n\
 123456\r\n0\r\nggg";
 
 
-// 	std::string as = "GET / HTTP/1.1\r\n\
-// host: value\r\n\
-// ssss: \tvvvvvvvvvvvvvvvv\r\n\
-// content-type: image/png\r\n\
-// connection: close\r\n\r\n";
 
+	std::ofstream ff("../output/outt.txt");
 
-	c.readRequest(as.c_str(), as.size());
-	std::cout << c.serveResponse() << "\n";
-	std::cout << c.serveResponse() << "\n";
-	std::cout << c.serveResponse() << "\n";
-	std::cout << c.serveResponse() << "\n";
+	while (true)
+	{
+		if (c.isRequestFinished() == false)
+			c.readRequest(as.c_str(), as.size());
+		else if (c.isResponseFinished() == false)
+		{
+			std::string &res = c.serveResponse();
+			std::cout << res;
+			// std::cout << res << res.size()<<  "\n";
+			// ff.write(res.c_str(), res.size());
+		}
+	}
+
 	// c.readRequest(b.c_str(), b.size());
 	return 0;
 }

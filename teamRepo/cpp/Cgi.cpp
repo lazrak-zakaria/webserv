@@ -11,6 +11,10 @@ void Client::Cgi::parseCgiHeader()
 	int	howMuchRead = me->_response.inputFile.gcount();
 	cgiHeader.append(buffer, howMuchRead);
 	size_t pos = cgiHeader.find("\n\n");
+	std::cout << "********************************************\n";
+	std::cout << cgiHeader << "|\n";
+	std::cout << "********************************************\n";
+	// exit(14);
 	if (pos == std::string::npos)
 	{
 		std::cout << "didnot found the end of header\n";
@@ -149,11 +153,21 @@ void Client::Cgi::parseCgiHeader()
 		else
 		{
 			me->_flags.isCgiHaveContentLength = true;
+			int i = 0;
+			for ( ; cgiHeadersMap["content-length"][i] == ' '; ++i);
+			for ( ; isdigit(cgiHeadersMap["content-length"][i]); ++i);
+			for ( ; cgiHeadersMap["content-length"][i] == ' '; ++i);
+			if (cgiHeadersMap["content-length"][i])
+			{
+				me->_codeStatus = 502;
+				return ;
+			}
 		}
 
 		ss << "\r\n";
 		me->_finalAnswer = ss.str();
 		std::cout << "________+++++\n";
+
 	}
 }
 
@@ -195,6 +209,11 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 				me->_flags.isResponseFinished = true; 
 			}
 		}
+		if (howMuchRead == 0)
+		{
+			me->_response.inputFile.close();
+			me->_flags.isResponseFinished = true; 
+		}
 
 	}
 	else
@@ -212,6 +231,7 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 			me->_finalAnswer.append(cgibody);
 		cgibody = "";
 	}
+
 	
 }
 
@@ -222,7 +242,10 @@ void Client::Cgi::checkCgiTimeout()
 	if (waitpid(processPid, 0, WNOHANG) == processPid)
 	{
 		/*cgi end good && later check exit status*/
-		me->_flags.canReadInputFile = true;
+		// me->_flags.canReadInputFile = true;
+		me->_flags.isCgiFinished = true;
+		me->_flags.isCgiRunning = false;
+								DBG;
 	}
 	else
 	{
@@ -252,14 +275,39 @@ void	Client::Cgi::executeCgi()
 		me->_codeStatus = 500;
 		return ;
 	}
+	me->filesToDelete.push_back(outputFileCGi);
 	outfile.close();
 	processPid = fork();
 	if (processPid == 0)
 	{
 		/*Setup env variables*/
+		u_int8_t i = 0;
 		char* env[10];
-		env[0] = NULL;
 
+		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
+		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
+		env[i++] = strdup(std::string("SERVER_NAME").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
+		
+		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
+
+		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
+		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
+		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
+
+		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
+		{
+			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
+			env[i++] = strdup(std::string("CONTENT_TYPE=").append(tmp).c_str());
+		}
+
+		if (me->_request.requestHeadersMap.count("content-length"))
+		{
+			std::string tmp = *(me->_request.requestHeadersMap["content-length"].end() - 1);
+			env[i++] = strdup(std::string("CONTENT_LENGTH=").append(me->_finalPath).c_str());
+		}
+
+		env[i] = NULL;
+		
 		me->_response.inputFile.close();
 
 		std::string	&programName 	= me->_configData->allLocations[me->_locationKey].cgi[cgiKeyProgram];
@@ -278,15 +326,21 @@ void	Client::Cgi::executeCgi()
 			std::cout << "CGI outPUT FAIL\n";
 			exit(1);
 		}
+
 		char *argv[3];
-
-
-		argv[0] = "../cgi_bin/a.out" ;//strdup(programName.c_str());
+		std::string pathWhereExecute = me->_finalPath.substr(0, me->_finalPath.find_last_of('/'));
+		if (chdir(pathWhereExecute.c_str()))
+		{
+			std::cerr << "chdir FAIL\n";
+			exit(5);
+		};
+		argv[0] = strdup(programName.c_str());
 		argv[1] = strdup(scriptToexec.c_str());
 		argv[2] = NULL;
-		std::cout << argv[0] <<  "++" << argv[1] << "\n";
+		std::cerr << "--" << pathWhereExecute << ";" <<  argv[0] <<  "++" << argv[1] << "\n";
+		
+		std::cerr << "/*******/\n";
 		execve(argv[0], argv, env);
-		std::cout << "/*******/\n";
 		exit(5);
 	}
 	else
@@ -295,19 +349,20 @@ void	Client::Cgi::executeCgi()
 		gettimeofday(&tmv, NULL);
 		timeStart =  tmv.tv_sec;
 
-		// int ret = waitpid(processPid, 0, WNOHANG);
-		int ret = wait(0); /* to test*/
+		int ret = waitpid(processPid, 0, WNOHANG);
+		// int ret = wait(0); /* to test*/
+		std::cout << "-----------------;;;--------------->" << outputFileCGi << '\n';
 		if (ret == processPid)
 		{
 			me->_flags.isCgiFinished = true;
-			me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
+			// me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
 			std::cout << "-------------------------------->" << outputFileCGi << '\n';
 		}
 		else if (ret == 0)
 		{
 			me->_flags.isCgiRunning = true;
-			return ;
 		}
+		me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
 		if (me->_response.inputFile.is_open() == 0)
 		{
 				me->_codeStatus = 500;

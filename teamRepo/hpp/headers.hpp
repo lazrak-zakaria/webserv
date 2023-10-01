@@ -35,5 +35,5 @@
 
 #define SIZE_READ 8
 
-
+#define DBG std::cout<<"+++DEBUG+++\n"
 #endif

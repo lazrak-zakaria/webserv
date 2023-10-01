@@ -18,7 +18,6 @@ void	Client::Response::sendFileToFinalAnswer()
 	ss << std::hex << howMuchRead;
 	me->_finalAnswer = "";
 	me->_finalAnswer.append(ss.str().append("\r\n"));
-
 	buf[howMuchRead] = '\r';
 	buf[howMuchRead + 1] = '\n';
 
@@ -28,10 +27,11 @@ void	Client::Response::sendFileToFinalAnswer()
 	{
 		me->_finalAnswer.append("0\r\n");
 		inputFile.close();
-		me->_flags.isResponseFinished = true; /*make sure this flag is only here*/
 	}
-}
 
+	if ((howMuchRead != BUF_SIZE && howMuchRead) || !howMuchRead)
+		me->_flags.isResponseFinished = true; /*make sure this flag is only here*/
+}
 
 void	Client::Response::postMethodeResponseDirectory()
 {
@@ -78,7 +78,7 @@ void	Client::Response::postMethodeResponseDirectory()
 				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
 				me->_cgi.executeCgi();
 
-				exit(0);
+				// exit(0);
 			}
 
 		}
@@ -143,12 +143,16 @@ void	Client::Response::sendCgiHeaders()
 
 void	Client::Response::postMethodeResponse()
 {
-	// if (me->_flags.canReadInputFile && !me->_flags.isCgiFinished)
-	// 	sendFileToFinalAnswer();
-	if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
+	if (me->_flags.canReadInputFile && !me->_flags.isCgiFinished)
+		sendFileToFinalAnswer();
+	else if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
+
+
 		if (me->_flags.isCgiRunning)
+		{
 			me->_cgi.checkCgiTimeout();
+		}
 		if (me->_flags.isCgiFinished)
 		{
 			if (!me->_flags.isCgiHeaderSent)
@@ -199,9 +203,11 @@ void	Client::Response::postMethodeResponse()
 void	Client::Response::responseError()
 {
 	if (me->_flags.canReadInputFile)
+	{
+
 		Client::Response::sendFileToFinalAnswer();
-	else
-		generateResponseErrorHeader();
+
+	}
 }
 
 std::string	Client::Response::getContentTypeOfFile(std::string &f)
@@ -252,6 +258,7 @@ void	Client::Response::generateResponseErrorHeader(void)
 		inputFile.open(me->_mimeError->errors[me->_codeStatus].c_str());
 		if (!inputFile.is_open())
 		{
+			exit(5);
 		}
 		ss << "Content-Type: " << "text/html" << "\r\n";
 	}
@@ -259,7 +266,6 @@ void	Client::Response::generateResponseErrorHeader(void)
 	ss << "\r\n";
 	me->_flags.canReadInputFile = true;
 	// me->_flags.removeMe = true;
-
 	me->_finalAnswer = ss.str();
 }
 
