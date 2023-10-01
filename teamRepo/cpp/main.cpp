@@ -55,10 +55,9 @@ ssss: \tvvvvvvvvvvvvvvvv\r\n\
 content-type: text/html\r\n\
 connection: close\r\n\
 Transfer-encoding: chunked\r\n\r\n\
-5\r\n\
-abcde\r\n\
-6\r\n\
-123456\r\n0\r\nggg";
+4\r\n\
+4\n6\n\r\n\
+0\r\nggg";
 
 
 // connection: close\r\n\r\n";
@@ -72,7 +71,7 @@ abcde\r\n\
 		else if (c.isResponseFinished() == false)
 		{
 			std::string &res = c.serveResponse();
-			std::cout << res;
+			std::cout << res << std::flush;
 			// std::cout << res << res.size()<<  "\n";
 			// ff.write(res.c_str(), res.size());
 		}

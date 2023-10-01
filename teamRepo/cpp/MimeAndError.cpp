@@ -81,6 +81,7 @@ MimeAndError::MimeAndError()
 	statusCode[414] = "URI Too Long";
 	statusCode[500] = "Internal Server Error";
 	statusCode[501] = "Not Implemented";
+	statusCode[502] = "502 Bad Gateway";
 	statusCode[505] = "HTTP Version Not Supported";
 
 	mimeReverse ["audio/aac"] = ".aac";
@@ -160,5 +161,6 @@ MimeAndError::MimeAndError()
 	errors[414] = "./../error/error_pages/414.html";
 	errors[500] = "./../error/error_pages/500.html";
 	errors[501] = "./../error/error_pages/501.html";
+	errors[502] = "./../error/error_pages/502.html";
 	errors[505] = "./../error/error_pages/505.html";
 }

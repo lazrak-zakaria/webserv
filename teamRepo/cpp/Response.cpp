@@ -225,6 +225,7 @@ std::string	Client::Response::getContentTypeOfFile(std::string &f)
 
 void	Client::Response::generateResponseErrorHeader(void)
 {
+	inputFile.close();
 	std::stringstream ss;
 	ss << "HTTP/1.1 " << me->_codeStatus << " " << me->_mimeError->statusCode[me->_codeStatus] << "\r\n";
 	ss << "Transfer-Encoding: " << "chunked" << "\r\n";

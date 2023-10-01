@@ -11,9 +11,7 @@ void Client::Cgi::parseCgiHeader()
 	int	howMuchRead = me->_response.inputFile.gcount();
 	cgiHeader.append(buffer, howMuchRead);
 	size_t pos = cgiHeader.find("\n\n");
-	std::cout << "********************************************\n";
-	std::cout << cgiHeader << "|\n";
-	std::cout << "********************************************\n";
+
 	// exit(14);
 	if (pos == std::string::npos)
 	{
@@ -176,6 +174,7 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 	const int BUFERSIZE = 5000;
 	char buf[BUFERSIZE + 2];
 
+	// DBG;
 	if (cgibody.empty())
 	{
 		me->_response.inputFile.read(buf, BUFERSIZE);
@@ -203,7 +202,7 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 		else
 		{
 			me->_finalAnswer.append(buf, howMuchRead);
-			if (howMuchRead != BUFERSIZE && howMuchRead)
+			if (howMuchRead != BUFERSIZE)
 			{
 				me->_response.inputFile.close();
 				me->_flags.isResponseFinished = true; 
@@ -233,6 +232,7 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 	}
 
 	
+	
 }
 
 /*even if kill the process you should wait*/
@@ -245,7 +245,7 @@ void Client::Cgi::checkCgiTimeout()
 		// me->_flags.canReadInputFile = true;
 		me->_flags.isCgiFinished = true;
 		me->_flags.isCgiRunning = false;
-								DBG;
+								// DBG;
 	}
 	else
 	{

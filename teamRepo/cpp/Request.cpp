@@ -203,6 +203,13 @@ void	Client::Request::parseRequest()
 			return ;
 		}
 
+
+		if (method == "GET" || method == "DELETE" || (method == "POST" && requestHeadersMap.count("transfer-encoding") == 0 && requestHeadersMap.count("content-length") == 0))
+		{
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
+
 		me->_flags.isRequestBody = true;
 		requestBody = requestHeader.substr(posCrlf + 4);
 
