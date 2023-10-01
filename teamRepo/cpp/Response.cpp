@@ -206,8 +206,9 @@ void	Client::Response::responseError()
 	{
 
 		Client::Response::sendFileToFinalAnswer();
-
 	}
+	// else
+	// 	generateResponseErrorHeader();
 }
 
 std::string	Client::Response::getContentTypeOfFile(std::string &f)
@@ -318,79 +319,462 @@ void	Client::Response::generate200Header()
 }			
 
 
-void	Client::Response::getMethodeResponseDirectory()
-{
-	me->addSlashToFinalPath();
-	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
-	{
-		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
-		{
-			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
-			size_t i = 0;
-			for (; i < indexes.size(); ++i)
-			{
-				if (me->isMatchedWithCgi(indexes[i]) && me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
-				{
-					me->_finalPath.append(indexes[i]);
-					break;
-				}
-			}
+// void	Client::Response::getMethodeResponseDirectory()
+// {
+// 	me->addSlashToFinalPath();
+// 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
+// 	{
+// 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
+// 		{
+// 			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
+// 			size_t i = 0;
+// 			for (; i < indexes.size(); ++i)
+// 			{
+// 				if (me->isMatchedWithCgi(indexes[i]) && me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
+// 				{
+// 					me->_finalPath.append(indexes[i]);
+// 					break;
+// 				}
+// 			}
 
-			/*no index match with cgi*/
-			if (i == indexes.size())
+// 			/*no index match with cgi*/
+// 			if (i == indexes.size())
+// 			{
+// 				std::cout << "no index match or exist with cgi-s\n";
+// 				me->_codeStatus = 403;
+// 				return ;
+// 			}
+// 			else
+// 			{
+// 				// me->_finalPath.append(indexes[i]);
+// 				/* run cgi*/
+// 				std::cout << "-----\ni will run cgi\n"; 
+// 				std::cout << "script file: " << me->_finalPath << "|\n";
+// 				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
+// 				me->_cgi.executeCgi();
+
+// 				exit(0);
+// 			}
+
+// 		}
+// 		else
+// 		{
+// 			std::cout << "you requested a directory and did not provide any cgi  index \n";
+// 			me->_codeStatus = 403;
+// 			return ;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
+// 		{
+// 			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
+// 			size_t i = 0;
+// 			for (; i < indexes.size(); ++i)
+// 			{
+// 				if (me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
+// 				{
+// 					me->_finalPath.append(indexes[i]);
+// 					break;
+// 				}
+// 			}
+
+// 			/*no index match with cgi*/
+// 			if (i == indexes.size())
+// 			{
+// 				std::cout << "no index match --> 404\n";
+// 				me->_codeStatus = 404;
+// 			}
+// 			else
+// 			{
+// 				std::cout << "here is your file\n";
+// 				inputFile.open(me->_finalPath.c_str());
+// 				if (inputFile.is_open() == false)
+// 				{
+// 					me->_codeStatus = 403;// it exist and did not open
+// 				}
+// 				else
+// 				{
+// 					me->_codeStatus = 200;
+// 					me->_flags.canReadInputFile = true;
+// 				}
+// 			}
+
+// 		}/*later auto index*/
+// 		else if (me->_configData->allLocations[me->_locationKey].autoIndex)
+// 		{
+
+// 		}
+// 		else
+// 		{
+// 			std::cout << "you requested a directory and did not provide any index \n";
+// 			me->_codeStatus = 403;
+// 			return ;
+// 		}
+// 	}
+
+
+// 	return;
+// }
+
+// void	Client::Response::getMethodeResponseFile()
+// {
+// 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
+// 	{
+// 		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
+// 		{
+// 			/*run cgi */
+// 			std::cout << "-----\nget: file i will run cgi\n"; 
+// 			std::cout << "script file: " << me->_finalPath << "|\n";
+// 			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
+// 		}
+// 		else
+// 		{
+// 			/*no cgi can run this*/
+// 			std::cout << "get:you requested a file and did not matched with any cgi\n";
+// 			me->_codeStatus = 403;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		/*send file*/
+// 		inputFile.open(me->_finalPath.c_str());
+// 		if (inputFile.is_open() == false)
+// 		{
+// 			me->_codeStatus = 403;// it exist and did not open
+// 		}
+// 		else
+// 		{
+// 			me->_codeStatus = 200;
+// 			me->_flags.canReadInputFile = true;
+// 		}
+// 	}
+
+// 	return ;
+// }
+
+
+
+// void	Client::Response::getMethodResponse()
+// {
+// 	if (me->_flags.canReadInputFile)
+// 		sendFileToFinalAnswer();
+// 	else if (me->_flags.isCgiRunning)
+// 	{
+// 		me->_cgi.checkCgiTimeout();
+// 	}
+// 	else
+// 	{
+// 		struct stat sb;
+// 		if (stat(me->_finalPath.c_str(), &sb) == 0)
+// 		{
+// 			if (S_ISDIR(sb.st_mode))
+// 			{
+// 				getMethodeResponseDirectory();
+// 			}
+// 			else if (S_ISREG(sb.st_mode))
+// 				getMethodeResponseFile();
+// 			else
+// 				me->_codeStatus = 403;
+// 		}
+// 		else
+// 		{
+// 			std::cout << "get: what you requested is not found\n";
+// 			me->_codeStatus = 404;
+// 		}
+// 	}
+// }
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+
+
+
+// ---------------------------  GET --------------------------------//
+
+
+
+void Client::Response::GetMethodResponse()
+{
+	int st;
+	if (!this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
+	{
+		// response 301;
+		std::cout << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
+	}
+	st = stat(this->me->_finalPath.c_str(), &this->me->_st);
+	if (st < 0)
+	{
+		perror("Error Stat Fail : ");
+		this->me->_codeStatus = 404;
+		return;
+	}
+	else if(S_ISDIR(this->me->_st.st_mode))
+	{
+		this->GetDirectory();
+	}
+	else if(S_ISREG(this->me->_st.st_mode))
+	{
+		this->GetFile();
+	}
+}
+
+void Client::Response::GetDirectory()
+{
+	std::string html;
+	std::vector<std::string>::iterator Iit = this->me->_configData->allLocations[this->me->_locationKey].index.begin();
+	struct stat st;
+	int Ret_St;
+
+	if (this->me->_finalPath.size() > 1 &&  this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
+	{
+		this->me->_codeStatus = 301;
+		std::cout << "Redirect to 301 url don't have / at the end url => " << this->me->_finalPath << std::endl;
+		return ;
+	}
+	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
+	{
+		std::cout << "index" << std::endl;
+		if (this->me->_flags.CanReadInputDir == 0)
+		{
+			this->me->_FdDirectory = opendir(this->me->_finalPath.c_str())	;
+			if (this->me->_FdDirectory == NULL)
 			{
-				std::cout << "no index match or exist with cgi-s\n";
-				me->_codeStatus = 403;
+				perror("Error opendir Fail: ");
+				this->me->_codeStatus = 404;
 				return ;
 			}
-			else
+			this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
+			if (this->me->_ReadDirectory == NULL)
 			{
-				// me->_finalPath.append(indexes[i]);
-				/* run cgi*/
-				std::cout << "-----\ni will run cgi\n"; 
-				std::cout << "script file: " << me->_finalPath << "|\n";
-				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
-				me->_cgi.executeCgi();
-
-				exit(0);
+				perror("Error readdir Fail: ");
+				this->me->_codeStatus = 403;
+				return ;
 			}
-
+			this->me->_flags.CanReadInputDir = true;
 		}
-		else
+		if (this->me->_flags.CanReadInputDir)
 		{
-			std::cout << "you requested a directory and did not provide any cgi  index \n";
-			me->_codeStatus = 403;
+			while(Iit != this->me->_configData->allLocations[this->me->_locationKey].index.end())
+			{
+				Ret_St = stat((this->me->_finalPath + *Iit).c_str() , &st);
+				if (Ret_St != -1)
+				{
+					if (this->me->isMatchedWithCgi(*Iit))
+					{
+						std::cout << "------------cgi---------" << std::endl;
+						this->me->_cgi.executeCgi();
+						return ;
+					}
+					else
+					{
+						if (this->me->_flags.canReadInputFile)
+						{
+							this->sendFileToFinalAnswer();
+							return ;
+						}
+						else
+						{
+							this->inputFile.open(this->me->_finalPath + *Iit , std::ios::binary);
+							if (!this->inputFile.is_open())
+							{
+								perror("Error open Fail: ");
+								this->me->_codeStatus = 404;
+								return;
+							}
+							this->sendFileToFinalAnswer();
+							return ;
+						}
+					}
+				}
+				Iit++;
+			}
+			this->me->_flags.CanReadInputDir = false;
+		}
+		//should closedir if not cgi and index to be able to open it in autoindex
+		// closedir(this->me->_FdDirectory);
+	}
+	if (this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
+	{
+		std::cout << "autoindex" << std::endl;
+		if (this->me->_flags.CanReadInputDir)
+		{
+			html = this->generatehtml(this->readdirectory());
+			this->me->_finalAnswer = html;
+			this->SendChunkDir();
 			return ;
 		}
+		std::vector<std::string> content;
+		int i = 4;
+		closedir(this->me->_FdDirectory);
+    	this->me->_FdDirectory = opendir(this->me->_finalPath.c_str());
+    	if (!this->me->_FdDirectory)
+    	{
+        	perror("Error opendir fail: ");
+        	this->me->_codeStatus = 404 ;
+        	return ;
+    	}
+		this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
+		if (this->me->_ReadDirectory == NULL)
+		{
+			perror("Error readdir Fail: ");
+			this->me->_codeStatus = 403;
+			return ;
+		}
+			this->me->_flags.CanReadInputDir = true;
+			html = this->generatehtml(this->readdirectory());
+			this->me->_finalAnswer = html;
+			this->SendChunkDir();
+		
 	}
 	else
 	{
-		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
-		{
-			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
-			size_t i = 0;
-			for (; i < indexes.size(); ++i)
-			{
-				if (me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
-				{
-					me->_finalPath.append(indexes[i]);
-					break;
-				}
-			}
+		this->me->_codeStatus = 403;
+		std::cout << "not autoindex and index" << std::endl;
+	}
+}
 
-			/*no index match with cgi*/
-			if (i == indexes.size())
+std::vector<std::string> Client::Response::readdirectory()
+{
+	std::vector<std::string> content;
+	int i = 4;
+    while(this->me->_ReadDirectory && i >= 0)
+    {
+		if (this->me->_ReadDirectory && this->me->_ReadDirectory->d_name && this->me->_ReadDirectory->d_name[0])
+        	content.push_back(this->me->_ReadDirectory->d_name);
+		this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
+		i--;
+    }
+	if (this->me->_ReadDirectory == NULL)
+		this->me->_flags.isResponseFinished = true;
+    return (content);
+}
+
+std::string Client::Response::generatehtml(std::vector<std::string> dir)
+{
+	std::string html;
+	std::vector<std::string>::iterator it = dir.begin();
+	if (it != dir.end())
+	{
+		html += "<html><ul>";
+		while (it != dir.end())
+		{
+			html +=  "<li><a href=\"" + *it + "\">" + *it + "</a></li><br>";
+            it++;
+		}
+		if (this->me->_flags.isResponseFinished)
+        	html += "</ul></html>";
+	}
+	return html;
+}
+
+void Client::Response::SendChunkDir()
+{
+	this->me->_finalAnswer.append("/r/n");
+}
+
+void Client::Response::GetFile()
+{
+	if (this->me->_flags.canReadInputFile)
+	{
+
+	}
+	this->inputFile.open(this->me->_finalPath, std::ios::binary);
+	if (!this->inputFile.is_open())
+	{
+		perror("Error Open Fail: ");
+		this->me->_codeStatus = 404;
+		return ;
+	}
+	this->me->_codeStatus = 200;
+	this->me->_flags.canReadInputFile = true;
+	this->sendFileToFinalAnswer();
+}
+
+
+//---------------------------- DELETE ------------------------//
+
+std::vector<std::string> Client::Response::DelReadDir(std::string path)
+{
+	std::vector<std::string> dir;
+	DIR *Fd_dir = opendir(path.c_str());
+	if (!Fd_dir)
+	{
+		perror("Error opendir fail: ");
+		this->me->_codeStatus = 404;
+		return dir;
+	}
+	struct dirent *ReadDir;
+	ReadDir = readdir(Fd_dir);
+	if (ReadDir == NULL)
+	{
+		perror("Error readdir Fail: ");
+		this->me->_codeStatus = 403;
+		return dir;
+	}
+	while(ReadDir != NULL)
+	{
+		dir.push_back(ReadDir->d_name);
+		ReadDir = readdir(Fd_dir);
+	}
+	return dir;
+}
+
+void Client::Response::DeleteMethodResponse()
+{
+	this->delflag = 0;
+	int st = stat(this->me->_finalPath.c_str(), &this->me->_st);
+	if (st < 0)
+	{
+		perror("Error Stat Fail: ");
+		this->me->_codeStatus = 404;
+		return;
+	}
+	else if (S_ISREG(this->me->_st.st_mode))
+	{
+		if (this->me->_st.st_mode & S_IWUSR)
+		{
+			if (unlink(this->me->_finalPath.c_str()) == 0)
 			{
-				std::cout << "no index match --> 404\n";
-				me->_codeStatus = 404;
+				this->me->_codeStatus = 204;
+				std::cout << "204 no content" << std::endl;
+				return;
 			}
 			else
 			{
-				std::cout << "here is your file\n";
-				inputFile.open(me->_finalPath.c_str());
-				if (inputFile.is_open() == false)
+				perror("Error Unlink Fail: ");
+				this->me->_codeStatus =  500;
+				return ;
+			}
+		}
+		else
+		{
+			this->me->_codeStatus = 403;
+			std::cout << "403 permission" << std::endl;
+		}
+	}
+	else if (S_ISDIR(this->me->_st.st_mode))
+	{
+		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
+		{
+			this->me->_codeStatus = 409;
+			std::cout << "409 conflict" << std::endl;
+		}
+		else if(this->me->_st.st_mode & S_IWUSR)
+		{
+			if (this->deletedir(this->me->_finalPath) == 0)
+			{
+				if (rmdir(this->me->_finalPath.c_str()) == -1)
 				{
-					me->_codeStatus = 403;// it exist and did not open
+					std::cout << this->me->_finalPath.c_str() << std::endl;
+					perror("Error Rmdir Fail: ");
+					this->me->_codeStatus = 500;
+					return ;
 				}
 				else
 				{
@@ -399,89 +783,80 @@ void	Client::Response::getMethodeResponseDirectory()
 					me->_flags.canReadInputFile = true;
 				}
 			}
-
-		}/*later auto index*/
-		else if (me->_configData->allLocations[me->_locationKey].autoIndex)
-		{
-
 		}
 		else
 		{
-			std::cout << "you requested a directory and did not provide any index \n";
-			me->_codeStatus = 403;
-			return ;
+			this->me->_codeStatus = 403;
+			std::cout << "403 permission" << std::endl;
 		}
 	}
-
-
-	return;
 }
 
-void	Client::Response::getMethodeResponseFile()
+int Client::Response::deletedir(std::string path)
 {
-	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
+	std::vector<std::string> dir = this->DelReadDir(path);
+	std::vector<std::string>::iterator it = dir.begin();
+	struct stat st;
+	int st_ret;
+	if (this->delflag == 1)
+		return 1;
+	if (it->empty())
+		std::cout << "/////  " <<it->empty() << std::endl;
+	while(it != dir.end())
 	{
-		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
+		if(*it == "." || *it == "..")
 		{
-			/*run cgi */
-			std::cout << "-----\nget: file i will run cgi\n"; 
-			std::cout << "script file: " << me->_finalPath << "|\n";
-			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
+			it++;
+			continue;
 		}
-		else
+		*it = path + "/" + *it;
+		st_ret = stat(it->c_str(), &st);
+		if(st_ret == -1)
 		{
-			/*no cgi can run this*/
-			std::cout << "get:you requested a file and did not matched with any cgi\n";
-			me->_codeStatus = 403;
+			perror("Error Stat Fail: ");
+			this->delflag = 1;
+			return 1;
 		}
-	}
-	else
-	{
-		/*send file*/
-		inputFile.open(me->_finalPath.c_str());
-		if (inputFile.is_open() == false)
+		else if (S_ISREG(st.st_mode))
 		{
-			me->_codeStatus = 403;// it exist and did not open
-		}
-		else
-		{
-			me->_codeStatus = 200;
-			me->_flags.canReadInputFile = true;
-		}
-	}
-
-	return ;
-}
-
-
-
-void	Client::Response::getMethodResponse()
-{
-	if (me->_flags.canReadInputFile)
-		sendFileToFinalAnswer();
-	else if (me->_flags.isCgiRunning)
-	{
-		me->_cgi.checkCgiTimeout();
-	}
-	else
-	{
-		struct stat sb;
-		if (stat(me->_finalPath.c_str(), &sb) == 0)
-		{
-			if (S_ISDIR(sb.st_mode))
+			if (st.st_mode & S_IWUSR)
 			{
-				getMethodeResponseDirectory();
+				if (unlink(it->c_str()) == -1)
+				{
+					perror("Error Unlink Fail: ");
+					this->me->_codeStatus = 500;
+					this->delflag = 1;
+					return 1;
+				}
+				std::cout << "delete file ==> " << it->c_str() << std::endl;
 			}
-			else if (S_ISREG(sb.st_mode))
-				getMethodeResponseFile();
 			else
-				me->_codeStatus = 403;
+			{
+				perror("Error Permission: ");
+				this->delflag = 1;
+				return 1;
+			}
 		}
-		else
+		else if (S_ISDIR(st.st_mode))
 		{
-			std::cout << "get: what you requested is not found\n";
-			me->_codeStatus = 404;
+			if (st.st_mode & S_IWUSR)
+			{
+				this->deletedir(*it);
+				if (rmdir(it->c_str()) != 0)
+				{
+					perror("Error rmdir Fail: ");
+					this->me->_codeStatus = 500;
+					return 1;
+				}
+			}
+			else
+			{
+				perror("Error Permission: ");
+				this->delflag = 1;
+				return 1;
+			}
 		}
+		it++;
 	}
+	return 0;
 }
-

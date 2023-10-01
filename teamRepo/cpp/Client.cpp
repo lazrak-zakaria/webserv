@@ -10,6 +10,8 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_cgi.me = this;
 	memset(&_flags, 0, sizeof(_flags));
 	_flags.expectSizeRead = true;
+	_FdDirectory = NULL;
+	_ReadDirectory = NULL;
 }
 
 void	Client::clearClient()
@@ -196,7 +198,6 @@ std::string		&Client::serveResponse(void)
 		ss << "Location: " << _response.location301 << "\r\n\r\n";
 		return (_finalAnswer = ss.str());
 	}
-
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
 		if(_flags.isHeaderResponseSent)
@@ -218,9 +219,13 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "GET")
 	{
-		_response.getMethodResponse();
+		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)
 			goto START;
+	}
+	else if(_request.method == "DELETE")
+	{
+		_response.DeleteMethodResponse();
 	}
 
 	return _finalAnswer;
@@ -228,4 +233,9 @@ std::string		&Client::serveResponse(void)
 
 
 
+//// dstructor
 
+Client::~Client()
+{
+	closedir(this->_FdDirectory);
+}

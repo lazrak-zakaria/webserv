@@ -16,10 +16,12 @@ class Client
 		std::string		_locationKey;
 		std::string		_finalAnswer;
 		u_int16_t		_codeStatus;
-
 		size_t			_timeLastAction;
 
 		std::vector<std::string>			filesToDelete;
+		struct stat 	_st;
+		DIR 			*_FdDirectory;
+		struct dirent	*_ReadDirectory;
 
 		struct Request
 		{
@@ -81,9 +83,9 @@ class Client
 			void					postMethodeResponseDirectory();
 			void					postMethodeResponseFile();
 
-			void					getMethodResponse();
-			void					getMethodeResponseDirectory();
-			void					getMethodeResponseFile();
+			// void					getMethodResponse();
+			// void					getMethodeResponseDirectory();
+			// void					getMethodeResponseFile();
 
 			void					sendCgiHeaders();
 
@@ -95,6 +97,21 @@ class Client
 			void					responseClear();
 			void					setResponseFinished(u_int8_t);
 			std::string				getContentTypeOfFile(std::string &f);
+
+			// get
+			void GetMethodResponse();
+			void GetDirectory();
+			void GetFile();
+			std::vector<std::string> readdirectory();
+			std::string generatehtml(std::vector<std::string> dir);
+			void SendChunkDir();
+
+			// delete
+			void DeleteMethodResponse();
+			int deletedir(std::string path);
+			std::vector<std::string> DelReadDir(std::string path);			int delflag;
+
+
 		} _response;
 
 
@@ -137,6 +154,7 @@ class Client
 
 			/*response*/
 			bool	canReadInputFile;
+			bool	CanReadInputDir;
 			bool	isResponseFinished;
 			bool	isHeaderResponseSent;
 			
@@ -157,6 +175,7 @@ class Client
 	public:
 
 		Client();
+		~Client();
 		void	clearClient();
 
 		void	test();
