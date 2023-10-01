@@ -219,6 +219,7 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "GET")
 	{
+		DBG;
 		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)
 			goto START;

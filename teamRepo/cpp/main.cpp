@@ -49,15 +49,10 @@ int main()
 // --abcde12345--\r\n";
 
 
-std::string as = "POST /a.out HTTP/1.1\r\n\
+std::string as = "GET / HTTP/1.1\r\n\
 host: value\r\n\
 ssss: \tvvvvvvvvvvvvvvvv\r\n\
-content-type: text/html\r\n\
-connection: close\r\n\
-Transfer-encoding: chunked\r\n\r\n\
-4\r\n\
-4\n6\n\r\n\
-0\r\nggg";
+connection: close\r\n\r\n";
 
 
 // connection: close\r\n\r\n";
@@ -75,10 +70,14 @@ Transfer-encoding: chunked\r\n\r\n\
 			// std::cout << res << res.size()<<  "\n";
 			// ff.write(res.c_str(), res.size());
 		}
+		// else
+		// {
+		// 	break;
+		// }
 	}
-	c.readRequest(as.c_str(), as.size());
+	// c.readRequest(as.c_str(), as.size());
 
-	std::cout << c.serveResponse() << "\n";
+	// std::cout << c.serveResponse() << "\n";
 	// std::cout << c.serveResponse() << "\n";
 	// std::cout << c.serveResponse() << "\n";
 	// std::cout << c.serveResponse() << "\n";
