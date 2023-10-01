@@ -96,6 +96,8 @@ class Client
 			void					setResponseFinished(u_int8_t);
 			std::string				getContentTypeOfFile(std::string &f);
 
+			void					GenerateLastResponseHeader(int status, std::string filename, struct stat st);
+
 			// get
 			void GetMethodResponse();
 			void GetDirectory();

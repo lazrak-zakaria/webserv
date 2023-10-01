@@ -487,6 +487,24 @@ void	Client::Response::generate200Header()
 /*****************************************************************/
 
 
+void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat st)
+{
+	std::string respo("HTTP/1.1 " + this->me->_mimeError->statusCode[status].append("\r\n"));
+	switch (status)
+	{
+		case 301:
+			respo += "location: " + this->me->_request.path + "/\r\n";
+			break;
+		case 204:
+			respo;
+		case 200:
+			respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
+			respo += "transfer-encoding: chunked\r\n";
+			respo += std::string("Last-Modified: ") + ctime(&st.st_mtime) + "\r\n";
+	}
+	this->me->_finalAnswer = respo;
+}
+
 
 // ---------------------------  GET --------------------------------//
 
