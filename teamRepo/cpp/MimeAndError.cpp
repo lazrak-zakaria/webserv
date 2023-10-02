@@ -162,5 +162,6 @@ MimeAndError::MimeAndError()
 	errors[500] = "./../error/error_pages/500.html";
 	errors[501] = "./../error/error_pages/501.html";
 	errors[502] = "./../error/error_pages/502.html";
+	errors[504] = "./../error/error_pages/504.html";
 	errors[505] = "./../error/error_pages/505.html";
 }

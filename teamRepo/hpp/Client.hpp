@@ -10,7 +10,7 @@ class Client
 {
 	private:
 
-		std::map<std::string, std::set<ServerConfig*> > _allConfigsData;
+		std::map<std::string, ServerConfig*> _allConfigsData;
 		ServerConfig	*_defaultConfigData;
 		ServerConfig	*_configData;
 		MimeAndError	*_mimeError;
