@@ -49,7 +49,7 @@ int main()
 // --abcde12345--\r\n";
 
 
-std::string as = "GET /dsdsd HTTP/1.1\r\n\
+std::string as = "GET / HTTP/1.1\r\n\
 host: value\r\n\
 ssss: \tvvvvvvvvvvvvvvvv\r\n\
 connection: close\r\n\r\n";

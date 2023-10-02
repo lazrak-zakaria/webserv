@@ -15,6 +15,7 @@ int main()
 
 	setLocation(mp, s, mime);
 
+/****************************/
 	std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > > sser;
 
 	std::pair<ServerConfig, std::map<std::string, ServerConfig*> > pr;
@@ -23,10 +24,10 @@ int main()
 	std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > > v;
 	v.push_back(pr);
 	WebServer::run(v);
-
-	// Client c;
-	// c.setDefaultConfigData(&s);
-	// c.setMimeError(&mime);
+/*****************************************/
+	Client c;
+	c.setDefaultConfigData(&s);
+	c.setMimeError(&mime);
 
 
 // 	std::string as = "POST / HTTP/1.1\r\n\
@@ -57,33 +58,35 @@ int main()
 // qqqqqqqqqqqqqqqqqqqq\r\n\
 // --abcde12345--\r\n";
 
-
-// std::string as = "GET / HTTP/1.1\r\n\
-// host: value\r\n\
-// ssss: \tvvvvvvvvvvvvvvvv\r\n\
-// connection: close\r\n\r\n";
+/*****************************************************************//*
+std::string as = "GET /dggdfgd HTTP/1.1\r\n\
+host: value\r\n\
+ssss: \tvvvvvvvvvvvvvvvv\r\n\
+connection: close\r\n\r\n";
 
 
 // // connection: close\r\n\r\n";
 
 // 	std::ofstream ff("../output/outt.txt");
 
-// 	while (true)
-// 	{
-// 		if (c.isRequestFinished() == false)
-// 			c.readRequest(as.c_str(), as.size());
-// 		else if (c.isResponseFinished() == false)
-// 		{
-// 			std::string &res = c.serveResponse();
-// 			std::cout << res << std::flush;
-// 			// std::cout << res << res.size()<<  "\n";
-// 			// ff.write(res.c_str(), res.size());
-// 		}
-// 		// else
-// 		// {
-// 		// 	break;
-// 		// }
-// 	}
+	while (true)
+	{
+		if (c.isRequestFinished() == false)
+			c.readRequest(as.c_str(), as.size());
+		else if (c.isResponseFinished() == false)
+		{
+			std::string &res = c.serveResponse();
+			std::cout << res << std::flush;
+			// std::cout << res << res.size()<<  "\n";
+			// ff.write(res.c_str(), res.size());
+		}
+		// else
+		// {
+		// 	break;
+		// }
+	}
+	*/
+	/*****************************************************************/
 	// c.readRequest(as.c_str(), as.size());
 
 	// std::cout << c.serveResponse() << "\n";

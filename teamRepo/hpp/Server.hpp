@@ -11,8 +11,11 @@ class Server
 		int						fdSock;
 		struct sockaddr_in  	addrServer;
 	
+		ServerConfig							*configData;
+		std::map<std::string, ServerConfig*>	*serverNamesConfig;
+		
 		std::map<int, Client>	serverClients;
-		ServerConfig			*configData;
+
 		MimeAndError			*mimeError;
 		std::vector<int>		invalidSockets;
 	public:
@@ -22,7 +25,7 @@ class Server
 		void	processReadySockets(fd_set &tempReadSet, 
 						fd_set &tempWriteSet,fd_set &readSet, fd_set &writeSet);
 
-						
+		void	setConfigDataServerNames(std::map<std::string, ServerConfig*> *serversName);
 		void	setConfigData(ServerConfig	*c);
 		void	setMimeError(MimeAndError	*m);
 		int		getFdSock();

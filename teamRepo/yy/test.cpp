@@ -2,19 +2,9 @@
 
 int main(int ac, char **av, char **env)
 {
-	// int a =  fork();
-	// if (a == 0)
-	// {
-	// 	if (freopen("output.txt", "w", stdout));
-	// 		execve("cgi", av, env);
-	// 	exit(0);
-	// }
-	// else
-	// {
-
-	// }
-
-	double a = 31;
-	std::cout << a << "\n";
+	time_t d = time(NULL);
+	std::string s = ctime(&d);
+	s.pop_back();
+	std::cout << "|" << s << "|" << "\n";
 	return 0;
 }

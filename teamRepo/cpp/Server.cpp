@@ -115,6 +115,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 		else if (FD_ISSET(clientFdSock, &tempWriteSet))
 		{
 			std::string &answer = clientObj.serveResponse();
+			std::cout << "||||||" <<answer<< "|||||||||||\n";
 
 			if(clientObj.isResponseFinished())
 				answer.append("\r\n");

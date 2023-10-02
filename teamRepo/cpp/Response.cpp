@@ -35,6 +35,7 @@ void	Client::Response::sendFileToFinalAnswer()
 		inputFile.close();
 	}
 
+
 	if ((howMuchRead != BUF_SIZE && howMuchRead) || !howMuchRead)
 		me->_flags.isResponseFinished = true; /*make sure this flag is only here*/
 }
@@ -583,8 +584,10 @@ void Client::Response::ErrorResponse()
         std::string respo(this->me->_mimeError->statusCode[this->me->_codeStatus] + "\r\n");
 		if (!opnedfile.empty())
         	respo += "Content-type: " + this->getContentTypeOfFile(opnedfile) + "\r\n";
-        respo += "Content-Transfer: Chunked\r\n";
-        respo += std::string("Date: ") + ctime(&date) + "\r\n";
+        respo += "Transfer-encoding: chunked\r\n";
+        respo += std::string("Date: ") + ctime(&date);
+		respo.pop_back();
+		respo += "\r\n";
         if (me->_request.requestHeadersMap.count("connection"))
 		{
 			std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
