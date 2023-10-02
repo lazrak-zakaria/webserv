@@ -509,6 +509,22 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
 			respo += "transfer-encoding: chunked\r\n";
 			respo += std::string("Last-Modified: ") + ctime(&st.st_mtime) + "\r\n";
+			if (me->_request.requestHeadersMap.count("connection"))
+			{
+				std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
+				for (int i = 0; tmp[i] ; ++i)
+					tmp[i] = tolower(tmp[i]);
+				if (tmp.find("close") != std::string::npos)
+				{
+					respo += "Connection: close\r\n";
+				}
+				else
+				{
+					respo += "Connection: keep-alive\r\n";
+				}
+			}
+			else
+					respo += "Connection: keep-alive\r\n";
 	}
 	this->me->_finalAnswer = respo;
 }
@@ -559,25 +575,12 @@ void Client::Response::GetDirectory()
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
 	{
 		std::cout << "index" << std::endl;
-		if (this->me->_flags.CanReadInputDir == 0)
+		if (this->me->_flags.canReadInputFile)
 		{
-			this->me->_FdDirectory = opendir(this->me->_finalPath.c_str())	;
-			if (this->me->_FdDirectory == NULL)
-			{
-				perror("Error opendir Fail: ");
-				this->me->_codeStatus = 404;
-				return ;
-			}
-			this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
-			if (this->me->_ReadDirectory == NULL)
-			{
-				perror("Error readdir Fail: ");
-				this->me->_codeStatus = 403;
-				return ;
-			}
-			this->me->_flags.CanReadInputDir = true;
+			this->sendFileToFinalAnswer();
+			return ;
 		}
-		if (this->me->_flags.CanReadInputDir)
+		else
 		{
 			while(Iit != this->me->_configData->allLocations[this->me->_locationKey].index.end())
 			{
@@ -587,18 +590,12 @@ void Client::Response::GetDirectory()
 					if (this->me->isMatchedWithCgi(*Iit))
 					{
 						std::cout << "------------cgi---------" << std::endl;
+						me->_finalPath.append(*Iit);
 						this->me->_cgi.executeCgi();
 						return ;
 					}
 					else
 					{
-						if (this->me->_flags.canReadInputFile)
-						{
-							this->sendFileToFinalAnswer();
-							return ;
-						}
-						else
-						{
 							this->inputFile.open(this->me->_finalPath + *Iit , std::ios::binary);
 							if (!this->inputFile.is_open())
 							{
@@ -606,26 +603,22 @@ void Client::Response::GetDirectory()
 								this->me->_codeStatus = 404;
 								return;
 							}
-							this->sendFileToFinalAnswer();
+							this->GenerateLastResponseHeader(200, *Iit, st);
+							this->me->_flags.canReadInputFile = true;
 							return ;
-						}
 					}
 				}
 				Iit++;
 			}
-			this->me->_flags.CanReadInputDir = false;
 		}
-		//should closedir if not cgi and index to be able to open it in autoindex
-		// closedir(this->me->_FdDirectory);
 	}
 	if (this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
 	{
 		std::cout << "autoindex" << std::endl;
 		if (this->me->_flags.CanReadInputDir)
 		{
-			html = this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = html;
-			this->SendChunkDir();
+			html += this->generatehtml(this->readdirectory());
+			this->me->_finalAnswer = html + "\r\n";
 			return ;
 		}
 		std::vector<std::string> content;
@@ -646,10 +639,10 @@ void Client::Response::GetDirectory()
 			return ;
 		}
 			this->me->_flags.CanReadInputDir = true;
-			html = this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = html;
-			this->SendChunkDir();
-		
+			this->GenerateLastResponseHeader(200, ".html", this->me->_st);
+			html += "<html><ul>" + this->generatehtml(this->readdirectory());
+			this->me->_finalAnswer = html + "\r\n";
+			html.clear();
 	}
 	else
 	{
@@ -680,7 +673,6 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 	std::vector<std::string>::iterator it = dir.begin();
 	if (it != dir.end())
 	{
-		html += "<html><ul>";
 		while (it != dir.end())
 		{
 			html +=  "<li><a href=\"" + *it + "\">" + *it + "</a></li><br>";
@@ -694,7 +686,7 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 
 void Client::Response::SendChunkDir()
 {
-	this->me->_finalAnswer.append("/r/n");
+	this->me->_finalAnswer.append("\r\n");
 }
 
 void Client::Response::GetFile()
