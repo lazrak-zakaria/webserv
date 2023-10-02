@@ -21,8 +21,16 @@ void	Client::clearClient()
 		_locationKey = "";
 		_finalAnswer = "";
 		_codeStatus = 0;
-
+		_timeLastAction = getTimeNow();
+		filesToDelete.clear();
+		_FdDirectory = NULL;
+		_ReadDirectory = NULL;
+		
+		
+		memset(&_flags, 0, sizeof(_flags));
+		_flags.expectSizeRead = true;
 		_request.requestClear();
+		_response.responseClear();
 }
 
 void	Client::setAllConfigData(std::map<std::string, ServerConfig*> *d)

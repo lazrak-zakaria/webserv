@@ -14,8 +14,8 @@ void	Client::Request::requestClear()
 		method.clear();
 		path.clear();
 		query.clear();
-		requestHeader;
-		requestHeadersMap;
+		requestHeader.clear();
+		requestHeadersMap.clear();
 
 		std::string().swap(requestBody);
 		receivedSize = 0;
@@ -24,8 +24,10 @@ void	Client::Request::requestClear()
 
 		contentLength = 0;
 		boundary.clear();
+		firstBoundary.clear();
+		endBoundary.clear();
 		contentType.clear();
-	
+		requestTimeStart = 0;
 		readAmountSoFar = expectedBytesToRead = TotalDataProcessed = 0;
 }
 

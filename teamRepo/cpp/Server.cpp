@@ -132,6 +132,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 
 			if (clientObj.isResponseFinished())
 			{
+				clientObj.clearClient();
 				FD_CLR(clientFdSock, &writeSet);
 				FD_SET(clientFdSock, &readSet);
 			}
