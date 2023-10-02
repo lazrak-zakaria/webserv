@@ -10,7 +10,7 @@ class Client
 {
 	private:
 
-		std::map<std::string, ServerConfig*> _allConfigsData;
+		std::map<std::string, ServerConfig*> *_allConfigsData;
 		ServerConfig	*_defaultConfigData;
 		ServerConfig	*_configData;
 		MimeAndError	*_mimeError;
@@ -183,7 +183,8 @@ class Client
 		void	test();
 		void	generateRandomName(std::string &name) const;
 
-		void	setConfigData(ServerConfig	*c);
+		void	setDefaultConfigData(ServerConfig	*c);
+		void	setAllConfigData(std::map<std::string, ServerConfig*> *_allConfigsData);
 		void	setMimeError(MimeAndError	*m);
 		bool	isRequestFinished() const;
 		bool	isResponseFinished() const;
