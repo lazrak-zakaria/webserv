@@ -8,7 +8,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	server1.host = "127.0.0.1";
 	server1.port = 9090;
 	server1.serverNames = "serv";
-	server1.limitBodySize = 50000;
+	server1.limitBodySize = 500000000;
 
 	std::vector<location> loc(2);
 
@@ -18,7 +18,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	loc[0].index.push_back("ind.gif");
 	// loc[0].index.push_back("a.out");
 	loc[0].index.push_back("mian.cpp");
-	loc[0].index.push_back("smile.png");
+	// loc[0].index.push_back("smile.png");
 	loc[0].autoIndex = true;
 	// loc[0].cgi.insert({".php", "php-cgi"});
 	loc[0].cgi.insert({".out", "a.out"});
@@ -28,8 +28,10 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	loc[0].allowedMethods.insert("DELETE");
 	// loc[0].canUpload = 1;
 
-	loc[1].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/test/";
+	loc[1].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/uplaod";
 	loc[1].allowedMethods.insert("POST");
+	loc[1].allowedMethods.insert("GET");
+
 	loc[1].canUpload = true;
 
 	server1.allLocations["/"] = loc[0];

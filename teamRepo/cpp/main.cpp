@@ -9,6 +9,8 @@ void	setLocation(std::map<int, Server*> &mp, ServerConfig	&server1, 	MimeAndErro
 
 int main()
 {
+
+	
 	ServerConfig s;
 	MimeAndError mime;
 	std::map<int, Server*> mp;

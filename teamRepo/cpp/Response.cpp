@@ -187,8 +187,8 @@ void	Client::Response::postMethodeResponse()
 		{
 			/*201 created*/
 			std::stringstream ss;
-			ss << "HTTP/1.1 " << me->_codeStatus << " " << me->_mimeError->statusCode[me->_codeStatus] << "\r\n";
-			ss << "Location: " << me->_request.path + "/"+ me->_request.outputFileName << "\r\n\r\n";
+			ss << me->_mimeError->statusCode[me->_codeStatus] << "\r\n";
+			ss << "Location: " << me->_request.path + me->_request.outputFileName << "\r\n\r\n";
 
 			me->_finalAnswer = ss.str();
 			me->_flags.isResponseFinished = true;
@@ -644,7 +644,9 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			break;
 		case 200:
 			if (!filename.empty())
+			{
 				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
+			}
 			respo += "transfer-encoding: chunked\r\n";
 			if (!filename.empty() && !st)
 			{
@@ -677,6 +679,9 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 					respo += "Connection: keep-alive\r\n";
 	}
 	this->me->_finalAnswer = respo + "\r\n";
+
+	// std::cout << me->_finalAnswer << "<-------\n";
+	// exit(77);
 }
 
 
@@ -843,6 +848,7 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 
 void Client::Response::GetFile()
 {
+
 	if (this->me->_flags.canReadInputFile)
 	{
 		this->sendFileToFinalAnswer();

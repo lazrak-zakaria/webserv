@@ -68,6 +68,7 @@ MimeAndError::MimeAndError()
 	mime["xul"] = "application/vnd.mozilla.xul+xml";
 	mime["zip"] = "application/zip";
 	mime["7z"] = "application/x-7z-compressed";
+	mime["mp3"] = "audio/mpeg";
 
 	statusCode[200] = "HTTP/1.1 200 OK";
 	statusCode[204] = "HTTP/1.1 204 No Content";
@@ -151,6 +152,7 @@ MimeAndError::MimeAndError()
 	mimeReverse ["application/vnd.mozilla.xul+xml"]= ".xul";
 	mimeReverse ["application/zip"] = ".zip";
 	mimeReverse ["application/x-7z-compressed"]= ".7z";
+	mimeReverse["audio/mp3"] = ".mp3";
 
 
 	errors[400] = "./../error/error_pages/400.html"; 

@@ -60,8 +60,9 @@ void	Client::Request::parseRequest()
 {
 	PARSE_REQUEST:
 
-	if (me->_codeStatus)
+	if (me->_codeStatus && me->_codeStatus != 201)
 	{
+		
 		me->_flags.isRequestFinished  = true;
 		return ;
 	}
@@ -587,6 +588,7 @@ void	Client::Request::parseMultipart()
 			{
 				me->_codeStatus = 400;
 				me->_flags.isRequestFinished = true;
+					exit(4);
 				return ;
 			}
 			requestBody.erase(0, multipartCompleteHeader + 4);
@@ -652,7 +654,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				tmp.push_back(tolower(requestBody[i]));
 			if (tmp != "content-disposition: form-data; name=")
 			{
-
+					exit(4);
 				return false;
 			}
 			--i;
@@ -671,6 +673,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 					break;
 			if (requestBody[i] != '\"')
 			{
+					exit(4);
 				return 0;
 			}
 			cursor = eCheck;
@@ -683,6 +686,8 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			{
 				if (requestBody[i + 1] != '\n')
 				{
+					exit(4);
+
 					return false;
 				}
 				++i;
@@ -693,6 +698,8 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				cursor = eFilename;
 				if (requestBody[++i] != ' ')
 				{
+					exit(4);
+
 					return false;
 				}
 			}
@@ -712,6 +719,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				
 				if (requestBody[i++] != '\"')
 				{
+					exit(4);
 					return false;
 				}
 				for (; i < multipartHeaderCrlf; ++i)
@@ -722,6 +730,8 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				}
 				if (requestBody[i] != '\"')
 				{
+					exit(4);
+
 					return false;
 				}
 				cursor = eCr;
@@ -729,6 +739,8 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			}
 			else
 			{
+					exit(4);
+
 				return false;
 			}
 		}
@@ -738,6 +750,8 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		{
 			if (requestBody[i] != '\r')
 			{
+					exit(4);
+
 				return false;
 			}
 			cursor = eLf;
@@ -747,7 +761,11 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		case eLf:
 		{
 			if (requestBody[i] != '\n')
+			{
+					exit(4);
+
 				return false;
+			}
 			if (optionalContentType)
 				cursor = eContentTypeOptional;
 		}
@@ -764,7 +782,12 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				return true;
 			}
 			if (tmp != "content-type")
+			{
+					exit(4);
+
 				return false;
+			
+			}
 			else
 			{
 				++i;
@@ -777,6 +800,8 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			}
 			if (requestBody.compare(i, 2, "\r\n") != 0)
 			{
+					exit(4);
+
 				return false;
 			}
 			i++;
@@ -789,7 +814,10 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			if (requestBody.compare(i, 2, "\r\n") != 0)
 			{
 				std::cout << requestBody << "XX\n";
-				return false;
+				{
+
+					return false;
+				}
 			}
 			++i;
 		}
@@ -805,23 +833,25 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		std::string extension = me->_mimeError->mimeReverse.count(contentTypeTmp) ? 
 												me->_mimeError->mimeReverse[contentTypeTmp] : "";
 
+		// me->addSlashToFinalPath();
 		std::string tmpPath = me->_finalPath + tmpFileName + extension;
 		// /*should i check if it exist ?*/
 
-		std::cout << tmpPath << "\n";
+		std::cout << tmpPath << "---------------=============\n";
 		outputFile.open(tmpPath, std::ios::binary);
 		if (outputFile.is_open() == 0)
 		{
 			std::cerr << "File did not open\n";
 			me->_codeStatus = 500;
-			return false;
+			{
+				return false;
+			}
 		}
 		me->_codeStatus = 201;
 		me->_flags.multicanw = true;
 		std::cout << "CREAT FILE\n";
+		isFileNameEmpty = true;
 	}
-	else 
-		me->_flags.multicanw = false;
 
 	return true;
 }
