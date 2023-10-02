@@ -7,7 +7,7 @@ void	Client::Response::setResponseFinished(u_int8_t code)
 }
 
 
-std::string		convertToHex(size_t decimalNum)
+std::string		Client::Response::convertToHex(size_t decimalNum)
 {
 	std::stringstream ss;
 	ss << std::hex << decimalNum;
@@ -501,7 +501,7 @@ void	Client::Response::generate200Header()
 /*****************************************************************/
 
 
-void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat st)
+void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat *st)
 {
 	std::string respo("HTTP/1.1 " + this->me->_mimeError->statusCode[status].append("\r\n"));
 	switch (status)
@@ -512,9 +512,16 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 		case 204:
 			respo;
 		case 200:
-			respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
+			if (filename.empty())
+				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
 			respo += "transfer-encoding: chunked\r\n";
-			respo += std::string("Last-Modified: ") + ctime(&st.st_mtime) + "\r\n";
+			if (!filename.empty() && !st)
+			{
+				time_t date = time(NULL);
+				respo += std::string("Date: ") + ctime(&date);
+			}
+			else
+				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime) + "\r\n";
 			if (me->_request.requestHeadersMap.count("connection"))
 			{
 				std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
@@ -609,7 +616,7 @@ void Client::Response::GetDirectory()
 								this->me->_codeStatus = 404;
 								return;
 							}
-							this->GenerateLastResponseHeader(200, *Iit, st);
+							this->GenerateLastResponseHeader(200, *Iit, &st);
 							this->me->_flags.canReadInputFile = true;
 							return ;
 					}
@@ -623,8 +630,8 @@ void Client::Response::GetDirectory()
 		std::cout << "autoindex" << std::endl;
 		if (this->me->_flags.CanReadInputDir)
 		{
-			html += this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = html + "\r\n";
+			html = this->generatehtml(this->readdirectory());
+			this->me->_finalAnswer = this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
 			return ;
 		}
 		std::vector<std::string> content;
@@ -645,9 +652,9 @@ void Client::Response::GetDirectory()
 			return ;
 		}
 			this->me->_flags.CanReadInputDir = true;
-			this->GenerateLastResponseHeader(200, ".html", this->me->_st);
+			this->GenerateLastResponseHeader(200, ".html", NULL);
 			html += "<html><ul>" + this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = html + "\r\n";
+			this->me->_finalAnswer = this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
 			html.clear();
 	}
 	else
@@ -690,16 +697,12 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 	return html;
 }
 
-void Client::Response::SendChunkDir()
-{
-	this->me->_finalAnswer.append("\r\n");
-}
-
 void Client::Response::GetFile()
 {
 	if (this->me->_flags.canReadInputFile)
 	{
-
+		this->sendFileToFinalAnswer();
+		return ;
 	}
 	this->inputFile.open(this->me->_finalPath, std::ios::binary);
 	if (!this->inputFile.is_open())
@@ -710,7 +713,9 @@ void Client::Response::GetFile()
 	}
 	this->me->_codeStatus = 200;
 	this->me->_flags.canReadInputFile = true;
-	this->sendFileToFinalAnswer();
+	struct stat st;
+	stat(this->me->_finalPath.c_str(), &st);
+	this->GenerateLastResponseHeader(200, this->me->_finalPath, &st);
 }
 
 
@@ -760,6 +765,7 @@ void Client::Response::DeleteMethodResponse()
 			{
 				this->me->_codeStatus = 204;
 				std::cout << "204 no content" << std::endl;
+				// this->GenerateLastResponseHeader(204, this->me->_finalPath, )
 				return;
 			}
 			else
@@ -796,7 +802,7 @@ void Client::Response::DeleteMethodResponse()
 				else
 				{
 					me->_codeStatus = 200;
-					generate200Header();
+					// this->GenerateLastResponseHeader(200, )
 					me->_flags.canReadInputFile = true;
 				}
 			}
