@@ -503,6 +503,117 @@ void	Client::Response::generate200Header()
 /*****************************************************************/
 /*****************************************************************/
 
+std::string Client::Response::FindFileToOpen()
+{
+    struct stat st;
+    int code = 0, ret_st = 0;
+
+
+    if (!this->me->_configData->errorPages.empty() && !this->me->_configData->errorPages[this->me->_codeStatus].empty())
+    {
+        ret_st = stat(this->me->_configData->errorPages[this->me->_codeStatus].c_str(), &st);
+        if (ret_st == 0)
+        {
+            this->inputFile.open(this->me->_configData->errorPages[this->me->_codeStatus] , std::ios::binary);
+            if (this->inputFile.is_open())
+            {
+                return this->me->_configData->errorPages[this->me->_codeStatus];
+            }
+            else
+                code = 403;
+        }
+        else
+		{
+            code =  404;
+		}
+    }
+    if (code == 0 && !this->me->_mimeError->errors.empty() && !this->me->_mimeError->errors[this->me->_codeStatus].empty())
+    {
+        ret_st = stat(this->me->_mimeError->errors[this->me->_codeStatus].c_str(), &st);
+        if (ret_st == 0)
+        {
+            this->inputFile.open(this->me->_mimeError->errors[this->me->_codeStatus] , std::ios::binary);
+            if (this->inputFile.is_open())
+            {
+                return this->me->_mimeError->errors[this->me->_codeStatus];
+            }
+            else
+                return "";
+        }
+        else
+		{
+            return "";
+		}
+    }
+	if (code != 0 && !this->me->_mimeError->errors.empty() && !this->me->_mimeError->errors[code].empty())
+    {
+        ret_st = stat(this->me->_mimeError->errors[code].c_str(), &st);
+        if (ret_st == 0)
+        {
+            this->inputFile.open(this->me->_mimeError->errors[code] , std::ios::binary);
+            if (this->inputFile.is_open())
+            {
+				this->me->_codeStatus = code;
+                return this->me->_mimeError->errors[code];
+            }
+            else
+                return "";
+        }
+        else
+		{
+            return "";
+		}
+    }
+    return "";
+}
+
+
+void Client::Response::ErrorResponse()
+{
+    time_t date = time(NULL);
+    std::string opnedfile;
+    if (this->me->_flags.canReadInputFile)
+    {
+        this->sendFileToFinalAnswer();
+    }
+    else
+    {
+		opnedfile = FindFileToOpen();
+		std::cout << "++++++++++" << opnedfile << std::endl;
+        std::string respo(this->me->_mimeError->statusCode[this->me->_codeStatus] + "\r\n");
+		if (!opnedfile.empty())
+        	respo += "Content-type: " + this->getContentTypeOfFile(opnedfile) + "\r\n";
+        respo += "Content-Transfer: Chunked\r\n";
+        respo += std::string("Date: ") + ctime(&date) + "\r\n";
+        if (me->_request.requestHeadersMap.count("connection"))
+		{
+			std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
+			for (int i = 0; tmp[i] ; ++i)
+				tmp[i] = tolower(tmp[i]);
+			if (tmp.find("close") != std::string::npos)
+			{
+				respo += "Connection: close\r\n";
+			}
+			else
+			{
+				respo += "Connection: keep-alive\r\n";
+			}
+		}
+		else
+			respo += "Connection: keep-alive\r\n";
+        this->me->_finalAnswer = respo + "\r\n";
+		this->me->_flags.isHeaderResponseSent = true;
+        if(opnedfile.empty())
+        {
+            this->me->_flags.isResponseFinished = true;
+            this->me->_flags.canReadInputFile = false;
+            std::string tmp("<html><h1>Wach Mamragtich</h1></html>\r\n");
+            this->me->_finalAnswer += "\r\n" + convertToHex(tmp.size()).append("\r\n") + tmp.append("\r\n0\r\n");
+        }
+        else
+            this->me->_flags.canReadInputFile = true;
+    }
+}
 
 void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat *st)
 {
@@ -555,7 +666,7 @@ void Client::Response::GetMethodResponse()
 	int st;
 	if (!this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
 	{
-		// response 301;
+		this->GenerateLastResponseHeader(301, "", NULL);
 		std::cout << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
 	}
 	st = stat(this->me->_finalPath.c_str(), &this->me->_st);

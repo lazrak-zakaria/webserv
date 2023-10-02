@@ -217,15 +217,7 @@ std::string		&Client::serveResponse(void)
 	}
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
-		if(_flags.isHeaderResponseSent)
-		{
-			_response.responseError();
-		}
-		else
-		{
-			_response.generateResponseErrorHeader();
-			_flags.isHeaderResponseSent = true;
-		}
+		_response.ErrorResponse();
 	}
 	else if (_request.method == "POST")
 	{
