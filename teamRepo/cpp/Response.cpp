@@ -620,7 +620,7 @@ void Client::Response::ErrorResponse()
 
 void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat *st)
 {
-	std::string respo("HTTP/1.1 " + this->me->_mimeError->statusCode[status].append("\r\n"));
+	std::string respo(this->me->_mimeError->statusCode[status].append("\r\n"));
 	switch (status)
 	{
 		case 301:
@@ -636,9 +636,15 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			{
 				time_t date = time(NULL);
 				respo += std::string("Date: ") + ctime(&date);
+				respo.pop_back();
+				respo += "\r\n";
 			}
 			else
-				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime) + "\r\n";
+			{
+				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime);
+				respo.pop_back();
+				respo += "\r\n";
+			}
 			if (me->_request.requestHeadersMap.count("connection"))
 			{
 				std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
@@ -656,7 +662,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			else
 					respo += "Connection: keep-alive\r\n";
 	}
-	this->me->_finalAnswer = respo;
+	this->me->_finalAnswer = respo + "\r\n";
 }
 
 
