@@ -110,7 +110,7 @@ void	Client::Response::postMethodeResponseDirectory()
 
 void	Client::Response::postMethodeResponseFile()
 {
-	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
+	if (!me->_configData->allLocations[me->_locationKey].cgi.empty())
 	{
 		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
 		{

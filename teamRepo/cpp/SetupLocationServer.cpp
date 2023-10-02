@@ -12,12 +12,12 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "zz/Desktop/ww/teamRepo/cgi_bin/";
+	loc[0].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/";
 	loc[0].index.push_back("ind.php");
 	loc[0].index.push_back("index.html");
 	loc[0].index.push_back("ind.gif");
-	loc[0].index.push_back("a.out");
-	loc[0].index.push_back("midan.cpp");
+	// loc[0].index.push_back("a.out");
+	loc[0].index.push_back("mian.cpp");
 	loc[0].index.push_back("smile.png");
 	loc[0].autoIndex = true;
 	// loc[0].cgi.insert({".php", "php-cgi"});
