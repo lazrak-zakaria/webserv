@@ -98,7 +98,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			{
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &readSet);
-				std::cout << "drop client\n";
+				std::cout << "drop READ client\n";
 				continue ;
 			}
 			
@@ -125,8 +125,8 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			if (dataSent == -1 || dataSent != answer.size())
 			{
 				invalidSockets.push_back(clientFdSock);
-				FD_CLR(clientFdSock, &readSet);
-				std::cout << "drop client\n";
+				FD_CLR(clientFdSock, &writeSet);
+				std::cout << "drop WRITE client\n";
 				continue ;
 			}
 
@@ -140,7 +140,9 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
+		std::cout << "close "<< *it << "\n";
 		close(*it);
 		serverClients.erase(*it);
 	}
+	invalidSockets.clear();
 }
