@@ -515,7 +515,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 		case 204:
 			respo;
 		case 200:
-			if (filename.empty())
+			if (!filename.empty())
 				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
 			respo += "transfer-encoding: chunked\r\n";
 			if (!filename.empty() && !st)
@@ -654,11 +654,11 @@ void Client::Response::GetDirectory()
 			this->me->_codeStatus = 403;
 			return ;
 		}
-			this->me->_flags.CanReadInputDir = true;
-			this->GenerateLastResponseHeader(200, ".html", NULL);
-			html += "<html><ul>" + this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
-			html.clear();
+		this->me->_flags.CanReadInputDir = true;
+		this->GenerateLastResponseHeader(200, ".html", NULL);
+		html += "<html><ul>" + this->generatehtml(this->readdirectory());
+		this->me->_finalAnswer += this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
+		html.clear();
 	}
 	else
 	{
@@ -695,7 +695,7 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
             it++;
 		}
 		if (this->me->_flags.isResponseFinished)
-        	html += "</ul></html>";
+        	html += "</ul></html>\r\n0\r\n";
 	}
 	return html;
 }
