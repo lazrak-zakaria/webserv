@@ -6,6 +6,13 @@ void	Client::Response::setResponseFinished(u_int8_t code)
 	me->_flags.isResponseFinished = true;
 }
 
+void	Client::Response::responseClear()
+{
+	responseHeader.clear();
+	chunkedSize = 0;
+	inputFile.close();
+	location301.clear();
+}
 
 std::string		Client::Response::convertToHex(size_t decimalNum)
 {
