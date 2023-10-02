@@ -99,6 +99,8 @@ class Client
 			std::string				getContentTypeOfFile(std::string &f);
 
 			void					GenerateLastResponseHeader(int status, std::string filename, struct stat *st);
+			void					ErrorResponse();
+			std::string				FindFileToOpen();
 
 			// get
 			void GetMethodResponse();
