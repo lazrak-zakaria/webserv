@@ -12,7 +12,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "zz/Desktop/ww/teamRepo/cgi_bin/";
+	loc[0].alias = "/nfs/homes/yoyahya/Desktop/lastrepo/teamRepo/cpp/";
 	loc[0].index.push_back("ind.php");
 	loc[0].index.push_back("index.html");
 	loc[0].index.push_back("ind.gif");
@@ -34,7 +34,10 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	server1.allLocations["/"] = loc[0];
 	server1.allLocations["/upload"] = loc[1];
-}
+
+	// u_int16_t a = 404;
+	server1.errorPages[404] = "/nfs/homes/yoyahya/Desktop/lastrepo/teamRepo/error/error_pages/error404.txt";
+}	
 
 /*
 
