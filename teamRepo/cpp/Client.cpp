@@ -102,6 +102,18 @@ bool		Client::isLocationMatched(const std::string &locationDirective, const std:
 
 void	Client::detectFinalLocation(void)
 {
+
+	#ifdef MULTIPLE
+	
+	if (_allConfigsData.count(_request.cgiHeadersMap["host"]))
+		_configData = _request.cgiHeadersMap["host"];
+	else
+		_configData = _defaultConfigData;
+
+	#endif 
+
+
+
 	std::vector<std::string> 					locationSet;
 	std::map<std::string, location>::iterator	it;
 
@@ -200,9 +212,7 @@ std::string		&Client::serveResponse(void)
 	}
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
-
 		_response.ErrorResponse();
-
 	}
 	else if (_request.method == "POST")
 	{

@@ -188,7 +188,7 @@ void	Client::Request::parseRequest()
 
 
 		struct stat sb;
-		if (me->isPathExist(me->_finalPath) == false)
+		if (!me->isPathExist(me->_finalPath))
 		{
 			me->_flags.isRequestFinished = true;
 			me->_codeStatus = 404;

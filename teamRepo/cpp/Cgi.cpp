@@ -180,7 +180,7 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 		me->_response.inputFile.read(buf, BUFERSIZE);
 		int	howMuchRead = me->_response.inputFile.gcount();
 			
-		if (me->_flags.isCgiHaveContentLength == false)
+		if (!me->_flags.isCgiHaveContentLength)
 		{
 			std::stringstream ss;
 			ss << std::hex << howMuchRead;
@@ -269,7 +269,7 @@ void	Client::Cgi::executeCgi()
 	me->generateRandomName(outputFileCGi);
 	outputFileCGi = std::string("./../tmp/TTT").append(outputFileCGi);
 	std::ofstream outfile (outputFileCGi);
-	if (outfile.is_open() == false)
+	if (!outfile.is_open())
 	{
 		std::cout << "FAILeD++++\n";
 		me->_codeStatus = 500;
@@ -286,7 +286,7 @@ void	Client::Cgi::executeCgi()
 
 		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
 		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
-		env[i++] = strdup(std::string("SERVER_NAME").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
+		env[i++] = strdup(std::string("SERVER_NAME=").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
 		
 		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
 
@@ -341,6 +341,7 @@ void	Client::Cgi::executeCgi()
 		
 		std::cerr << "/*******/\n";
 		execve(argv[0], argv, env);
+		std::cerr << "/******78787*/\n";
 		exit(5);
 	}
 	else

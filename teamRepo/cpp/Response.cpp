@@ -110,7 +110,7 @@ void	Client::Response::postMethodeResponseDirectory()
 
 void	Client::Response::postMethodeResponseFile()
 {
-	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
+	if (!me->_configData->allLocations[me->_locationKey].cgi.empty())
 	{
 		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
 		{
@@ -157,6 +157,7 @@ void	Client::Response::postMethodeResponse()
 
 		if (me->_flags.isCgiRunning)
 		{
+			std::cout << "+++++++++++++++\n";
 			me->_cgi.checkCgiTimeout();
 		}
 		if (me->_flags.isCgiFinished)
@@ -232,6 +233,8 @@ std::string	Client::Response::getContentTypeOfFile(std::string &f)
 void	Client::Response::generateResponseErrorHeader(void)
 {
 	inputFile.close();
+		std::cout << "{}{}{}\n";
+
 	std::stringstream ss;
 	ss << "HTTP/1.1 " << me->_codeStatus << " " << me->_mimeError->statusCode[me->_codeStatus] << "\r\n";
 	ss << "Transfer-Encoding: " << "chunked" << "\r\n";
