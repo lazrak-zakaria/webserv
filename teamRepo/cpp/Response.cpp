@@ -627,7 +627,11 @@ void Client::Response::ErrorResponse()
 
 void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat *st)
 {
-	std::string respo(this->me->_mimeError->statusCode[status].append("\r\n"));
+	std::string respo (this->me->_mimeError->statusCode[status]);
+	respo.append("\r\n");
+	DBG;
+	std::cout<<"|" <<  respo << "|\n";
+	DBG;
 	switch (status)
 	{
 		case 301:
