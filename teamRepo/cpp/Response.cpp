@@ -504,6 +504,47 @@ void	Client::Response::generate200Header()
 /*****************************************************************/
 
 
+void Client::Response::GenerateLastResponseHeader(int status, std::string filename, struct stat *st)
+{
+	std::string respo("HTTP/1.1 " + this->me->_mimeError->statusCode[status].append("\r\n"));
+	switch (status)
+	{
+		case 301:
+			respo += "location: " + this->me->_request.path + "/\r\n";
+			break;
+		case 204:
+			respo;
+		case 200:
+			if (filename.empty())
+				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
+			respo += "transfer-encoding: chunked\r\n";
+			if (!filename.empty() && !st)
+			{
+				time_t date = time(NULL);
+				respo += std::string("Date: ") + ctime(&date);
+			}
+			else
+				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime) + "\r\n";
+			if (me->_request.requestHeadersMap.count("connection"))
+			{
+				std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
+				for (int i = 0; tmp[i] ; ++i)
+					tmp[i] = tolower(tmp[i]);
+				if (tmp.find("close") != std::string::npos)
+				{
+					respo += "Connection: close\r\n";
+				}
+				else
+				{
+					respo += "Connection: keep-alive\r\n";
+				}
+			}
+			else
+					respo += "Connection: keep-alive\r\n";
+	}
+	this->me->_finalAnswer = respo;
+}
+
 
 // ---------------------------  GET --------------------------------//
 
@@ -550,25 +591,12 @@ void Client::Response::GetDirectory()
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
 	{
 		std::cout << "index" << std::endl;
-		if (this->me->_flags.CanReadInputDir == 0)
+		if (this->me->_flags.canReadInputFile)
 		{
-			this->me->_FdDirectory = opendir(this->me->_finalPath.c_str())	;
-			if (this->me->_FdDirectory == NULL)
-			{
-				perror("Error opendir Fail: ");
-				this->me->_codeStatus = 404;
-				return ;
-			}
-			this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
-			if (this->me->_ReadDirectory == NULL)
-			{
-				perror("Error readdir Fail: ");
-				this->me->_codeStatus = 403;
-				return ;
-			}
-			this->me->_flags.CanReadInputDir = true;
+			this->sendFileToFinalAnswer();
+			return ;
 		}
-		if (this->me->_flags.CanReadInputDir)
+		else
 		{
 			while(Iit != this->me->_configData->allLocations[this->me->_locationKey].index.end())
 			{
@@ -578,18 +606,12 @@ void Client::Response::GetDirectory()
 					if (this->me->isMatchedWithCgi(*Iit))
 					{
 						std::cout << "------------cgi---------" << std::endl;
+						me->_finalPath.append(*Iit);
 						this->me->_cgi.executeCgi();
 						return ;
 					}
 					else
 					{
-						if (this->me->_flags.canReadInputFile)
-						{
-							this->sendFileToFinalAnswer();
-							return ;
-						}
-						else
-						{
 							this->inputFile.open(this->me->_finalPath + *Iit , std::ios::binary);
 							if (!this->inputFile.is_open())
 							{
@@ -597,17 +619,14 @@ void Client::Response::GetDirectory()
 								this->me->_codeStatus = 404;
 								return;
 							}
-							this->sendFileToFinalAnswer();
+							this->GenerateLastResponseHeader(200, *Iit, &st);
+							this->me->_flags.canReadInputFile = true;
 							return ;
-						}
 					}
 				}
 				Iit++;
 			}
-			this->me->_flags.CanReadInputDir = false;
 		}
-		//should closedir if not cgi and index to be able to open it in autoindex
-		// closedir(this->me->_FdDirectory);
 	}
 	if (this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
 	{
@@ -615,8 +634,7 @@ void Client::Response::GetDirectory()
 		if (this->me->_flags.CanReadInputDir)
 		{
 			html = this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = html;
-			this->SendChunkDir();
+			this->me->_finalAnswer = this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
 			return ;
 		}
 		std::vector<std::string> content;
@@ -637,10 +655,10 @@ void Client::Response::GetDirectory()
 			return ;
 		}
 			this->me->_flags.CanReadInputDir = true;
-			html = this->generatehtml(this->readdirectory());
-			this->me->_finalAnswer = html;
-			this->SendChunkDir();
-		
+			this->GenerateLastResponseHeader(200, ".html", NULL);
+			html += "<html><ul>" + this->generatehtml(this->readdirectory());
+			this->me->_finalAnswer = this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
+			html.clear();
 	}
 	else
 	{
@@ -671,7 +689,6 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 	std::vector<std::string>::iterator it = dir.begin();
 	if (it != dir.end())
 	{
-		html += "<html><ul>";
 		while (it != dir.end())
 		{
 			html +=  "<li><a href=\"" + *it + "\">" + *it + "</a></li><br>";
@@ -683,16 +700,12 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 	return html;
 }
 
-void Client::Response::SendChunkDir()
-{
-	this->me->_finalAnswer.append("/r/n");
-}
-
 void Client::Response::GetFile()
 {
 	if (this->me->_flags.canReadInputFile)
 	{
-
+		this->sendFileToFinalAnswer();
+		return ;
 	}
 	this->inputFile.open(this->me->_finalPath, std::ios::binary);
 	if (!this->inputFile.is_open())
@@ -703,7 +716,9 @@ void Client::Response::GetFile()
 	}
 	this->me->_codeStatus = 200;
 	this->me->_flags.canReadInputFile = true;
-	this->sendFileToFinalAnswer();
+	struct stat st;
+	stat(this->me->_finalPath.c_str(), &st);
+	this->GenerateLastResponseHeader(200, this->me->_finalPath, &st);
 }
 
 
@@ -753,6 +768,7 @@ void Client::Response::DeleteMethodResponse()
 			{
 				this->me->_codeStatus = 204;
 				std::cout << "204 no content" << std::endl;
+				// this->GenerateLastResponseHeader(204, this->me->_finalPath, )
 				return;
 			}
 			else
@@ -789,7 +805,7 @@ void Client::Response::DeleteMethodResponse()
 				else
 				{
 					me->_codeStatus = 200;
-					generate200Header();
+					// this->GenerateLastResponseHeader(200, )
 					me->_flags.canReadInputFile = true;
 				}
 			}
