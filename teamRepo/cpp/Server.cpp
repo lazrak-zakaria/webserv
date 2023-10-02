@@ -6,10 +6,16 @@ void	Server::setConfigData(ServerConfig	*c)
 	configData = c;
 }
 
+void	Server::setConfigDataServerNames(std::map<std::string, ServerConfig*>	*s)
+{
+	serverNamesConfig = s;
+}
+
 void	Server::setMimeError(MimeAndError	*m)
 {
 	mimeError = m;
 }
+
 
 int		Server::getFdSock()
 {
@@ -68,7 +74,8 @@ void	Server::acceptClient(fd_set &readSet)
 	}
 	FD_SET(fdSockTmp, &readSet);
 	serverClients[fdSockTmp];
-	serverClients[fdSockTmp].setConfigData(configData);
+	serverClients[fdSockTmp].setAllConfigData(serverNamesConfig);
+	serverClients[fdSockTmp].setDefaultConfigData(configData);
 	serverClients[fdSockTmp].setMimeError(mimeError);
 }
 

@@ -12,21 +12,27 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_flags.expectSizeRead = true;
 	_FdDirectory = NULL;
 	_ReadDirectory = NULL;
+	_allConfigsData = 0;
 }
 
 void	Client::clearClient()
 {
-		_finalPath.clear();
-		_locationKey.clear();
-		_finalAnswer.clear();
+		_finalPath = "";
+		_locationKey = "";
+		_finalAnswer = "";
 		_codeStatus = 0;
 
 		_request.requestClear();
 }
 
-void	Client::setConfigData(ServerConfig	*c)
+void	Client::setAllConfigData(std::map<std::string, ServerConfig*> *d)
 {
-	_configData = c;
+	_allConfigsData = d;
+}
+
+void	Client::setDefaultConfigData(ServerConfig	*c)
+{
+	_defaultConfigData = c;
 }
 
 void	Client::setMimeError(MimeAndError	*m)
@@ -103,15 +109,14 @@ bool		Client::isLocationMatched(const std::string &locationDirective, const std:
 void	Client::detectFinalLocation(void)
 {
 
-	#ifdef MULTIPLE
-	
-	if (_allConfigsData.count(_request.cgiHeadersMap["host"]))
-		_configData = _request.cgiHeadersMap["host"];
+
+	if (_allConfigsData && _allConfigsData->count(*(_request.requestHeadersMap["host"].end()-1)))
+		_configData = _allConfigsData->at("host");
 	else
 		_configData = _defaultConfigData;
 
-	#endif 
 
+	std::cout << "here\n";
 
 
 	std::vector<std::string> 					locationSet;
