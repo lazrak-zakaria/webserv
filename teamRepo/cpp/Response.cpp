@@ -637,6 +637,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 		case 204:
 			respo;
 			this->me->_flags.isResponseFinished = true;
+			break;
 		case 200:
 			if (!filename.empty())
 				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
@@ -670,7 +671,6 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			}
 			else
 					respo += "Connection: keep-alive\r\n";
-			this->me->_flags.isResponseFinished = true;
 	}
 	this->me->_finalAnswer = respo + "\r\n";
 }
