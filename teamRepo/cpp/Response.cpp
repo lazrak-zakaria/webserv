@@ -6,6 +6,14 @@ void	Client::Response::setResponseFinished(u_int8_t code)
 	me->_flags.isResponseFinished = true;
 }
 
+
+std::string		convertToHex(size_t decimalNum)
+{
+	std::stringstream ss;
+	ss << std::hex << decimalNum;
+	return ss.str();
+}
+
 void	Client::Response::sendFileToFinalAnswer()
 {
 	const int 	BUF_SIZE = 5000; 
@@ -14,10 +22,8 @@ void	Client::Response::sendFileToFinalAnswer()
 
 	int	howMuchRead = inputFile.gcount();
 	
-	std::stringstream ss;
-	ss << std::hex << howMuchRead;
 	me->_finalAnswer = "";
-	me->_finalAnswer.append(ss.str().append("\r\n"));
+	me->_finalAnswer.append(convertToHex(howMuchRead).append("\r\n"));
 	buf[howMuchRead] = '\r';
 	buf[howMuchRead + 1] = '\n';
 

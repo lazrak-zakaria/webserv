@@ -10,6 +10,8 @@ class Client
 {
 	private:
 
+		std::map<std::string, std::set<ServerConfig*> > _allConfigsData;
+		ServerConfig	*_defaultConfigData;
 		ServerConfig	*_configData;
 		MimeAndError	*_mimeError;
 		std::string		_finalPath;
@@ -83,9 +85,7 @@ class Client
 			void					postMethodeResponseDirectory();
 			void					postMethodeResponseFile();
 
-			// void					getMethodResponse();
-			// void					getMethodeResponseDirectory();
-			// void					getMethodeResponseFile();
+			std::string				convertToHex(size_t sz);
 
 			void					sendCgiHeaders();
 
