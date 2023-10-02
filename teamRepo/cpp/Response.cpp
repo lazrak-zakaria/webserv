@@ -625,9 +625,11 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 	{
 		case 301:
 			respo += "location: " + this->me->_request.path + "/\r\n";
+			this->me->_flags.isResponseFinished = true;
 			break;
 		case 204:
 			respo;
+			this->me->_flags.isResponseFinished = true;
 		case 200:
 			if (!filename.empty())
 				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
@@ -661,6 +663,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			}
 			else
 					respo += "Connection: keep-alive\r\n";
+			this->me->_flags.isResponseFinished = true;
 	}
 	this->me->_finalAnswer = respo + "\r\n";
 }
@@ -706,6 +709,7 @@ void Client::Response::GetDirectory()
 	{
 		this->me->_codeStatus = 301;
 		std::cout << "Redirect to 301 url don't have / at the end url => " << this->me->_finalPath << std::endl;
+		this->GenerateLastResponseHeader(301, "", NULL);
 		return ;
 	}
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
