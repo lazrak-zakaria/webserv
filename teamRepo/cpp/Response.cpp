@@ -755,6 +755,9 @@ void Client::Response::GetDirectory()
 		{
 			html = this->generatehtml(this->readdirectory());
 			this->me->_finalAnswer = this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
+			if (this->me->_flags.isResponseFinished)
+				this->me->_finalAnswer.append("0\r\n");
+
 			return ;
 		}
 		std::vector<std::string> content;
@@ -778,6 +781,9 @@ void Client::Response::GetDirectory()
 		this->GenerateLastResponseHeader(200, ".html", NULL);
 		html += "<html><ul>" + this->generatehtml(this->readdirectory());
 		this->me->_finalAnswer += this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
+		if (this->me->_flags.isResponseFinished)
+			this->me->_finalAnswer.append("0\r\n");
+
 		html.clear();
 	}
 	else
@@ -815,7 +821,7 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
             it++;
 		}
 		if (this->me->_flags.isResponseFinished)
-        	html += "</ul></html>\r\n0\r\n";
+        	html += "</ul></html>";
 	}
 	return html;
 }
