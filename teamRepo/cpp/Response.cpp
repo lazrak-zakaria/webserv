@@ -716,10 +716,10 @@ void Client::Response::GetDirectory()
 	struct stat st;
 	int Ret_St;
 
-	if (this->me->_finalPath.size() > 1 &&  this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
+	if (this->me->_request.path[this->me->_request.path.size() - 1] != '/')
 	{
 		this->me->_codeStatus = 301;
-		std::cout << "Redirect to 301 url don't have / at the end url => " << this->me->_finalPath << std::endl;
+		std::cout << "Redirect to 301 url don't have / at the end url => " << this->me->_request.path<< std::endl;
 		this->GenerateLastResponseHeader(301, "", NULL);
 		return ;
 	}
