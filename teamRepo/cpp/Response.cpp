@@ -509,6 +509,22 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
 			respo += "transfer-encoding: chunked\r\n";
 			respo += std::string("Last-Modified: ") + ctime(&st.st_mtime) + "\r\n";
+			if (me->_request.requestHeadersMap.count("connection"))
+			{
+				std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
+				for (int i = 0; tmp[i] ; ++i)
+					tmp[i] = tolower(tmp[i]);
+				if (tmp.find("close") != std::string::npos)
+				{
+					respo += "Connection: close\r\n";
+				}
+				else
+				{
+					respo += "Connection: keep-alive\r\n";
+				}
+			}
+			else
+					respo += "Connection: keep-alive\r\n";
 	}
 	this->me->_finalAnswer = respo;
 }
@@ -587,6 +603,7 @@ void Client::Response::GetDirectory()
 					if (this->me->isMatchedWithCgi(*Iit))
 					{
 						std::cout << "------------cgi---------" << std::endl;
+						me->_finalPath.append(*Iit);
 						this->me->_cgi.executeCgi();
 						return ;
 					}
@@ -694,7 +711,7 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 
 void Client::Response::SendChunkDir()
 {
-	this->me->_finalAnswer.append("/r/n");
+	this->me->_finalAnswer.append("\r\n");
 }
 
 void Client::Response::GetFile()
