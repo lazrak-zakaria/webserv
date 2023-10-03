@@ -136,6 +136,22 @@ void	Client::Request::parseRequest()
 				}
 				me->_codeStatus = 201;
 			}
+			else if (me->_flags.isMultipart && !me->_flags.checkedMultipartPath && !outputFile.is_open())
+			{
+				struct stat sb;
+				if (stat(me->_finalPath.c_str(), &sb) == 0)
+				{
+					if (S_ISDIR(sb.st_mode))
+						me->addSlashToFinalPath();
+					else
+					{
+						me->_codeStatus = 403;
+						me->_flags.isRequestFinished = true;
+						return ;
+					}
+					me->_flags.checkedMultipartPath = true;
+				}
+			}
 
 			if (me->_flags.isChunked)
 				parseChunkedData();
@@ -871,10 +887,11 @@ void	Client::Request::parseChunkedData()
 
 	if (me->_flags.expectSizeRead)
 	{
-		if (size_t pos = requestBody.find("\r\n") && pos != std::string::npos)
+
+		size_t pos = requestBody.find("\r\n");
+		if (pos != std::string::npos)
 		{
-			std::string hexValue(requestBody, 0, pos);
-			
+			std::string hexValue = requestBody.substr( 0, pos);
 			std::stringstream ss;
 			ss  << hexValue ; 
 			ss >> std::hex >> expectedBytesToRead ;
@@ -917,6 +934,8 @@ void	Client::Request::parseChunkedData()
 				contentToStore.append(requestBody, 0, (expectedBytesToRead - readAmountSoFar));
 
 				requestBody.erase(0, (expectedBytesToRead - readAmountSoFar));
+				// std::cout << requestBody << "blabla\n";
+				// exit(7);
 				readAmountSoFar = expectedBytesToRead = 0;
 				me->_flags.crlfRequired = true;
 			}
@@ -941,7 +960,10 @@ void	Client::Request::parseChunkedData()
 			}
 			else
 			{
-				// std::cout << "Error body should end with crlf\n";
+				std::cout << "Error body should end with crlf\n";
+				DBG;
+				std::cout << requestBody << "}\n";
+				DBG;
 				me->_codeStatus = 400;
 			}
 
@@ -950,6 +972,8 @@ void	Client::Request::parseChunkedData()
 	}
 
 	//buffer still have data to be parsed
-	if ((me->_flags.expectSizeRead && requestBody.find("\r\n")) || (me->_flags.expectSizeRead == 0 && requestBody.empty() == 0))
+	if ((me->_flags.expectSizeRead && requestBody.find("\r\n") != std::string::npos) || (me->_flags.expectSizeRead == 0 && !requestBody.empty()))
+	{
 		goto START;
+	}
 }

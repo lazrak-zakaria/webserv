@@ -152,6 +152,7 @@ class Client
 			bool	isMultipart;
 			bool	inMultipartBody;
 			bool	multicanw;
+			bool	checkedMultipartPath;
 			/*chunked*/
 			bool	expectSizeRead;
 			bool	crlfRequired;

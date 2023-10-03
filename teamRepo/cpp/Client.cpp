@@ -210,13 +210,18 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 	if (_flags.isRequestBody)
 	{
 		_request.requestBody.append(requestData, receivedSize);
-		// DBG;
-		// std::cout <<_request.requestBody;
-		// DBG;
+		DBG << "body";
+		std::cout <<_request.requestBody;
+		DBG;
 	}
 	else
+	{
+		
 		_request.requestHeader.append(requestData, receivedSize);
-
+		DBG << "header";
+		std::cout <<_request.requestHeader;
+		DBG;
+	}
 	// std::cout << requestData << "\n";
 	_request.parseRequest();
 }
