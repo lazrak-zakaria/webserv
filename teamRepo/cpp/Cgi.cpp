@@ -313,6 +313,8 @@ void	Client::Cgi::executeCgi()
 		std::string	&programName 	= me->_configData->allLocations[me->_locationKey].cgi[cgiKeyProgram];
 		std::string	&scriptToexec	= me->_finalPath;
 		
+		// std::cout << inputFileCGi << "++++++++\n";
+		// exit(4);
 		if (inputFileCGi.empty() == false) /*for post*/
 		{
 			if (freopen(inputFileCGi.c_str(), "r", stdin) == NULL)
@@ -346,6 +348,7 @@ void	Client::Cgi::executeCgi()
 	}
 	else
 	{
+		// sleep(2);
 		struct timeval tmv;
 		gettimeofday(&tmv, NULL);
 		timeStart =  tmv.tv_sec;

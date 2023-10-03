@@ -91,7 +91,14 @@ void	Client::Request::parseRequest()
 				parseChunkedData();
 			else
 			{
+
+				readAmountSoFar += requestBody.size();
 				outputFile.write(requestBody.c_str(), requestBody.size());
+				if (readAmountSoFar >= contentLength)
+				{
+					outputFile.close();
+					me->_flags.isRequestFinished = true;
+				}
 				requestBody = "";
 			}
 
@@ -126,7 +133,6 @@ void	Client::Request::parseRequest()
 												me->_mimeError->mimeReverse[contentType] : "";
 				me->_finalPath.append(name.append(extension));
 				outputFileName = name;
-				
 				outputFile.open(me->_finalPath.c_str(), std::ios::binary);
 				if (outputFile.is_open() == 0)
 				{
@@ -157,10 +163,19 @@ void	Client::Request::parseRequest()
 				parseChunkedData();
 			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
 			{
+				readAmountSoFar += requestBody.size();
+				if (readAmountSoFar >= contentLength)
+					me->_flags.isRequestFinished = true;
 				parseMultipart();
 			}
 			else
 			{
+				readAmountSoFar += requestBody.size();
+				if (readAmountSoFar >= contentLength)
+				{
+					me->_flags.isRequestFinished = true;
+					outputFile.close();
+				}
 				outputFile.write(requestBody.c_str(), requestBody.size());
 				requestBody = "";
 			}
@@ -188,13 +203,9 @@ void	Client::Request::parseRequest()
 		}
 
 		parseHeader(posCrlf + 4);
-		if (me->_codeStatus)
-		{
-			me->_flags.isRequestFinished = true;
-			return ;
-		}
 
 		me->detectFinalLocation();
+		
 		if (me->_codeStatus)
 		{
 			me->_flags.isRequestFinished = true;
@@ -262,6 +273,11 @@ void	Client::Request::parseHeader(size_t crlf)
 	u_int8_t	cursor = eMethode, currentState = eUri;
 	bool		charAfterCrLf = false;
 	int			uriCounter = 0;
+
+			DBG;
+		std::cout << "-------------------------------->" << requestHeader << "\n";
+		DBG;
+
 
 	for (size_t i = 0; i < crlf && !me->_codeStatus; ++i)
 	{
@@ -409,6 +425,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	if (method.compare("POST") && method.compare("GET") && method.compare("DELETE"))
 	{
+
 		me->_codeStatus = 501;
 		goto BAD_REQUEST;
 	}

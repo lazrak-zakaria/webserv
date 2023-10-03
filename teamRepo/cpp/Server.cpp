@@ -93,6 +93,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 		{
 			char	buf[4096];
 			int		collected = recv(clientFdSock, buf, 4096, 0);
+			DBG << "body+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
 
 			if (collected == -1 || collected == 0)
 			{

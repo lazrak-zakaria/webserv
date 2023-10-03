@@ -44,7 +44,9 @@ void	Client::Response::sendFileToFinalAnswer()
 
 
 	if ((howMuchRead != BUF_SIZE && howMuchRead) || !howMuchRead)
+	{
 		me->_flags.isResponseFinished = true; /*make sure this flag is only here*/
+	}
 }
 
 void	Client::Response::postMethodeResponseDirectory()
@@ -512,8 +514,8 @@ std::string Client::Response::FindFileToOpen()
     struct stat st;
     int code = 0, ret_st = 0;
 
-
-    if (!this->me->_configData->errorPages.empty() && !this->me->_configData->errorPages[this->me->_codeStatus].empty())
+    if (!this->me->_configData->errorPages.empty() && 
+		this->me->_configData->errorPages.count(this->me->_codeStatus) &&  !this->me->_configData->errorPages[this->me->_codeStatus].empty())
     {
         ret_st = stat(this->me->_configData->errorPages[this->me->_codeStatus].c_str(), &st);
         if (ret_st == 0)
@@ -583,6 +585,7 @@ void Client::Response::ErrorResponse()
     else
     {
 		opnedfile = FindFileToOpen();
+
 		std::cout << "++++++++++" << opnedfile << std::endl;
         std::string respo(this->me->_mimeError->statusCode[this->me->_codeStatus] + "\r\n");
 		if (!opnedfile.empty())

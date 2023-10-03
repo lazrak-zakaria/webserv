@@ -49,6 +49,7 @@ void	Client::setAllConfigData(std::map<std::string, ServerConfig*> *d)
 void	Client::setDefaultConfigData(ServerConfig	*c)
 {
 	_defaultConfigData = c;
+	_configData = c;
 }
 
 void	Client::setMimeError(MimeAndError	*m)
@@ -125,7 +126,9 @@ bool		Client::isLocationMatched(const std::string &locationDirective, const std:
 void	Client::detectFinalLocation(void)
 {
 
-
+	if (!_request.requestHeadersMap.count("host"))
+		return ;
+	
 	if (_allConfigsData && _allConfigsData->count(*(_request.requestHeadersMap["host"].end()-1)))
 		_configData = _allConfigsData->at("host");
 	else
@@ -210,7 +213,7 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 	if (_flags.isRequestBody)
 	{
 		_request.requestBody.append(requestData, receivedSize);
-		DBG << "body";
+		// DBG << "body+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
 		std::cout <<_request.requestBody;
 		DBG;
 	}
@@ -233,7 +236,7 @@ std::string		&Client::serveResponse(void)
 	_finalAnswer = "";
 
 	START:
-
+	// exit(90);
 	if (_codeStatus == 301)
 	{
 		std::stringstream ss;
@@ -244,6 +247,7 @@ std::string		&Client::serveResponse(void)
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
 		_response.ErrorResponse();
+			// exit(89);
 	}
 	else if (_request.method == "POST")
 	{
