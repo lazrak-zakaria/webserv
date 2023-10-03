@@ -22,7 +22,6 @@ void	Client::clearClient()
 		_finalAnswer = "";
 		_codeStatus = 0;
 		_timeLastAction = getTimeNow();
-		filesToDelete.clear();
 		_FdDirectory = NULL;
 		_ReadDirectory = NULL;
 		
@@ -31,6 +30,10 @@ void	Client::clearClient()
 		_flags.expectSizeRead = true;
 		_request.requestClear();
 		_response.responseClear();
+
+		for (size_t i = 0 ; i < filesToDelete.size(); ++i)
+			unlink(filesToDelete[i].c_str());
+		filesToDelete.clear();
 }
 
 std::string &Client::trim(std::string& str)
