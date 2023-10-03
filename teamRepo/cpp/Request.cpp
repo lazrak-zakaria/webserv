@@ -55,14 +55,59 @@ bool	Client::Request::isFieldValueValid(const char &c) const
 }
 
 
+void	Client::Request::protectPath(std::string &path)
+{
+	//     /path/../path/../path/path/../../..
+	size_t i = 1;
+	size_t pathSize = path.size();
+
+	int	dots = 0;
+	int	validPath = 0;
+
+	bool	newStart = true;
+
+	for (; i < pathSize ; ++i)
+	{
+		if (newStart && path[i] == '/')
+			continue;
+
+		if (newStart)
+		{
+			if ((path[i] == '.' && path[i + 1] == '.')
+					&& (path[i + 2] == '/' || !path[i + 2]))
+			{
+				dots++;
+				i += 2;
+			}
+			else if (path[i] == '.' && (
+				path[i + 1] == '/' || !path[i + 1]))
+			{
+				i++;
+			}
+			else
+				newStart = false;
+		}
+
+		if (!newStart)
+		{
+			if (path[i + 1] == '/' || !path[i + 1])
+			{
+				validPath++;
+				newStart = true;
+			}
+		}
+
+		if (dots > validPath)
+			path = "/";
+	}
+}
 
 void	Client::Request::parseRequest()
 {
 	PARSE_REQUEST:
 
 	if (me->_codeStatus && me->_codeStatus != 201)
-	{
-		
+	{	
 		me->_flags.isRequestFinished  = true;
 		return ;
 	}
@@ -71,11 +116,25 @@ void	Client::Request::parseRequest()
 		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 		{
 			/* open temporary file to store */
+			struct stat sb;
+			if (stat(me->_finalPath.c_str(), &sb) == 0)
+			{
+				if (S_ISDIR(sb.st_mode))
+				{
+					if (me->_request.path[me->_request.path.size() - 1] != '/')
+					{
+						me->_codeStatus = 301;
+						me->_flags.isRequestFinished = true;
+						return ;
+					}
+				}
+			}
 			if (outputFile.is_open() == 0)
 			{
 				std::string name;
 				me->generateRandomName(name);
 				name = std::string("./../tmp/").append(name);
+				// exit(4);
 				outputFile.open(name, std::ios::binary);
 				if (outputFile.is_open() == 0)
 				{
@@ -111,7 +170,14 @@ void	Client::Request::parseRequest()
 				if (stat(me->_finalPath.c_str(), &sb) == 0)
 				{
 					if (S_ISDIR(sb.st_mode))
-						me->addSlashToFinalPath();
+					{
+						if (me->_request.path[me->_request.path.size() - 1] != '/')
+						{
+							me->_codeStatus = 301;
+							me->_flags.isRequestFinished = true;
+							return ;
+						}
+					}
 					else
 					{
 						me->_codeStatus = 403;
@@ -148,7 +214,14 @@ void	Client::Request::parseRequest()
 				if (stat(me->_finalPath.c_str(), &sb) == 0)
 				{
 					if (S_ISDIR(sb.st_mode))
-						me->addSlashToFinalPath();
+					{
+						if (me->_request.path[me->_request.path.size() - 1] != '/')
+						{
+							me->_codeStatus = 301;
+							me->_flags.isRequestFinished = true;
+							return ;
+						}
+					}
 					else
 					{
 						me->_codeStatus = 403;
@@ -180,6 +253,12 @@ void	Client::Request::parseRequest()
 				requestBody = "";
 			}
 		}
+		else
+		{
+			me->_codeStatus = 403;
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
 
 	}
 	else
@@ -203,7 +282,7 @@ void	Client::Request::parseRequest()
 		}
 
 		parseHeader(posCrlf + 4);
-
+		protectPath(path);
 		me->detectFinalLocation();
 		
 		if (me->_codeStatus)

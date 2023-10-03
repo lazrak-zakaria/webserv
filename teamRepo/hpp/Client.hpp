@@ -57,6 +57,7 @@ class Client
 			bool	isUriValid(const char &c) const;
 			bool	isFieldNameValid(const char &c) const;
 			bool	isFieldValueValid(const char &c) const;
+			void	protectPath(std::string &path);
 
 			void	parseMultipart();
 			bool	parseMultipartHeader(size_t start, size_t crlfPos);
