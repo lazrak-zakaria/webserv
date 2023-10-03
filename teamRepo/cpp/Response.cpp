@@ -695,6 +695,30 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 
 void Client::Response::GetMethodResponse()
 {
+
+	if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
+	{
+
+
+		if (me->_flags.isCgiRunning)
+		{
+			std::cout << "+++++++++++++++\n";
+			me->_cgi.checkCgiTimeout();
+		}
+		if (me->_flags.isCgiFinished)
+		{
+			if (!me->_flags.isCgiHeaderSent)
+			{
+				me->_cgi.parseCgiHeader();
+				me->_flags.isCgiHeaderSent = true;
+			}
+			else
+			{
+				me->_cgi.sendCgiBodyToFinaleAnswer();
+			}
+		}
+		return ;
+	}
 	int st;
 	if (!this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
 	{
