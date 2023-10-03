@@ -21,7 +21,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	// loc[0].index.push_back("smile.png");
 	loc[0].autoIndex = true;
 	// loc[0].cgi.insert({".php", "php-cgi"});
-	loc[0].cgi.insert({".out", "a.out"});
+	loc[1].cgi.insert({".out", "a.out"});
 
 	loc[0].allowedMethods.insert("GET");
 	loc[0].allowedMethods.insert("POST");
@@ -32,7 +32,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	loc[1].allowedMethods.insert("POST");
 	loc[1].allowedMethods.insert("GET");
 
-	loc[1].canUpload = true;
+	// loc[1].canUpload = true;
 
 	server1.allLocations["/"] = loc[0];
 	server1.allLocations["/upload"] = loc[1];

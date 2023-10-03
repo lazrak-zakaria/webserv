@@ -90,8 +90,10 @@ void	Client::Request::parseRequest()
 			if (me->_flags.isChunked)
 				parseChunkedData();
 			else
+			{
 				outputFile.write(requestBody.c_str(), requestBody.size());
-
+				requestBody = "";
+			}
 
 		}
 		else if (me->_configData->allLocations[me->_locationKey].canUpload)
@@ -142,7 +144,10 @@ void	Client::Request::parseRequest()
 				parseMultipart();
 			}
 			else
+			{
 				outputFile.write(requestBody.c_str(), requestBody.size());
+				requestBody = "";
+			}
 		}
 
 	}
