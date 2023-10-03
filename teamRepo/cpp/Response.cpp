@@ -186,12 +186,8 @@ void	Client::Response::postMethodeResponse()
 		if (me->_configData->allLocations[me->_locationKey].canUpload) // add more flags
 		{
 			/*201 created*/
-			std::stringstream ss;
-			ss << me->_mimeError->statusCode[me->_codeStatus] << "\r\n";
-			ss << "Location: " << me->_request.path + me->_request.outputFileName << "\r\n\r\n";
-
-			me->_finalAnswer = ss.str();
-			me->_flags.isResponseFinished = true;
+			GenerateLastResponseHeader(201, me->_request.uploadFileName, NULL);
+			// exit(9);
 			return ;
 		}
 
@@ -629,13 +625,18 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 {
 	std::string respo (this->me->_mimeError->statusCode[status]);
 	respo.append("\r\n");
-	DBG;
-	std::cout<<"|" <<  respo << "|\n";
-	DBG;
+	// DBG;
+	// std::cout<<"|" <<  respo << "|\n";
+	// DBG;
 	switch (status)
 	{
 		case 301:
 			respo += "location: " + this->me->_request.path + "/\r\n";
+			this->me->_flags.isResponseFinished = true;
+			break;
+		case 201:
+			respo += "location: " + this->me->_request.path + filename + "\r\n";
+			respo += "transfer-encoding: chunked\r\n\r\n0\r\n";
 			this->me->_flags.isResponseFinished = true;
 			break;
 		case 204:

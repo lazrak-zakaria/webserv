@@ -802,6 +802,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 						break;
 					contentTypeTmp.push_back(requestBody[i++]);
 				}
+				me->trim(contentTypeTmp);
 			}
 			if (requestBody.compare(i, 2, "\r\n") != 0)
 			{
@@ -818,7 +819,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		{
 			if (requestBody.compare(i, 2, "\r\n") != 0)
 			{
-				std::cout << requestBody << "XX\n";
+				// std::cout << requestBody << "XX\n";
 				{
 
 					return false;
@@ -839,10 +840,11 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 												me->_mimeError->mimeReverse[contentTypeTmp] : "";
 
 		// me->addSlashToFinalPath();
+		uploadFileName = tmpFileName + extension;
 		std::string tmpPath = me->_finalPath + tmpFileName + extension;
 		// /*should i check if it exist ?*/
 
-		std::cout << tmpPath << "---------------=============\n";
+		// std::cout << tmpPath << "---------------=============\n";
 		outputFile.open(tmpPath, std::ios::binary);
 		if (outputFile.is_open() == 0)
 		{
@@ -852,6 +854,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				return false;
 			}
 		}
+		contentTypeTmp = "";
 		me->_codeStatus = 201;
 		me->_flags.multicanw = true;
 		std::cout << "CREAT FILE\n";

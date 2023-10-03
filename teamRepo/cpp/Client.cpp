@@ -33,6 +33,14 @@ void	Client::clearClient()
 		_response.responseClear();
 }
 
+std::string &Client::trim(std::string& str)
+{
+    str.erase(str.find_last_not_of(' ')+1);         //suffixing spaces
+    str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
+    return str;
+}
+
+
 void	Client::setAllConfigData(std::map<std::string, ServerConfig*> *d)
 {
 	_allConfigsData = d;
@@ -83,7 +91,7 @@ bool	Client::isMatchedWithCgi(std::string &file)
 	if (pos != std::string::npos)
 	{
 		std::string	extension = file.substr(pos);
-		std::cout << extension << "||\n";
+		// std::cout << extension << "||\n";
 		std::map<std::string, std::string>& cgi = _configData->allLocations[_locationKey].cgi;
 
 		std::map<std::string, std::string>::iterator it;
@@ -124,7 +132,7 @@ void	Client::detectFinalLocation(void)
 		_configData = _defaultConfigData;
 
 
-	std::cout << "here\n";
+	// std::cout << "here\n";
 
 
 	std::vector<std::string> 					locationSet;
@@ -157,8 +165,8 @@ void	Client::detectFinalLocation(void)
 		_finalPath = _configData->allLocations[_locationKey].root;
 		// if (_finalPath[_finalPath.size() - 1] != '/' && _request.path.size() > 0 && _request.path[0] != '/')
 		// 	_finalPath += '/';
-		std::cout << "__"<< _request.path << "\n";
-		std::cout << "__"<< _finalPath << "\n";
+		// std::cout << "__"<< _request.path << "\n";
+		// std::cout << "__"<< _finalPath << "\n";
 		
 		_finalPath += _request.path;
 	}
@@ -202,9 +210,9 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 	if (_flags.isRequestBody)
 	{
 		_request.requestBody.append(requestData, receivedSize);
-		DBG;
-		std::cout <<_request.requestBody;
-		DBG;
+		// DBG;
+		// std::cout <<_request.requestBody;
+		// DBG;
 	}
 	else
 		_request.requestHeader.append(requestData, receivedSize);
@@ -240,7 +248,7 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "GET")
 	{
-		DBG;
+		// DBG;
 			signal(SIGPIPE, SIG_IGN);
 		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)

@@ -48,7 +48,7 @@ class Client
 			size_t								expectedBytesToRead;
 			size_t								TotalDataProcessed;
 
-
+			std::string							uploadFileName;
 			size_t								requestTimeStart;
 			Client								*me;
 
@@ -176,6 +176,8 @@ class Client
 		bool	isMatchedWithCgi(std::string &file);
 		bool	isPathExist(std::string path);
 		size_t	getTimeNow();
+		std::string &trim(std::string& str);
+
 	public:
 
 		Client();
