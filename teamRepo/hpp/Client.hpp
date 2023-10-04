@@ -138,7 +138,8 @@ class Client
 			void		checkCgiTimeout();	
 			void		parseCgiHeader();
 			void		sendCgiBodyToFinaleAnswer();
-
+			void		clearCgi();
+			
 			Client 		*me;
 			void		executeCgi();
 		} _cgi;

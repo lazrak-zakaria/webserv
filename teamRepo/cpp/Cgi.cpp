@@ -235,6 +235,23 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 	
 }
 
+void		Client::Cgi::clearCgi()
+{
+	cgiHeadersMap.clear();
+	cgiHeader.clear();
+	cgibody.clear();
+	statusLine.clear();
+			
+	processPid = -1;
+	timeStart = 0;
+
+	inputFileCGi.clear();
+	outputFileCGi.clear();
+			
+	cgiKeyProgram.clear();
+}
+
+
 /*even if kill the process you should wait*/
 void Client::Cgi::checkCgiTimeout()
 {
@@ -257,7 +274,6 @@ void Client::Cgi::checkCgiTimeout()
 			kill(processPid, SIGKILL);
 			waitpid(processPid, 0, WNOHANG);
 			me->_codeStatus = 504;
-			// me->_flags.isResponseFinished = true;
 			me->_flags.isCgiRunning = false;
 			me->_flags.isCgiFinished = false;
 		}
@@ -364,16 +380,16 @@ void	Client::Cgi::executeCgi()
 			me->_flags.isCgiFinished = true;
 			// me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
 			std::cout << "-------------------------------->" << outputFileCGi << '\n';
+			me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
+			if (me->_response.inputFile.is_open() == 0)
+			{
+					me->_codeStatus = 500;
+				std::cout << "open failed to read cgi output\n";
+			}
 		}
 		else if (ret == 0)
 		{
 			me->_flags.isCgiRunning = true;
-		}
-		me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
-		if (me->_response.inputFile.is_open() == 0)
-		{
-				me->_codeStatus = 500;
-			std::cout << "open failed to read cgi output\n";
 		}
 	}
 }

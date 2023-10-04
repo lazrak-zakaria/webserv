@@ -12,7 +12,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "/nfs/homes/yoyahya/Desktop/last/teamRepo/";
+	loc[0].alias = "/nfs/homes/zlazrak/Desktop/webserv/teamRepo/";
 	// loc[0].index.push_back("ind.php");
 	// loc[0].index.push_back("index.html");
 	// loc[0].index.push_back("ind.gif");
@@ -28,7 +28,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	loc[0].allowedMethods.insert("DELETE");
 	// loc[0].canUpload = 1;
 
-	loc[1].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/upload";
+	loc[1].alias = "/nfs/homes/zlazrak/Desktop/webserv/teamRepo/upload";
 	loc[1].allowedMethods.insert("POST");
 	loc[1].allowedMethods.insert("GET");
 
