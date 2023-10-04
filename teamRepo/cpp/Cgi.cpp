@@ -15,6 +15,13 @@ void Client::Cgi::parseCgiHeader()
 	// exit(14);
 	if (pos == std::string::npos)
 	{
+		std::cout << "|||"<<cgiHeader << "|||\n";
+		// 	exit(9);
+		// pos = cgiHeader.find("\r\n\r\n");
+		// if (pos != std::string::npos)
+		// {
+		// 	std::cout << "WWWWTFFFFFFFFFFFF\n";
+		// }
 		std::cout << "didnot found the end of header\n";
 		std::string().swap(cgiHeader);
 		me->_codeStatus = 500;
@@ -355,6 +362,8 @@ void	Client::Cgi::executeCgi()
 			std::cerr << "chdir FAIL\n";
 			exit(5);
 		};
+
+
 		argv[0] = strdup(programName.c_str());
 		argv[1] = strdup(scriptToexec.c_str());
 		argv[2] = NULL;
