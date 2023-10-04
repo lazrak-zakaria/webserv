@@ -285,7 +285,7 @@ void	Client::Cgi::executeCgi()
 	{
 		/*Setup env variables*/
 		u_int8_t i = 0;
-		char* env[10];
+		char* env[12];
 
 		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
 		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
@@ -296,7 +296,7 @@ void	Client::Cgi::executeCgi()
 		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
 		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
 		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
-
+		env[i++] = strdup(std::string("REDIRECT_STATUS=").append(outputFileCGi).c_str());
 		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
 		{
 			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
