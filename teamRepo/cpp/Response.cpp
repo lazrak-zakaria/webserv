@@ -698,11 +698,9 @@ void Client::Response::GetMethodResponse()
 
 	if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
-
-
 		if (me->_flags.isCgiRunning)
 		{
-			std::cout << "+++++++++++++++\n";
+			// std::cout << "+++++++++++++++\n";
 			me->_cgi.checkCgiTimeout();
 		}
 		if (me->_flags.isCgiFinished)
@@ -876,24 +874,39 @@ std::string Client::Response::generatehtml(std::vector<std::string> dir)
 
 void Client::Response::GetFile()
 {
+	struct stat st;
 
 	if (this->me->_flags.canReadInputFile)
 	{
 		this->sendFileToFinalAnswer();
 		return ;
 	}
-	this->inputFile.open(this->me->_finalPath, std::ios::binary);
-	if (!this->inputFile.is_open())
+	else
 	{
-		perror("Error Open Fail: ");
-		this->me->_codeStatus = 404;
-		return ;
+		int s = stat(this->me->_finalPath.c_str(), &st);
+		if (s == 0 && this->me->isMatchedWithCgi(this->me->_finalPath) == true)
+		{
+			this->me->_cgi.executeCgi();
+			return ;
+		}
+		if (!st.st_mode & S_IRUSR)
+		{
+			this->me->_codeStatus = 403;
+			return ;
+		}
+		this->inputFile.open(this->me->_finalPath, std::ios::binary);
+		if (!this->inputFile.is_open())
+		{
+			perror("Error Open Fail: ");
+			this->me->_codeStatus = 404;
+			return ;
+		}
+		this->me->_codeStatus = 200;
+		this->me->_flags.canReadInputFile = true;
+		struct stat st;
+		stat(this->me->_finalPath.c_str(), &st);
+		this->GenerateLastResponseHeader(200, this->me->_finalPath, &st);
 	}
-	this->me->_codeStatus = 200;
-	this->me->_flags.canReadInputFile = true;
-	struct stat st;
-	stat(this->me->_finalPath.c_str(), &st);
-	this->GenerateLastResponseHeader(200, this->me->_finalPath, &st);
 }
 
 
