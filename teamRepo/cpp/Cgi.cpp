@@ -257,6 +257,9 @@ void Client::Cgi::checkCgiTimeout()
 			kill(processPid, SIGKILL);
 			waitpid(processPid, 0, WNOHANG);
 			me->_codeStatus = 504;
+			// me->_flags.isResponseFinished = true;
+			me->_flags.isCgiRunning = false;
+			me->_flags.isCgiFinished = false;
 		}
 	}
 }

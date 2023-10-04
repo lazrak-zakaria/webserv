@@ -249,6 +249,8 @@ std::string		&Client::serveResponse(void)
 	}
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
+		// std::cout << "------------------------------------>" <<_codeStatus << "\n";
+
 		_response.ErrorResponse();
 			// exit(89);
 	}
