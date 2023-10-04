@@ -28,7 +28,6 @@ void	Client::Response::sendFileToFinalAnswer()
 	inputFile.read(buf, BUF_SIZE);
 
 	int	howMuchRead = inputFile.gcount();
-	
 	me->_finalAnswer = "";
 	me->_finalAnswer.append(convertToHex(howMuchRead).append("\r\n"));
 	buf[howMuchRead] = '\r';
@@ -179,6 +178,16 @@ void	Client::Response::postMethodeResponse()
 			}
 			else
 			{
+				if (!inputFile.is_open())
+				{
+					me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
+					if (me->_response.inputFile.is_open() == 0)
+					{
+						me->_codeStatus = 500;
+						std::cout << "open failed to read cgi output\n";
+						return ;
+					}
+				}
 				me->_cgi.sendCgiBodyToFinaleAnswer();
 			}
 		}
@@ -335,171 +344,6 @@ void	Client::Response::generate200Header()
 }			
 
 
-// void	Client::Response::getMethodeResponseDirectory()
-// {
-// 	me->addSlashToFinalPath();
-// 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
-// 	{
-// 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
-// 		{
-// 			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
-// 			size_t i = 0;
-// 			for (; i < indexes.size(); ++i)
-// 			{
-// 				if (me->isMatchedWithCgi(indexes[i]) && me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
-// 				{
-// 					me->_finalPath.append(indexes[i]);
-// 					break;
-// 				}
-// 			}
-
-// 			/*no index match with cgi*/
-// 			if (i == indexes.size())
-// 			{
-// 				std::cout << "no index match or exist with cgi-s\n";
-// 				me->_codeStatus = 403;
-// 				return ;
-// 			}
-// 			else
-// 			{
-// 				// me->_finalPath.append(indexes[i]);
-// 				/* run cgi*/
-// 				std::cout << "-----\ni will run cgi\n"; 
-// 				std::cout << "script file: " << me->_finalPath << "|\n";
-// 				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
-// 				me->_cgi.executeCgi();
-
-// 				exit(0);
-// 			}
-
-// 		}
-// 		else
-// 		{
-// 			std::cout << "you requested a directory and did not provide any cgi  index \n";
-// 			me->_codeStatus = 403;
-// 			return ;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
-// 		{
-// 			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
-// 			size_t i = 0;
-// 			for (; i < indexes.size(); ++i)
-// 			{
-// 				if (me->isPathExist(std::string(me->_finalPath).append(indexes[i])))
-// 				{
-// 					me->_finalPath.append(indexes[i]);
-// 					break;
-// 				}
-// 			}
-
-// 			/*no index match with cgi*/
-// 			if (i == indexes.size())
-// 			{
-// 				std::cout << "no index match --> 404\n";
-// 				me->_codeStatus = 404;
-// 			}
-// 			else
-// 			{
-// 				std::cout << "here is your file\n";
-// 				inputFile.open(me->_finalPath.c_str());
-// 				if (inputFile.is_open() == false)
-// 				{
-// 					me->_codeStatus = 403;// it exist and did not open
-// 				}
-// 				else
-// 				{
-// 					me->_codeStatus = 200;
-// 					me->_flags.canReadInputFile = true;
-// 				}
-// 			}
-
-// 		}/*later auto index*/
-// 		else if (me->_configData->allLocations[me->_locationKey].autoIndex)
-// 		{
-
-// 		}
-// 		else
-// 		{
-// 			std::cout << "you requested a directory and did not provide any index \n";
-// 			me->_codeStatus = 403;
-// 			return ;
-// 		}
-// 	}
-
-
-// 	return;
-// }
-
-// void	Client::Response::getMethodeResponseFile()
-// {
-// 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == false)
-// 	{
-// 		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
-// 		{
-// 			/*run cgi */
-// 			std::cout << "-----\nget: file i will run cgi\n"; 
-// 			std::cout << "script file: " << me->_finalPath << "|\n";
-// 			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
-// 		}
-// 		else
-// 		{
-// 			/*no cgi can run this*/
-// 			std::cout << "get:you requested a file and did not matched with any cgi\n";
-// 			me->_codeStatus = 403;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		/*send file*/
-// 		inputFile.open(me->_finalPath.c_str());
-// 		if (inputFile.is_open() == false)
-// 		{
-// 			me->_codeStatus = 403;// it exist and did not open
-// 		}
-// 		else
-// 		{
-// 			me->_codeStatus = 200;
-// 			me->_flags.canReadInputFile = true;
-// 		}
-// 	}
-
-// 	return ;
-// }
-
-
-
-// void	Client::Response::getMethodResponse()
-// {
-// 	if (me->_flags.canReadInputFile)
-// 		sendFileToFinalAnswer();
-// 	else if (me->_flags.isCgiRunning)
-// 	{
-// 		me->_cgi.checkCgiTimeout();
-// 	}
-// 	else
-// 	{
-// 		struct stat sb;
-// 		if (stat(me->_finalPath.c_str(), &sb) == 0)
-// 		{
-// 			if (S_ISDIR(sb.st_mode))
-// 			{
-// 				getMethodeResponseDirectory();
-// 			}
-// 			else if (S_ISREG(sb.st_mode))
-// 				getMethodeResponseFile();
-// 			else
-// 				me->_codeStatus = 403;
-// 		}
-// 		else
-// 		{
-// 			std::cout << "get: what you requested is not found\n";
-// 			me->_codeStatus = 404;
-// 		}
-// 	}
-// }
 /*****************************************************************/
 /*****************************************************************/
 /*****************************************************************/
@@ -581,6 +425,7 @@ void Client::Response::ErrorResponse()
     if (this->me->_flags.canReadInputFile)
     {
         this->sendFileToFinalAnswer();
+
     }
     else
     {
@@ -620,7 +465,7 @@ void Client::Response::ErrorResponse()
             this->me->_finalAnswer += "\r\n" + convertToHex(tmp.size()).append("\r\n") + tmp.append("\r\n0\r\n");
         }
         else
-            this->me->_flags.canReadInputFile = true;
+        	this->me->_flags.canReadInputFile = true;
     }
 }
 
@@ -707,6 +552,13 @@ void Client::Response::GetMethodResponse()
 		{
 			if (!me->_flags.isCgiHeaderSent)
 			{
+				me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
+				if (me->_response.inputFile.is_open() == 0)
+				{
+					me->_codeStatus = 500;
+					std::cout << "open failed to read cgi output\n";
+					return ;
+				}
 				me->_cgi.parseCgiHeader();
 				me->_flags.isCgiHeaderSent = true;
 			}

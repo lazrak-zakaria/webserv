@@ -31,9 +31,11 @@ void	Client::clearClient()
 		_request.requestClear();
 		_response.responseClear();
 
+
 		// for (size_t i = 0 ; i < filesToDelete.size(); ++i)
 		// 	unlink(filesToDelete[i].c_str());
 		filesToDelete.clear();
+		_cgi.clearCgi();
 }
 
 std::string &Client::trim(std::string& str)
@@ -258,7 +260,10 @@ std::string		&Client::serveResponse(void)
 	{
 		_response.postMethodeResponse();
 		if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
+		{
+			_response.inputFile.close();
 			goto START;
+		}
 	}
 	else if (_request.method == "GET")
 	{
@@ -266,7 +271,10 @@ std::string		&Client::serveResponse(void)
 			signal(SIGPIPE, SIG_IGN);
 		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)
+		{
+			_response.inputFile.close();
 			goto START;
+		}
 	}
 	else if(_request.method == "DELETE")
 	{

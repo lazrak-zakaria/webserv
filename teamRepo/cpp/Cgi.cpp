@@ -15,6 +15,13 @@ void Client::Cgi::parseCgiHeader()
 	// exit(14);
 	if (pos == std::string::npos)
 	{
+		std::cout << "|||"<<cgiHeader << "|||\n";
+		// 	exit(9);
+		// pos = cgiHeader.find("\r\n\r\n");
+		// if (pos != std::string::npos)
+		// {
+		// 	std::cout << "WWWWTFFFFFFFFFFFF\n";
+		// }
 		std::cout << "didnot found the end of header\n";
 		std::string().swap(cgiHeader);
 		me->_codeStatus = 500;
@@ -235,6 +242,23 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 	
 }
 
+void		Client::Cgi::clearCgi()
+{
+	cgiHeadersMap.clear();
+	cgiHeader.clear();
+	cgibody.clear();
+	statusLine.clear();
+			
+	processPid = -1;
+	timeStart = 0;
+
+	inputFileCGi.clear();
+	outputFileCGi.clear();
+			
+	cgiKeyProgram.clear();
+}
+
+
 /*even if kill the process you should wait*/
 void Client::Cgi::checkCgiTimeout()
 {
@@ -257,7 +281,6 @@ void Client::Cgi::checkCgiTimeout()
 			kill(processPid, SIGKILL);
 			waitpid(processPid, 0, WNOHANG);
 			me->_codeStatus = 504;
-			// me->_flags.isResponseFinished = true;
 			me->_flags.isCgiRunning = false;
 			me->_flags.isCgiFinished = false;
 		}
@@ -339,6 +362,8 @@ void	Client::Cgi::executeCgi()
 			std::cerr << "chdir FAIL\n";
 			exit(5);
 		};
+
+
 		argv[0] = strdup(programName.c_str());
 		argv[1] = strdup(scriptToexec.c_str());
 		argv[2] = NULL;
@@ -364,16 +389,16 @@ void	Client::Cgi::executeCgi()
 			me->_flags.isCgiFinished = true;
 			// me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
 			std::cout << "-------------------------------->" << outputFileCGi << '\n';
+			me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
+			if (me->_response.inputFile.is_open() == 0)
+			{
+					me->_codeStatus = 500;
+				std::cout << "open failed to read cgi output\n";
+			}
 		}
 		else if (ret == 0)
 		{
 			me->_flags.isCgiRunning = true;
-		}
-		me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
-		if (me->_response.inputFile.is_open() == 0)
-		{
-				me->_codeStatus = 500;
-			std::cout << "open failed to read cgi output\n";
 		}
 	}
 }

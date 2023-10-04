@@ -85,6 +85,7 @@ MimeAndError::MimeAndError()
 	statusCode[500] = "HTTP/1.1 500 Internal Server Error";
 	statusCode[501] = "HTTP/1.1 501 Not Implemented";
 	statusCode[502] = "HTTP/1.1 502 Bad Gateway";
+	statusCode[504] = "HTTP/1.1 504 Gateway Timeout";
 	statusCode[505] = "HTTP/1.1 505 HTTP Version Not Supported";
 
 	mimeReverse ["audio/aac"] = ".aac";

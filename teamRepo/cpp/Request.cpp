@@ -231,7 +231,6 @@ void	Client::Request::parseRequest()
 					me->_flags.checkedMultipartPath = true;
 				}
 			}
-
 			if (me->_flags.isChunked)
 				parseChunkedData();
 			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
@@ -243,6 +242,7 @@ void	Client::Request::parseRequest()
 			}
 			else
 			{
+				
 				readAmountSoFar += requestBody.size();
 				if (readAmountSoFar >= contentLength)
 				{
@@ -517,6 +517,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	if (method.compare("POST") == 0)
 	{
+		me->_flags.isRequestBody = true;
 		if (requestHeadersMap.count("content-type") && requestHeadersMap.count("transfer-encoding") == 0
 					&& requestHeadersMap.count("content-length") == 0)
 		{
@@ -552,7 +553,6 @@ void	Client::Request::parseHeader(size_t crlf)
 				goto BAD_REQUEST;
 			}
 			contentLength = atoi(tmp.c_str());	
-
 		}
 	}
 
@@ -710,6 +710,12 @@ void	Client::Request::parseMultipart()
 			}
 			requestBody.erase(0, multipartCompleteHeader + 4);
 			me->_flags.inMultipartBody = true;
+		}
+		else if(requestBody.find(firstBoundary) == std::string::npos) /*atleast i need to find boundary*/
+		{
+			me->_codeStatus = 400;
+			me->_flags.isRequestFinished = true;
+			return ;
 		}
 	}
 

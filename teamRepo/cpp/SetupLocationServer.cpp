@@ -29,7 +29,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	loc[0].allowedMethods.insert("DELETE");
 	// loc[0].canUpload = 1;
 
-	loc[1].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/upload";
+	loc[1].alias = "/nfs/homes/zlazrak/Desktop/webserv/teamRepo/upload";
 	loc[1].allowedMethods.insert("POST");
 	loc[1].allowedMethods.insert("GET");
 
