@@ -258,6 +258,8 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "POST")
 	{
+			signal(SIGPIPE, SIG_IGN);
+
 		_response.postMethodeResponse();
 		if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 		{

@@ -12,9 +12,9 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "/nfs/homes/zlazrak/Desktop/webservTest/teamRepo/";
-	loc[0].index.push_back("login_form.php");
-	loc[0].index.push_back("process_login.php");
+	loc[0].alias = "/nfs/homes/yoyahya/Desktop/serve/teamRepo/";
+	loc[0].index.push_back("login.php");
+	// loc[0].index.push_back("process_login.php");
 	// loc[0].index.push_back("dashboard.php");
 	// loc[0].index.push_back("a.out");
 	// loc[0].index.push_back("mian.cpp");

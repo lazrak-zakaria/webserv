@@ -343,6 +343,12 @@ void	Client::Cgi::executeCgi()
 		env[i++] = strdup(std::string("SERVER_NAME=").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
 		
 		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
+		if (me->_request.requestHeadersMap.count("cookie"))
+		{
+			std::cout << "cookie : **********************************************************|" << *(--me->_request.requestHeadersMap["cookie"].end()) << "\n";
+			env[i++] = strdup(std::string("HTTP_COOKIE=").append(*(--me->_request.requestHeadersMap["cookie"].end())).c_str());
+		}
+		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
 		env[i++] = strdup("REDIRECT_STATUS=200");
 		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
 		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());

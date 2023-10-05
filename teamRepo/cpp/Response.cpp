@@ -166,7 +166,7 @@ void	Client::Response::postMethodeResponse()
 
 		if (me->_flags.isCgiRunning)
 		{
-			std::cout << "+++++++++++++++\n";
+			// std::cout << "+++++++++++++++\n";
 			me->_cgi.checkCgiTimeout();
 		}
 		if (me->_flags.isCgiFinished)
