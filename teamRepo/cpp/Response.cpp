@@ -178,16 +178,6 @@ void	Client::Response::postMethodeResponse()
 			}
 			else
 			{
-				if (!inputFile.is_open())
-				{
-					me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
-					if (me->_response.inputFile.is_open() == 0)
-					{
-						me->_codeStatus = 500;
-						std::cout << "open failed to read cgi output\n";
-						return ;
-					}
-				}
 				me->_cgi.sendCgiBodyToFinaleAnswer();
 			}
 		}
@@ -552,13 +542,6 @@ void Client::Response::GetMethodResponse()
 		{
 			if (!me->_flags.isCgiHeaderSent)
 			{
-				me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
-				if (me->_response.inputFile.is_open() == 0)
-				{
-					me->_codeStatus = 500;
-					std::cout << "open failed to read cgi output\n";
-					return ;
-				}
 				me->_cgi.parseCgiHeader();
 				me->_flags.isCgiHeaderSent = true;
 			}

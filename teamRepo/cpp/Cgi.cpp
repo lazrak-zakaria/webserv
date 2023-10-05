@@ -1,91 +1,103 @@
 #include "../hpp/Client.hpp"
 
 
+u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
+{
+	    enum{statusLine, efieldName, efieldValue};
+
+    size_t sizeLF = crlf.length();
+    u_int cursor = efieldName;
+    std::string key, value;
+
+    for (size_t i = 0; header[i]; ++i)
+    {
+        if (cursor == efieldName)
+        {
+            if (me->_request.isFieldNameValid(header[i]))
+            {
+                key.push_back(tolower(header[i]));
+            }
+            else if (header[i] == ':')
+                cursor = efieldValue;
+            else if (!header.compare(i, sizeLF, crlf) && key.empty())
+                return 0;
+            else
+            {
+                std::cout << "X\n";
+                return 502;
+            }
+        }
+        else
+        {
+            if (me->_request.isFieldValueValid(header[i]))
+                value.push_back(header[i]);
+            else if ( (!header.compare(i, sizeLF, crlf) && key.empty())
+                || !header.compare(i, sizeLF*2 , crlf + crlf) )
+            {
+                if (!key.empty())
+                    cgiHeadersMap[key] = value;
+                return 0;
+            }
+            else if (!header.compare(i, sizeLF, crlf))
+            {
+                cgiHeadersMap[key] = value;
+                key = "";
+                value = "";
+                cursor = efieldName;
+                i++;
+            }
+            else
+                return 502;
+        }
+    } 
+    return 0;
+}
+
+
 void Client::Cgi::parseCgiHeader()
 {
 	const int BUFSIZE = 40000;
 	char buffer[BUFSIZ];
-
+	std::string sepCgiCrlf;
 	me->_response.inputFile.read(buffer, BUFSIZ - 2);
 
 	int	howMuchRead = me->_response.inputFile.gcount();
 	cgiHeader.append(buffer, howMuchRead);
-	size_t pos = cgiHeader.find("\n\n");
-
-	// exit(14);
-	if (pos == std::string::npos)
-	{
-		std::cout << "|||"<<cgiHeader << "|||\n";
-		// 	exit(9);
-		// pos = cgiHeader.find("\r\n\r\n");
-		// if (pos != std::string::npos)
-		// {
-		// 	std::cout << "WWWWTFFFFFFFFFFFF\n";
-		// }
-		std::cout << "didnot found the end of header\n";
-		std::string().swap(cgiHeader);
-		me->_codeStatus = 500;
-	}
-	else
-	{
-		cgibody = cgiHeader.substr(pos + 2);
-		cgiHeader.erase(pos + 2);
-		enum {eFieldName, eFieldNameChar, eFieldValue, eFieldValueChar, loopToNewLine};
-
-		u_int8_t	cursor = eFieldNameChar;
-		u_int8_t	currentState = eFieldName ;
-		std::string	key, value;
 
 
-		for (size_t i = 0; i < cgiHeader.size(); ++i)
+
+		size_t pos = cgiHeader.find("\n\n");
+		if (pos != std::string::npos)
+			sepCgiCrlf = "\n";
+		else
 		{
-			char &currentChar = cgiHeader[i];
-			switch (currentState)
+			pos = cgiHeader.find("\r\n\r\n");
+			if (pos != std::string::npos)
+				sepCgiCrlf = "\r\n";
+			
+			else
 			{
-				case eFieldName:
-					switch (cursor)
-					{
-					case eFieldNameChar:
-						if (currentChar == ':' && !key.empty())
-						{
-							currentState = eFieldValue;
-							cursor = eFieldValueChar;
-						}
-						else if (me->_request.isFieldNameValid(currentChar))
-						{
-							key.push_back(tolower(currentChar));
-						}
-						else
-							currentState = loopToNewLine;
-					}
-					break;
-				case eFieldValue:
-					switch (cursor)
-					{
-						case eFieldValueChar:
-							if (me->_request.isFieldValueValid(currentChar))
-								value.push_back(currentChar);
-							else if (currentChar == '\n')
-							{
-								cgiHeadersMap[key] = value;
-								key.clear();
-								value.clear();
-								currentState = eFieldName;
-								cursor = eFieldNameChar;
-							}
-							else
-								currentState = loopToNewLine;
-							break;
-					}
-					break;
-				case loopToNewLine:
-					for (; i < cgiHeader.size() && cgiHeader[i] != '\n'; ++i);
-					currentState = eFieldName;
-					cursor = eFieldNameChar;
-					key.clear();
-					value.clear();
+				std::cout << "didnot found the end of header\n";
+				std::string().swap(cgiHeader);
+				me->_codeStatus = 500;
+				return ;
 			}
 		}
+
+
+
+		cgibody = cgiHeader.substr(pos + 2);
+		cgiHeader.erase(pos + 2);
+
+		if (parseCgiWithCrlf(cgiHeader, sepCgiCrlf))
+		{
+			me->_response.inputFile.close();
+			me->_codeStatus = 502;
+			return ;
+		}
+
+
+
 
 		if (cgiHeadersMap.count("status"))
 		{
@@ -174,7 +186,7 @@ void Client::Cgi::parseCgiHeader()
 		std::cout << "________+++++\n";
 
 	}
-}
+
 
 void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 {
@@ -270,6 +282,19 @@ void Client::Cgi::checkCgiTimeout()
 		me->_flags.isCgiFinished = true;
 		me->_flags.isCgiRunning = false;
 								// DBG;
+		
+		if (!me->_response.inputFile.is_open())
+		{
+
+			// me->_response.inputFile
+			me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
+			if (me->_response.inputFile.is_open() == 0)
+			{
+				me->_codeStatus = 500;
+				std::cout << "open failed to read cgi output\n";
+				return ;
+			}
+		}
 	}
 	else
 	{
@@ -308,18 +333,19 @@ void	Client::Cgi::executeCgi()
 	{
 		/*Setup env variables*/
 		u_int8_t i = 0;
-		char* env[12];
+		char* env[16];
 
 		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
 		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
 		env[i++] = strdup(std::string("SERVER_NAME=").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
 		
 		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
-
+		env[i++] = strdup("REDIRECT_STATUS=200");
 		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
 		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
 		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
-		env[i++] = strdup(std::string("REDIRECT_STATUS=").append(outputFileCGi).c_str());
+		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(me->_finalPath).c_str());
+		
 		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
 		{
 			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);

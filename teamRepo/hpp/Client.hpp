@@ -139,7 +139,7 @@ class Client
 			void		parseCgiHeader();
 			void		sendCgiBodyToFinaleAnswer();
 			void		clearCgi();
-			
+			u_int16_t	parseCgiWithCrlf(std::string &header, std::string crlf);
 			Client 		*me;
 			void		executeCgi();
 		} _cgi;
