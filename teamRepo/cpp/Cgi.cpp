@@ -23,7 +23,6 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
                 return 0;
             else
             {
-                std::cout << "X\n";
                 return 502;
             }
         }
@@ -47,7 +46,9 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
                 i++;
             }
             else
-                return 502;
+            {
+				return 502;
+			}
         }
     } 
     return 0;
@@ -66,14 +67,14 @@ void Client::Cgi::parseCgiHeader()
 
 
 
-		size_t pos = cgiHeader.find("\n\n");
+		size_t pos = cgiHeader.find("\r\n\r\n");
 		if (pos != std::string::npos)
-			sepCgiCrlf = "\n";
+			sepCgiCrlf = "\r\n";
 		else
 		{
-			pos = cgiHeader.find("\r\n\r\n");
+			pos = cgiHeader.find("\n\n");
 			if (pos != std::string::npos)
-				sepCgiCrlf = "\r\n";
+				sepCgiCrlf = "\n";
 			
 			else
 			{
@@ -85,14 +86,16 @@ void Client::Cgi::parseCgiHeader()
 		}
 
 
-
+		// if ()
 		cgibody = cgiHeader.substr(pos + 2);
 		cgiHeader.erase(pos + 2);
 
 		if (parseCgiWithCrlf(cgiHeader, sepCgiCrlf))
 		{
+			std::cout << "[[[[[[[" <<pos<< "]]]]]]]\n";
 			me->_response.inputFile.close();
 			me->_codeStatus = 502;
+			std::cout << "something went wrog with parsing the output ogf cgi\n";
 			return ;
 		}
 
@@ -345,7 +348,7 @@ void	Client::Cgi::executeCgi()
 		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
 		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
 		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(me->_finalPath).c_str());
-		
+
 		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
 		{
 			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
