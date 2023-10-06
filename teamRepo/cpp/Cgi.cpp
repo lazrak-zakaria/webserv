@@ -35,12 +35,12 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
             {
 				std::cout << "----------------------------------------------------->" << key << "\n";
                 if (!key.empty())
-                    cgiHeadersMap[key] = value;
+                    cgiHeadersMap[key].push_back(value);
                 return 0;
             }
             else if (!header.compare(i, sizeLF, crlf))
             {
-                cgiHeadersMap[key] = value;
+                cgiHeadersMap[key].push_back(value);
 				std::cout << "----------------------------------------------------->" << key << "\n";
                 key = "";
                 value = "";
@@ -123,21 +123,23 @@ void Client::Cgi::parseCgiHeader()
         std::string tmpCodeStatus;
         std::string errorDescription;
 
-        while (cgiHeadersMap["status"][i] == ' ') ++i;
-        while (cgiHeadersMap["status"][i] && cgiHeadersMap["status"][i] != ' ')
+		std::string &statusHeader = *(cgiHeadersMap["status"].end() - 1);
+
+        while (statusHeader[i] == ' ') ++i;
+        while (statusHeader[i] && statusHeader[i] != ' ')
         {
-            if (!isdigit(cgiHeadersMap["status"][i]) || j > 2)
+            if (!isdigit(statusHeader[i]) || j > 2)
             {
 
                 me->_codeStatus = 502;
                 return ;
             }
             else
-                tmpCodeStatus.push_back(cgiHeadersMap["status"][i]);
+                tmpCodeStatus.push_back(statusHeader[i]);
             ++i;
             ++j;
         }
-        if (tmpCodeStatus > "599" || j != 3 || cgiHeadersMap["status"][i] != ' ')
+        if (tmpCodeStatus > "599" || j != 3 || statusHeader[i] != ' ')
         {
             me->_codeStatus = 502;
             return ;
@@ -147,7 +149,7 @@ void Client::Cgi::parseCgiHeader()
 
         statusLine = std::string("HTTP/1.1 ").append(tmpCodeStatus);
         statusLine.push_back(' ');
-        statusLine.append(cgiHeadersMap["status"].substr(i));
+        statusLine.append(statusHeader.substr(i));
         statusLine.append("\r\n");
     }
     else
@@ -178,14 +180,18 @@ void Client::Cgi::parseCgiHeader()
 			return ;
 		}
 
-		std::map<std::string, std::string>::iterator it;
+		std::map<std::string, std::vector<std::string> >::iterator it;
 		std::stringstream ss;
 		ss << statusLine;
 		std::cout << "--------------------------------------\n";
 		for (it = cgiHeadersMap.begin(); it != cgiHeadersMap.end(); ++it)
 		{
-			std::cout << "|" << it->first <<"| |" <<it->second<< "|\r\n"; 
-			ss << it->first << ": " << it->second<< "\r\n"; 
+			std::vector<std::string>::iterator itVector = cgiHeadersMap[it->first].begin();
+			for (; itVector != cgiHeadersMap[it->first].end(); it++)
+			{
+				std::cout << "|" << it->first <<"| |" << *itVector << "|\r\n";
+				ss << it->first << ": " << *itVector << "\r\n"; 
+			}
 		}
 		std::cout << "--------------------------------------\n";
 		
@@ -196,12 +202,13 @@ void Client::Cgi::parseCgiHeader()
 			ss << "transfer-encoding: chunked\r\n";
 		else
 		{
+			std::string &cgiContentLength = *(cgiHeadersMap["content-length"].end() - 1);
 			me->_flags.isCgiHaveContentLength = true;
 			int i = 0;
-			for ( ; cgiHeadersMap["content-length"][i] == ' '; ++i);
-			for ( ; isdigit(cgiHeadersMap["content-length"][i]); ++i);
-			for ( ; cgiHeadersMap["content-length"][i] == ' '; ++i);
-			if (cgiHeadersMap["content-length"][i])
+			for ( ; cgiContentLength[i] == ' '; ++i);
+			for ( ; isdigit(cgiContentLength[i]); ++i);
+			for ( ; cgiContentLength[i] == ' '; ++i);
+			if (cgiContentLength[i])
 			{
 				me->_codeStatus = 502;
 				return ;
@@ -367,11 +374,24 @@ void	Client::Cgi::executeCgi()
 		env[i++] = strdup(std::string("SERVER_NAME=").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
 		
 		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
+		
+
+
+
 		if (me->_request.requestHeadersMap.count("cookie"))
-		{
-			std::cout << "cookie : **********************************************************|" << *(--me->_request.requestHeadersMap["cookie"].end()) << "\n";
-			env[i++] = strdup(std::string("HTTP_COOKIE=").append(*(--me->_request.requestHeadersMap["cookie"].end())).c_str());
-		}
+        {
+            // std::cout << "cookie : **|" << (--me->_request.requestHeadersMap["cookie"].end()) << "\n";
+            // env[i++] = strdup(std::string("HTTP_COOKIE=").append((--me->_request.requestHeadersMap["cookie"].end())).c_str());
+            std::vector<std::string>::iterator it = me->_request.requestHeadersMap["cookie"].begin();
+            while(it != me->_request.requestHeadersMap["cookie"].end())
+            {
+                env[i++] = strdup(std::string("HTTP_COOKIE=").append(*it).c_str());
+                it++;
+            }
+        }
+
+
+
 		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
 		env[i++] = strdup("REDIRECT_STATUS=200");
 		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());

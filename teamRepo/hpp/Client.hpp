@@ -123,7 +123,7 @@ class Client
 		struct Cgi
 		{
 
-			std::map<std::string, std::string>	cgiHeadersMap;
+			std::map<std::string, std::vector<std::string> >	cgiHeadersMap;
 			std::string							cgiHeader;
 			std::string							cgibody;
 			std::string							statusLine;
