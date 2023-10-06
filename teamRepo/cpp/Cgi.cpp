@@ -33,6 +33,7 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
             else if ( (!header.compare(i, sizeLF, crlf) && key.empty())
                 || !header.compare(i, sizeLF*2 , crlf + crlf) )
             {
+				std::cout << "----------------------------------------------------->" << key << "\n";
                 if (!key.empty())
                     cgiHeadersMap[key] = value;
                 return 0;
@@ -40,10 +41,12 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
             else if (!header.compare(i, sizeLF, crlf))
             {
                 cgiHeadersMap[key] = value;
+				std::cout << "----------------------------------------------------->" << key << "\n";
                 key = "";
                 value = "";
                 cursor = efieldName;
-                i++;
+				if (sizeLF != 1)
+                	i++;
             }
             else
             {
@@ -101,51 +104,72 @@ void Client::Cgi::parseCgiHeader()
 
 
 
+		std::cout << "{\n" << cgiHeader << "\n}\n";
 
-		if (cgiHeadersMap.count("status"))
-		{
-			std::string tmp;
-			size_t i = 0;
-			while (cgiHeadersMap["status"][i] == ' ')
-				++i;
-			u_int8_t j = 0; 
-			while (cgiHeadersMap["status"][i] && cgiHeadersMap["status"][i] != ' ')
-			{
-				if (!isdigit(cgiHeadersMap["status"][i]) || j > 2)
-				{
-					std::cout << "should foun only digits -----> |"<< cgiHeadersMap["status"][i] << "|\n";
-					me->_codeStatus = 502;
-					return ;
-				}
-				else
-				{
-					std::cout << "----------------------------->|" << cgiHeadersMap["status"][i] << "|\n";
-					tmp.push_back(cgiHeadersMap["status"][i++]);
-				}
-				++j;
-			}
-			if (tmp > "599" || j != 3)
-			{
-				std::cout << "code max\n";
-				me->_codeStatus = 502;
-				return ;
-			}
-			statusLine = std::string("HTTP/1.1 ").append(tmp);
-			tmp = "";
-			if (cgiHeadersMap["status"][i++] != ' ')		
-			{
-				std::cout << "i should find space|" << cgiHeadersMap["status"][i] << "|\n";
-				me->_codeStatus = 502;
-				return ;
-			}
-			statusLine.push_back(' ');
-			while (cgiHeadersMap["status"][i])
-				statusLine.push_back(cgiHeadersMap["status"][i++]);
-			statusLine.append("\r\n");
-			cgiHeadersMap.erase("status");
-		}
-		else
-			statusLine = "HTTP/1.1 200 OK\r\n";
+
+
+
+
+
+
+
+
+
+
+    if (cgiHeadersMap.count("status"))
+	{
+        size_t i = 0;
+        u_int8_t j = 0;
+        std::string tmpCodeStatus;
+        std::string errorDescription;
+
+        while (cgiHeadersMap["status"][i] == ' ') ++i;
+        while (cgiHeadersMap["status"][i] && cgiHeadersMap["status"][i] != ' ')
+        {
+            if (!isdigit(cgiHeadersMap["status"][i]) || j > 2)
+            {
+
+                me->_codeStatus = 502;
+                return ;
+            }
+            else
+                tmpCodeStatus.push_back(cgiHeadersMap["status"][i]);
+            ++i;
+            ++j;
+        }
+        if (tmpCodeStatus > "599" || j != 3 || cgiHeadersMap["status"][i] != ' ')
+        {
+            me->_codeStatus = 502;
+            return ;
+        }
+
+        ++i;
+
+        statusLine = std::string("HTTP/1.1 ").append(tmpCodeStatus);
+        statusLine.push_back(' ');
+        statusLine.append(cgiHeadersMap["status"].substr(i));
+        statusLine.append("\r\n");
+    }
+    else
+        statusLine = "HTTP/1.1 200 OK\r\n";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		if (cgiHeadersMap.count("content-type") == 0)
 		{
