@@ -187,7 +187,7 @@ void Client::Cgi::parseCgiHeader()
 		for (it = cgiHeadersMap.begin(); it != cgiHeadersMap.end(); ++it)
 		{
 			std::vector<std::string>::iterator itVector = cgiHeadersMap[it->first].begin();
-			for (; itVector != cgiHeadersMap[it->first].end(); it++)
+			for (; itVector != cgiHeadersMap[it->first].end(); itVector++)
 			{
 				std::cout << "|" << it->first <<"| |" << *itVector << "|\r\n";
 				ss << it->first << ": " << *itVector << "\r\n"; 

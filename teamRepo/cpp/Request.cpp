@@ -353,11 +353,12 @@ void	Client::Request::parseHeader(size_t crlf)
 	bool		charAfterCrLf = false;
 	int			uriCounter = 0;
 
-			DBG;
+	if (requestHeader[0] !='G')
+	{		DBG;
 		std::cout << "-------------------------------->" << requestHeader << "\n";
 		DBG;
-
-
+		// exit(80);
+	}
 	for (size_t i = 0; i < crlf && !me->_codeStatus; ++i)
 	{
 		const char	&currentChar = requestHeader[i];
@@ -505,7 +506,9 @@ void	Client::Request::parseHeader(size_t crlf)
 	if (method.compare("POST") && method.compare("GET") && method.compare("DELETE"))
 	{
 
+		std::cout << "{" << method << "}\n";
 		me->_codeStatus = 501;
+		exit(40);
 		goto BAD_REQUEST;
 	}
 
@@ -747,7 +750,7 @@ void	Client::Request::parseMultipart()
 	}
 
 
-	if (requestBody.find("\r\n") && bodyEnd)
+	if (requestBody.find("\r\n") != std::string::npos && bodyEnd)
 		goto MULTIPART_START;
 
 }

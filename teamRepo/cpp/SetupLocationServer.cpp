@@ -29,14 +29,14 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	loc[0].allowedMethods.insert("DELETE");
 	// loc[0].canUpload = 1;
 
-	loc[1].alias = "/nfs/homes/zlazrak/Desktop/webserv/teamRepo/upload";
+	loc[1].alias = "/nfs/homes/zlazrak/Desktop/ww/teamRepo/upload";
 	loc[1].allowedMethods.insert("POST");
 	loc[1].allowedMethods.insert("GET");
 
 	loc[1].canUpload = true;
 
 	server1.allLocations["/"] = loc[0];
-	server1.allLocations["/upload"] = loc[1];
+	server1.allLocations["/upload/"] = loc[1];
 
 	// u_int16_t a = 404;
 	// server1.errorPages[404] = "/nfs/homes/yoyahya/Desktop/lastrepo/teamRepo/error/error_pages/error404.txt";
