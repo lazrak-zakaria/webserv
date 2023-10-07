@@ -63,6 +63,11 @@ class Client
 			bool	parseMultipartHeader(size_t start, size_t crlfPos);
 			void	parseChunkedData();
 
+
+			void	postCgiRequest();
+			void	postUploadRequest();
+			void	isDirectoryUpload();
+
 			void	requestClear();
 			void	setMe(Client *);
 

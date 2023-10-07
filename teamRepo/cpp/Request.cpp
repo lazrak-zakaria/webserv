@@ -102,19 +102,15 @@ void	Client::Request::protectPath(std::string &path)
 	}
 }
 
-void	Client::Request::parseRequest()
-{
-	PARSE_REQUEST:
 
-	if (me->_codeStatus && me->_codeStatus != 201)
-	{	
-		me->_flags.isRequestFinished  = true;
-		return ;
-	}
-	if (me->_flags.isRequestBody)
-	{
-		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
-		{
+
+void	Client::Request::postCgiRequest()
+{
+
+/**********************************************************************************/
+
+
+
 			/* open temporary file to store */
 			struct stat sb;
 			if (stat(me->_finalPath.c_str(), &sb) == 0)
@@ -161,11 +157,14 @@ void	Client::Request::parseRequest()
 				requestBody = "";
 			}
 
-		}
-		else if (me->_configData->allLocations[me->_locationKey].canUpload)
-		{	
-			if (!me->_flags.isMultipart && outputFile.is_open() == 0)
-			{
+
+/**********************************************************************************/
+
+}
+
+void	Client::Request::isDirectoryUpload()
+{
+
 				struct stat sb;
 				if (stat(me->_finalPath.c_str(), &sb) == 0)
 				{
@@ -191,6 +190,23 @@ void	Client::Request::parseRequest()
 					me->_flags.isRequestFinished = true;
 					return ;
 				}
+}
+
+
+void	Client::Request::postUploadRequest()
+{
+
+/*******************************************************************************************/
+
+
+
+
+			if (!me->_flags.isMultipart && !outputFile.is_open())
+			{
+
+				isDirectoryUpload();
+				if (me->_flags.isRequestFinished)
+					return ;
 
 				std::string name;
 				me->generateRandomName(name);
@@ -210,27 +226,14 @@ void	Client::Request::parseRequest()
 			}
 			else if (me->_flags.isMultipart && !me->_flags.checkedMultipartPath && !outputFile.is_open())
 			{
-				struct stat sb;
-				if (stat(me->_finalPath.c_str(), &sb) == 0)
-				{
-					if (S_ISDIR(sb.st_mode))
-					{
-						if (me->_request.path[me->_request.path.size() - 1] != '/')
-						{
-							me->_codeStatus = 301;
-							me->_flags.isRequestFinished = true;
-							return ;
-						}
-					}
-					else
-					{
-						me->_codeStatus = 403;
-						me->_flags.isRequestFinished = true;
-						return ;
-					}
-					me->_flags.checkedMultipartPath = true;
-				}
+				isDirectoryUpload();
+				if (me->_flags.isRequestFinished)
+					return ;
+				me->_flags.checkedMultipartPath = true;
 			}
+
+
+
 			if (me->_flags.isChunked)
 				parseChunkedData();
 			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
@@ -252,6 +255,45 @@ void	Client::Request::parseRequest()
 				outputFile.write(requestBody.c_str(), requestBody.size());
 				requestBody = "";
 			}
+
+
+
+
+
+
+
+
+/*******************************************************************************************/
+
+
+}
+
+
+
+
+
+
+
+
+
+void	Client::Request::parseRequest()
+{
+	PARSE_REQUEST:
+
+	if (me->_codeStatus && me->_codeStatus != 201)
+	{	
+		me->_flags.isRequestFinished  = true;
+		return ;
+	}
+	if (me->_flags.isRequestBody)
+	{
+		if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
+		{
+			postCgiRequest();
+		}
+		else if (me->_configData->allLocations[me->_locationKey].canUpload)
+		{	
+			postUploadRequest();
 		}
 		else
 		{
@@ -284,7 +326,7 @@ void	Client::Request::parseRequest()
 		parseHeader(posCrlf + 4);
 		protectPath(path);
 		me->detectFinalLocation();
-		
+
 		if (me->_codeStatus)
 		{
 			me->_flags.isRequestFinished = true;
@@ -318,7 +360,7 @@ void	Client::Request::parseRequest()
 		}
 
 
-		if (method == "GET" || method == "DELETE" || (method == "POST" && requestHeadersMap.count("transfer-encoding") == 0 && requestHeadersMap.count("content-length") == 0))
+		if (method[0] == 'G' || method[0] == 'D' || (method[0] == 'P' && !requestHeadersMap.count("transfer-encoding") && !requestHeadersMap.count("content-length")))
 		{
 			me->_flags.isRequestFinished = true;
 			return ;
@@ -348,10 +390,15 @@ void	Client::Request::parseHeader(size_t crlf)
 		eCr, eLf, eFieldName, eFieldNameChar,
 		eFieldValue, eFieldValueChar
 	};
-	std::string	key, value;
-	u_int8_t	cursor = eMethode, currentState = eUri;
+	std::string	key;
+	std::string	value;
+	u_int8_t	cursor = eMethode;
+	u_int8_t	currentState = eUri;
 	bool		charAfterCrLf = false;
 	int			uriCounter = 0;
+	bool		hasContentLength;
+	bool		hasTransferEncoding;
+	bool		hasContentType;
 
 	if (requestHeader[0] !='G')
 	{		DBG;
@@ -503,6 +550,8 @@ void	Client::Request::parseHeader(size_t crlf)
 		}
 	}
 
+
+
 	if (method.compare("POST") && method.compare("GET") && method.compare("DELETE"))
 	{
 
@@ -512,33 +561,41 @@ void	Client::Request::parseHeader(size_t crlf)
 		goto BAD_REQUEST;
 	}
 
-	if (method.compare("POST") && (requestHeadersMap.count("content-length") || requestHeadersMap.count("transfer-encoding")))
+
+	if (!requestHeadersMap.count("host") || requestHeadersMap["host"].size() != 1)
+		goto BAD_REQUEST;
+
+
+
+	hasContentLength = requestHeadersMap.count("content-length");
+	hasTransferEncoding = requestHeadersMap.count("transfer-encoding");
+	hasContentType = requestHeadersMap.count("content-type");
+
+	if (method[0] != 'P' && (hasContentLength || hasTransferEncoding))
 	{
 		me->_codeStatus = 413;
 		goto BAD_REQUEST;
 	}
 
-	if (method.compare("POST") == 0)
+	if (method[0] == 'P')
 	{
 		me->_flags.isRequestBody = true;
-		if (requestHeadersMap.count("content-type") && requestHeadersMap.count("transfer-encoding") == 0
-					&& requestHeadersMap.count("content-length") == 0)
+		if (hasContentType && !hasTransferEncoding
+					&& !hasContentLength)
 		{
 			me->_codeStatus = 411;
 			goto BAD_REQUEST;
 		}
 	}
 
-	if (!requestHeadersMap.count("host") || requestHeadersMap["host"].size() != 1)
-		goto BAD_REQUEST;
 	
 
-	if (requestHeadersMap.count("content-length"))
+	if (hasContentLength)
 	{
 		if (requestHeadersMap["content-length"].size() == 1)
 		{
 			size_t k = 0;
-			std::string	&contentLengthTmp = requestHeadersMap["content-length"][0];
+			std::string	&contentLengthTmp = *(--requestHeadersMap["content-length"].end());
 			while (k < contentLengthTmp.size() && contentLengthTmp[k] == ' ')
 				++k;
 			while (k < contentLengthTmp.size() && contentLengthTmp[k] == '0')
@@ -559,7 +616,7 @@ void	Client::Request::parseHeader(size_t crlf)
 		}
 	}
 
-	if (requestHeadersMap.count("transfer-encoding"))
+	if (hasTransferEncoding)
 	{
 				// std::cout << "here\n";
 		std::string &transferEncoding = *(--requestHeadersMap["transfer-encoding"].end());
@@ -580,7 +637,7 @@ void	Client::Request::parseHeader(size_t crlf)
 		me->_flags.isChunked = true;
 	}
 
-	if (requestHeadersMap.count("content-type"))
+	if (hasContentType)
 	{
 		std::string &contentTypeTmp = *(--requestHeadersMap["content-type"].end());
 		std::string	tmp;
@@ -616,25 +673,14 @@ void	Client::Request::parseHeader(size_t crlf)
 			endBoundary = std::string("--").append(boundary).append("--\r\n");
 		}
 
-		if (i != contentTypeTmp.size())
-				goto BAD_REQUEST;
+		// if (i != contentTypeTmp.size()) /* i comment this in, [oct 7 14:39]*/
+		// 		goto BAD_REQUEST;
 
 		// std::cout << contentType << "["<< boundary<< "]\n";
 	}
 
 
-	
-	if (requestHeadersMap.count("transfer-encoding"))
-	{
-		if (requestHeadersMap.count("content-length"))
-			goto BAD_REQUEST;
-	}
 
-	if (requestHeadersMap.count("content-type"))
-	{
-		if (requestHeadersMap.count("transfer-encoding") && requestHeadersMap.count("content-length"))
-			goto BAD_REQUEST;
-	}
 
 
 

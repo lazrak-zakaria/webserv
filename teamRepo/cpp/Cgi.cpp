@@ -3,7 +3,7 @@
 
 u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
 {
-	    enum{statusLine, efieldName, efieldValue};
+	enum{statusLine, efieldName, efieldValue};
 
     size_t sizeLF = crlf.length();
     u_int cursor = efieldName;
