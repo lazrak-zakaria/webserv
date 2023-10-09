@@ -16,7 +16,6 @@ class Client
 		MimeAndError	*_mimeError;
 		std::string		_finalPath;
 		std::string		_locationKey;
-		std::string		_finalAnswer;
 		u_int16_t		_codeStatus;
 		size_t			_timeLastAction;
 
@@ -187,6 +186,8 @@ class Client
 		std::string &trim(std::string& str);
 
 	public:
+		std::string		_finalAnswer;
+		bool			isCompletelySent;
 
 		Client();
 		~Client();

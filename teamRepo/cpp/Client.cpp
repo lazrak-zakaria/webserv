@@ -98,9 +98,7 @@ bool	Client::isMatchedWithCgi(std::string &file)
 	if (pos != std::string::npos)
 	{
 		std::string	extension = file.substr(pos);
-		// std::cout << extension << "||\n";
 		std::map<std::string, std::string>& cgi = _configData->allLocations[_locationKey].cgi;
-
 		std::map<std::string, std::string>::iterator it;
 		
 		for (it = cgi.begin(); it != cgi.end(); ++it)
@@ -172,25 +170,16 @@ void	Client::detectFinalLocation(void)
 	if (!_configData->allLocations[_locationKey].root.empty())
 	{
 		_finalPath = _configData->allLocations[_locationKey].root;
-		// if (_finalPath[_finalPath.size() - 1] != '/' && _request.path.size() > 0 && _request.path[0] != '/')
-		// 	_finalPath += '/';
-		// std::cout << "__"<< _request.path << "\n";
-		// std::cout << "__"<< _finalPath << "\n";
-		
 		_finalPath += _request.path;
 	}
 	else if (!_configData->allLocations[_locationKey].alias.empty())
 	{
 		std::string tmp = _request.path.substr(_locationKey.length());
-
 		_finalPath = _configData->allLocations[_locationKey].alias;
-
 		_finalPath.append(tmp);
 	}
 	else
-	{
-		/*what ?*/
-	}
+		_finalPath = _request.path;
 }
 
 
@@ -219,19 +208,11 @@ void	Client::readRequest(const char * requestData, int receivedSize)
 	if (_flags.isRequestBody)
 	{
 		_request.requestBody.append(requestData, receivedSize);
-		// DBG << "body+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
-		std::cout <<_request.requestBody;
-		DBG;
 	}
 	else
 	{
-		
 		_request.requestHeader.append(requestData, receivedSize);
-		DBG << "header";
-		std::cout <<_request.requestHeader;
-		DBG;
 	}
-	// std::cout << requestData << "\n";
 	_request.parseRequest();
 }
 
@@ -252,15 +233,11 @@ std::string		&Client::serveResponse(void)
 	}
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
-		// std::cout << "------------------------------------>" <<_codeStatus << "\n";
-
 		_response.ErrorResponse();
-			// exit(89);
 	}
 	else if (_request.method == "POST")
 	{
-			signal(SIGPIPE, SIG_IGN);
-
+		signal(SIGPIPE, SIG_IGN);
 		_response.postMethodeResponse();
 		if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 		{
@@ -270,8 +247,7 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "GET")
 	{
-		// DBG;
-			signal(SIGPIPE, SIG_IGN);
+		signal(SIGPIPE, SIG_IGN);
 		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)
 		{
@@ -283,7 +259,6 @@ std::string		&Client::serveResponse(void)
 	{
 		_response.DeleteMethodResponse();
 	}
-
 	return _finalAnswer;
 }
 
@@ -293,5 +268,6 @@ std::string		&Client::serveResponse(void)
 
 Client::~Client()
 {
-	closedir(this->_FdDirectory);
+	if (this->_FdDirectory)
+		closedir(this->_FdDirectory);
 }

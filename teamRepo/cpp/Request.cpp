@@ -940,13 +940,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		case eFinish:
 		{
 			if (requestBody.compare(i, 2, "\r\n") != 0)
-			{
-				// std::cout << requestBody << "XX\n";
-				{
-
-					return false;
-				}
-			}
+				return false;
 			++i;
 		}
 		break;
@@ -961,20 +955,15 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		std::string extension = me->_mimeError->mimeReverse.count(contentTypeTmp) ? 
 												me->_mimeError->mimeReverse[contentTypeTmp] : "";
 
-		// me->addSlashToFinalPath();
 		uploadFileName = tmpFileName + extension;
 		std::string tmpPath = me->_finalPath + tmpFileName + extension;
-		// /*should i check if it exist ?*/
 
-		// std::cout << tmpPath << "---------------=============\n";
 		outputFile.open(tmpPath, std::ios::binary);
 		if (outputFile.is_open() == 0)
 		{
 			std::cerr << "File did not open\n";
 			me->_codeStatus = 500;
-			{
-				return false;
-			}
+			return false;
 		}
 		contentTypeTmp = "";
 		me->_codeStatus = 201;

@@ -53,7 +53,6 @@ void	Client::Response::postMethodeResponseDirectory()
 
 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 	{
-		// me->addSlashToFinalPath();
 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
 		{
 			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;
@@ -67,52 +66,39 @@ void	Client::Response::postMethodeResponseDirectory()
 				}
 			}
 
-			/*no index match with cgi*/
 			if (i == indexes.size())
 			{
 				std::cout << "no index match or exist with cgi-s\n";
-				goto END_RESPONSE;;
+				me->_codeStatus = 204;
 			}
 			else
 			{
-				// me->_finalPath.append(indexes[i]);
-				/* run cgi*/
-				std::cout << "-----\ni will run cgi\n"; 
+				std::cout << "-----\ndirectory i will run cgi\n"; 
 				std::cout << "script file: " << me->_finalPath << "|\n";
 				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
 				me->_cgi.executeCgi();
-
-				// exit(0);
 			}
-
 		}
 		else
 		{
 			std::cout << "you requested a directory and did not provide any index \n";
-			goto END_RESPONSE;
+			me->_codeStatus = 204;
 		}
 	}
 	else
 	{
 		std::cout << "you are doing a post request and you did not provide an upload nor cgi\n";
-		goto END_RESPONSE;
+		me->_codeStatus = 204;
 	}
-
-
-	return;
-
-	END_RESPONSE:
-		me->_codeStatus = 403;
-		std::cout << "ERROR\n";
 }
 
 void	Client::Response::postMethodeResponseFile()
 {
 	if (!me->_configData->allLocations[me->_locationKey].cgi.empty())
 	{
-		if (me->isMatchedWithCgi(me->_finalPath)) /* if file does not exist le the child process quite with error*/
+		if (me->isMatchedWithCgi(me->_finalPath)) 
 		{
-			/*run cgi */
+
 			std::cout << "-----\nfile i will run cgi\n"; 
 			std::cout << "script file: " << me->_finalPath << "|\n";
 			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
@@ -120,24 +106,16 @@ void	Client::Response::postMethodeResponseFile()
 		}
 		else
 		{
-			/*no cgi can run this*/
 			std::cout << "you requested a file and did not matched with any cgi\n";
-			goto END_RESPONSE;
+			me->_codeStatus = 403;
+			return ;
 		}
 	}
 	else
 	{
-		/* WTF do you want*/
-		std::cout << "if you want a page do GET later i send you a file\n";
-		goto END_RESPONSE;
+		me->_codeStatus = 204;
+		return ;
 	}
-
-	return ;
-
-	END_RESPONSE:
-		me->_codeStatus = 403;
-		std::cout << "ERROR\n";
-
 }
 
 void	Client::Response::sendCgiHeaders()
@@ -152,10 +130,8 @@ void	Client::Response::postMethodeResponse()
 	else if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
 
-
 		if (me->_flags.isCgiRunning)
 		{
-			// std::cout << "+++++++++++++++\n";
 			me->_cgi.checkCgiTimeout();
 		}
 		if (me->_flags.isCgiFinished)
@@ -201,17 +177,6 @@ void	Client::Response::postMethodeResponse()
 	}
 }
 
-void	Client::Response::responseError()
-{
-	if (me->_flags.canReadInputFile)
-	{
-
-		Client::Response::sendFileToFinalAnswer();
-	}
-	// else
-	// 	generateResponseErrorHeader();
-}
-
 std::string	Client::Response::getContentTypeOfFile(std::string &f)
 {
 	size_t	pos = f.find_last_of('.');
@@ -224,113 +189,9 @@ std::string	Client::Response::getContentTypeOfFile(std::string &f)
 	return std::string("application/octet-stream");
 }
 
-void	Client::Response::generateResponseErrorHeader(void)
-{
-	inputFile.close();
-		std::cout << "{}{}{}\n";
-
-	std::stringstream ss;
-	ss << "HTTP/1.1 " << me->_codeStatus << " " << me->_mimeError->statusCode[me->_codeStatus] << "\r\n";
-	ss << "Transfer-Encoding: " << "chunked" << "\r\n";
-
-	if (me->_request.requestHeadersMap.count("connection"))
-	{
-		std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
-		for (int i = 0; tmp[i] ; ++i)
-			tmp[i] = tolower(tmp[i]);
-		if (tmp.find("close") != std::string::npos)
-		{
-			ss << "Connection: " << "close" << "\r\n";
-		}
-		else
-		{
-			ss << "Connection: " << "keep-alive" << "\r\n";
-		}
-	}
-	else
-			ss << "Connection: " << "keep-alive" << "\r\n";
-	
-	if (me->_configData->errorPages.count(me->_codeStatus))
-	{
-		inputFile.open(me->_configData->errorPages[me->_codeStatus].c_str());
-		if (!inputFile.is_open())
-		{
-		}
-		ss << "Content-Type: " << getContentTypeOfFile(me->_configData->errorPages[me->_codeStatus]) << "\r\n";
-	}
-	else
-	{
-		inputFile.open(me->_mimeError->errors[me->_codeStatus].c_str());
-		if (!inputFile.is_open())
-		{
-			exit(5);
-		}
-		ss << "Content-Type: " << "text/html" << "\r\n";
-	}
-
-	ss << "\r\n";
-	me->_flags.canReadInputFile = true;
-	// me->_flags.removeMe = true;
-	me->_finalAnswer = ss.str();
-}
-
-
-
-
-
-
-
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*****************************************************************************************/
-
-void	Client::Response::generate200Header()
-{
-	std::stringstream ss;
-	ss << "HTTP/1.1 " << me->_codeStatus << " " << "OK" << "\r\n";
-	ss << "Transfer-Encoding: " << "chunked" << "\r\n";
-
-	if (me->_request.requestHeadersMap.count("connection"))
-	{
-		std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
-		for (int i = 0; tmp[i] ; ++i)
-			tmp[i] = tolower(tmp[i]);
-		if (tmp.find("close") != std::string::npos)
-		{
-			ss << "Connection: " << "close" << "\r\n";
-		}
-		else
-		{
-			ss << "Connection: " << "keep-alive" << "\r\n";
-		}
-	}
-	else
-			ss << "Connection: " << "keep-alive" << "\r\n";
-
-
-	ss << "Content-Type: " << getContentTypeOfFile(me->_finalPath) << "\r\n";
-
-
-	ss << "\r\n";
-	me->_flags.canReadInputFile = true;
-
-	me->_finalAnswer = ss.str();
-}			
-
-
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
+/************************************************/
+/************************************************/
+/************************************************/
 
 std::string Client::Response::FindFileToOpen()
 {
@@ -467,7 +328,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			this->me->_flags.isResponseFinished = true;
 			break;
 		case 204:
-			respo;
+			// respo;
 			this->me->_flags.isResponseFinished = true;
 			break;
 		case 200:
@@ -508,8 +369,6 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 	}
 	this->me->_finalAnswer = respo + "\r\n";
 
-	// std::cout << me->_finalAnswer << "<-------\n";
-	// exit(77);
 }
 
 
@@ -632,7 +491,8 @@ void Client::Response::GetDirectory()
 		}
 		std::vector<std::string> content;
 		int i = 4;
-		closedir(this->me->_FdDirectory);
+		if  (this->me->_FdDirectory)
+			closedir(this->me->_FdDirectory);
     	this->me->_FdDirectory = opendir(this->me->_finalPath.c_str());
     	if (!this->me->_FdDirectory)
     	{
@@ -669,7 +529,9 @@ std::vector<std::string> Client::Response::readdirectory()
 	int i = 4;
     while(this->me->_ReadDirectory && i >= 0)
     {
-		if (this->me->_ReadDirectory && this->me->_ReadDirectory->d_name && this->me->_ReadDirectory->d_name[0])
+		//&& this->me->_ReadDirectory->d_name && this->me->_ReadDirectory->d_name[0]
+			//can be NULL ?!	
+		if (this->me->_ReadDirectory)
         	content.push_back(this->me->_ReadDirectory->d_name);
 		this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
 		i--;
@@ -713,7 +575,7 @@ void Client::Response::GetFile()
 			this->me->_cgi.executeCgi();
 			return ;
 		}
-		if (!st.st_mode & S_IRUSR)
+		if (!(st.st_mode & S_IRUSR))
 		{
 			this->me->_codeStatus = 403;
 			return ;

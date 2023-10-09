@@ -61,9 +61,9 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
 void Client::Cgi::parseCgiHeader()
 {
 	const int BUFSIZE = 40000;
-	char buffer[BUFSIZ];
+	char buffer[BUFSIZE];
 	std::string sepCgiCrlf;
-	me->_response.inputFile.read(buffer, BUFSIZ - 2);
+	me->_response.inputFile.read(buffer, BUFSIZE - 2);
 
 	int	howMuchRead = me->_response.inputFile.gcount();
 	cgiHeader.append(buffer, howMuchRead);
@@ -367,21 +367,29 @@ void	Client::Cgi::executeCgi()
 	{
 		/*Setup env variables*/
 		u_int8_t i = 0;
-		char* env[16];
+		size_t envSize = me->_request.requestHeadersMap.count("cookie") ? me->_request.requestHeadersMap.size() : 0;
+		envSize += 16;
+		char** env = new char*[envSize];
 
 		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
 		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
 		env[i++] = strdup(std::string("SERVER_NAME=").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
-		
 		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
-		
-
-
+		env[i++] = strdup("REDIRECT_STATUS=200");
+		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
+		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
+		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
+		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(me->_finalPath).c_str());
+		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
+		{
+			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
+			env[i++] = strdup(std::string("CONTENT_TYPE=").append(tmp).c_str());
+		}
+		else
+			env[i++] = strdup(std::string("CONTENT_TYPE=").c_str());
 
 		if (me->_request.requestHeadersMap.count("cookie"))
         {
-            // std::cout << "cookie : **|" << (--me->_request.requestHeadersMap["cookie"].end()) << "\n";
-            // env[i++] = strdup(std::string("HTTP_COOKIE=").append((--me->_request.requestHeadersMap["cookie"].end())).c_str());
             std::vector<std::string>::iterator it = me->_request.requestHeadersMap["cookie"].begin();
             while(it != me->_request.requestHeadersMap["cookie"].end())
             {
@@ -390,48 +398,29 @@ void	Client::Cgi::executeCgi()
             }
         }
 
-
-
-		env[i++] = strdup("SERVER_PROTOCOL=HTTP/1.1");
-		env[i++] = strdup("REDIRECT_STATUS=200");
-		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
-		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
-		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
-		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(me->_finalPath).c_str());
-
-		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
-		{
-			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
-			env[i++] = strdup(std::string("CONTENT_TYPE=").append(tmp).c_str());
-		}
-
 		if (me->_request.requestHeadersMap.count("content-length"))
 		{
 			std::string tmp = *(me->_request.requestHeadersMap["content-length"].end() - 1);
 			env[i++] = strdup(std::string("CONTENT_LENGTH=").append(me->_finalPath).c_str());
 		}
-
 		env[i] = NULL;
 		
 		me->_response.inputFile.close();
-
 		std::string	&programName 	= me->_configData->allLocations[me->_locationKey].cgi[cgiKeyProgram];
 		std::string	&scriptToexec	= me->_finalPath;
 		
-		// std::cout << inputFileCGi << "++++++++\n";
-		// exit(4);
 		if (inputFileCGi.empty() == false) /*for post*/
 		{
 			if (freopen(inputFileCGi.c_str(), "r", stdin) == NULL)
 			{
-				std::cout << "CGI INPUT FAIL\n";
-				exit(1);
+				std::cerr << "CGI INPUT FAIL\n";
+				exit(5);
 			}
 		}
 		if (freopen(outputFileCGi.c_str(), "w", stdout) == NULL)
 		{
-			std::cout << "CGI outPUT FAIL\n";
-			exit(1);
+			std::cerr << "CGI OUTPUT FAIL\n";
+			exit(5);
 		}
 
 		char *argv[3];
@@ -442,42 +431,36 @@ void	Client::Cgi::executeCgi()
 			exit(5);
 		};
 
-
 		argv[0] = strdup(programName.c_str());
 		argv[1] = strdup(scriptToexec.c_str());
 		argv[2] = NULL;
 		std::cerr << "--" << pathWhereExecute << ";" <<  argv[0] <<  "++" << argv[1] << "\n";
 		
-		std::cerr << "/*******/\n";
 		execve(argv[0], argv, env);
-		std::cerr << "/******78787*/\n";
+		std::cerr << "execve failed\n";
 		exit(5);
 	}
 	else
 	{
-		// sleep(2);
 		struct timeval tmv;
 		gettimeofday(&tmv, NULL);
 		timeStart =  tmv.tv_sec;
 
 		int ret = waitpid(processPid, 0, WNOHANG);
-		// int ret = wait(0); /* to test*/
-		std::cout << "-----------------;;;--------------->" << outputFileCGi << '\n';
 		if (ret == processPid)
 		{
 			me->_flags.isCgiFinished = true;
-			// me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
-			std::cout << "-------------------------------->" << outputFileCGi << '\n';
+			me->_response.inputFile.close();
 			me->_response.inputFile.open(outputFileCGi.c_str(), std::ios::binary);
 			if (me->_response.inputFile.is_open() == 0)
 			{
-					me->_codeStatus = 500;
+				me->_codeStatus = 500;
 				std::cout << "open failed to read cgi output\n";
 			}
 		}
 		else if (ret == 0)
-		{
 			me->_flags.isCgiRunning = true;
-		}
+		else
+			me->_codeStatus = 500;
 	}
 }
