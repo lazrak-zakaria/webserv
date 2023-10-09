@@ -30,6 +30,7 @@ void	Server::socketBindListen()
         perror("socket");
         exit(1);
     }
+	fcntl(fdSock, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
 	// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
@@ -72,6 +73,7 @@ void	Server::acceptClient(fd_set &readSet)
 		std::cerr << "connetion error\n";
         return ;
 	}
+
 	std::cout << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
 	FD_SET(fdSockTmp, &readSet);
 	serverClients[fdSockTmp];
@@ -146,8 +148,13 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				clientObj.isCompletelySent = true;
 			if (clientObj.isResponseFinished() && clientObj.isCompletelySent)
 			{
-				clientObj.clearClient();
 				FD_CLR(clientFdSock, &writeSet);
+				clientObj.clearClient();
+				if (clientObj.closeMe)
+				{
+					invalidSockets.push_back(clientFdSock);
+					continue;
+				}
 				FD_SET(clientFdSock, &readSet);
 			}
 		}

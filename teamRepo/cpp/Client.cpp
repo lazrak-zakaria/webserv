@@ -5,7 +5,7 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_codeStatus(0) , isCompletelySent(true)
 
 {
-	
+	closeMe = false;
 	_request.me = this;
 	_response.me = this;
 	_cgi.me = this;
@@ -23,6 +23,8 @@ void	Client::clearClient()
 		_locationKey = "";
 		_finalAnswer = "";
 		_codeStatus = 0;
+		if (_FdDirectory)
+			closedir(_FdDirectory);
 		_FdDirectory = NULL;
 		_ReadDirectory = NULL;
 		

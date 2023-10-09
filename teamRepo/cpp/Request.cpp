@@ -312,6 +312,7 @@ void	Client::Request::parseRequest()
 		if (!me->isPathExist(me->_finalPath))
 		{
 			me->setRequestFinished(404);
+			std::cout << me->_finalPath << "-----------------------------*****\n";
 			std::cout << "I WILL STOP YOU HERE\n" << me->_finalPath << "\n";
 			return;
 		}

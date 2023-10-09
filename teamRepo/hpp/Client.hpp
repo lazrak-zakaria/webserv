@@ -184,6 +184,7 @@ class Client
 		std::string		_finalAnswer;
 		bool			isCompletelySent;
 		size_t			_timeLastAction;
+		bool			closeMe;
 
 		Client();
 		~Client();

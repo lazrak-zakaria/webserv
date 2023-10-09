@@ -12,7 +12,7 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "/Users/zlazrak/Desktop/webs/teamRepo/";
+	loc[0].alias = "/Users/yoyahya/Desktop/web/teamRepo/";
 	loc[0].index.push_back("login.php");
 	// loc[0].index.push_back("process_login.php");
 	// loc[0].index.push_back("dashboard.php");

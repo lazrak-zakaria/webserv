@@ -6,6 +6,7 @@ void	Client::Response::responseClear()
 	chunkedSize = 0;
 	inputFile.close();
 	location301.clear();
+
 }
 
 std::string		Client::Response::convertToHex(size_t decimalNum)
@@ -277,6 +278,7 @@ void Client::Response::ErrorResponse()
 			if (tmp.find("close") != std::string::npos)
 			{
 				respo += "Connection: close\r\n";
+				me->closeMe = true;
 			}
 			else
 			{
@@ -347,6 +349,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 					tmp[i] = tolower(tmp[i]);
 				if (tmp.find("close") != std::string::npos)
 				{
+					me->closeMe = true;
 					respo += "Connection: close\r\n";
 				}
 				else
@@ -451,16 +454,16 @@ void Client::Response::GetDirectory()
 					}
 					else
 					{
-							this->inputFile.open(this->me->_finalPath + *Iit , std::ios::binary);
-							if (!this->inputFile.is_open())
-							{
-								perror("Error open Fail: ");
-								this->me->_codeStatus = 404;
-								return;
-							}
-							this->GenerateLastResponseHeader(200, *Iit, &st);
-							this->me->_flags.canReadInputFile = true;
-							return ;
+						this->inputFile.open(this->me->_finalPath + *Iit , std::ios::binary);
+						if (!this->inputFile.is_open())
+						{
+							perror("Error open Fail: ");
+							this->me->_codeStatus = 404;
+							return;
+						}
+						this->GenerateLastResponseHeader(200, *Iit, &st);
+						this->me->_flags.canReadInputFile = true;
+						return ;
 					}
 				}
 				Iit++;
