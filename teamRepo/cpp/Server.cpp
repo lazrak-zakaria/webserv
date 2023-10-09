@@ -115,16 +115,20 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 		}
 		else if (FD_ISSET(clientFdSock, &tempWriteSet))
 		{
-			std::string &answer = clientObj.serveResponse();
-			if (!answer.empty())
-			std::cout << "||||||" <<answer<< "|||||||||||\n";
 
-			if(clientObj.isResponseFinished())
-				answer.append("\r\n");
+			if (clientObj.isCompletelySent)
+			{
+				clientObj.serveResponse();
+				if (!clientObj._finalAnswer.empty())
+				std::cout << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
 
-			int dataSent = send(clientFdSock, answer.c_str(), answer.size(), 0);
+				if(clientObj.isResponseFinished())
+					clientObj._finalAnswer.append("\r\n");
+			}
+			
+			int dataSent = send(clientFdSock, clientObj._finalAnswer.c_str(), clientObj._finalAnswer.size(), 0);
 
-			if (dataSent == -1 || dataSent != answer.size())
+			if (dataSent == -1)
 			{
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &writeSet);
@@ -132,7 +136,14 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				continue ;
 			}
 
-			if (clientObj.isResponseFinished())
+			if (clientObj._finalAnswer.size() != dataSent)
+			{
+				clientObj._finalAnswer.erase(0, dataSent);
+				clientObj.isCompletelySent = false;
+			}
+			else
+				clientObj.isCompletelySent = true;
+			if (clientObj.isResponseFinished() && clientObj.isCompletelySent)
 			{
 				clientObj.clearClient();
 				FD_CLR(clientFdSock, &writeSet);

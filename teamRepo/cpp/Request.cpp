@@ -106,174 +106,140 @@ void	Client::Request::protectPath(std::string &path)
 
 void	Client::Request::postCgiRequest()
 {
-
-/**********************************************************************************/
-
-
-
-			/* open temporary file to store */
-			struct stat sb;
-			if (stat(me->_finalPath.c_str(), &sb) == 0)
+	struct stat sb;
+	if (stat(me->_finalPath.c_str(), &sb) == 0)
+	{
+		if (S_ISDIR(sb.st_mode))
+		{
+			if (me->_request.path[me->_request.path.size() - 1] != '/')
 			{
-				if (S_ISDIR(sb.st_mode))
-				{
-					if (me->_request.path[me->_request.path.size() - 1] != '/')
-					{
-						me->_codeStatus = 301;
-						me->_flags.isRequestFinished = true;
-						return ;
-					}
-				}
+				me->_codeStatus = 301;
+				me->_flags.isRequestFinished = true;
+				return ;
 			}
-			if (outputFile.is_open() == 0)
-			{
-				std::string name;
-				me->generateRandomName(name);
-				name = std::string("./../tmp/").append(name);
-				// exit(4);
-				outputFile.open(name, std::ios::binary);
-				if (outputFile.is_open() == 0)
-				{
-					me->_codeStatus = 500;
-					me->_flags.isRequestFinished = true;
-					return ;
-				}
-				me->filesToDelete.push_back(name);
-				me->_cgi.inputFileCGi = name;
-			}
+		}
+	}
 
-			if (me->_flags.isChunked)
-				parseChunkedData();
-			else
-			{
+	if (!outputFile.is_open())
+	{
+		std::string name;
+		me->generateRandomName(name);
+		name = std::string("./../tmp/").append(name);
+		outputFile.open(name, std::ios::binary);
+		if (!outputFile.is_open())
+		{
+			me->_codeStatus = 500;
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
+		me->filesToDelete.push_back(name);
+		me->_cgi.inputFileCGi = name;
+	}
 
-				readAmountSoFar += requestBody.size();
-				outputFile.write(requestBody.c_str(), requestBody.size());
-				if (readAmountSoFar >= contentLength)
-				{
-					outputFile.close();
-					me->_flags.isRequestFinished = true;
-				}
-				requestBody = "";
-			}
-
-
-/**********************************************************************************/
-
+	if (me->_flags.isChunked)
+		parseChunkedData();
+	else
+	{
+		size_t	requestBodySize = requestBody.size();
+		readAmountSoFar += requestBodySize;
+		size_t howMuchShouldWrite = (readAmountSoFar <= contentLength) ? requestBodySize : requestBodySize - (readAmountSoFar - contentLength);
+		outputFile.write(requestBody.c_str(), howMuchShouldWrite);
+		if (readAmountSoFar >= contentLength)
+		{
+			outputFile.close();
+			me->_flags.isRequestFinished = true;
+		}
+		requestBody = "";
+	}
 }
+
 
 void	Client::Request::isDirectoryUpload()
 {
-
-				struct stat sb;
-				if (stat(me->_finalPath.c_str(), &sb) == 0)
-				{
-					if (S_ISDIR(sb.st_mode))
-					{
-						if (me->_request.path[me->_request.path.size() - 1] != '/')
-						{
-							me->_codeStatus = 301;
-							me->_flags.isRequestFinished = true;
-							return ;
-						}
-					}
-					else
-					{
-						me->_codeStatus = 403;
-						me->_flags.isRequestFinished = true;
-						return ;
-					}
-				}
-				else
-				{
-					me->_codeStatus = 404;
-					me->_flags.isRequestFinished = true;
-					return ;
-				}
+	struct stat sb;
+	if (stat(me->_finalPath.c_str(), &sb) == 0)
+	{
+		if (S_ISDIR(sb.st_mode))
+		{
+			if (me->_request.path[me->_request.path.size() - 1] != '/')
+			{
+				me->_codeStatus = 301;
+				me->_flags.isRequestFinished = true;
+				return ;
+			}
+		}
+		else
+		{
+			me->_codeStatus = 403;
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
+	}
+	else
+	{
+		me->_codeStatus = 404;
+		me->_flags.isRequestFinished = true;
+		return ;
+	}
 }
 
 
 void	Client::Request::postUploadRequest()
 {
+	if (!me->_flags.isMultipart && !outputFile.is_open())
+	{
+		isDirectoryUpload();
+		if (me->_flags.isRequestFinished)
+			return ;
 
-/*******************************************************************************************/
-
-
-
-
-			if (!me->_flags.isMultipart && !outputFile.is_open())
-			{
-
-				isDirectoryUpload();
-				if (me->_flags.isRequestFinished)
-					return ;
-
-				std::string name;
-				me->generateRandomName(name);
-				me->addSlashToFinalPath();
-				std::string extension = me->_mimeError->mimeReverse.count(contentType) ? 
-												me->_mimeError->mimeReverse[contentType] : "";
-				me->_finalPath.append(name.append(extension));
-				outputFileName = name;
-				outputFile.open(me->_finalPath.c_str(), std::ios::binary);
-				if (outputFile.is_open() == 0)
-				{
-					me->_codeStatus = 500;
-					me->_flags.isRequestFinished = true;
-					return ;
-				}
-				me->_codeStatus = 201;
-			}
-			else if (me->_flags.isMultipart && !me->_flags.checkedMultipartPath && !outputFile.is_open())
-			{
-				isDirectoryUpload();
-				if (me->_flags.isRequestFinished)
-					return ;
-				me->_flags.checkedMultipartPath = true;
-			}
+		std::string name;
+		me->generateRandomName(name);
+		std::string extension = me->_mimeError->mimeReverse.count(contentType) ? 
+										me->_mimeError->mimeReverse[contentType] : "";
+		me->_finalPath.append(name.append(extension));
+		outputFileName = name;
+		outputFile.open(me->_finalPath.c_str(), std::ios::binary);
+		if (!outputFile.is_open())
+		{
+			me->_codeStatus = 500;
+			me->_flags.isRequestFinished = true;
+			return ;
+		}
+		me->_codeStatus = 201;
+	}
+	else if (me->_flags.isMultipart && !me->_flags.checkedMultipartPath && !outputFile.is_open())
+	{
+		isDirectoryUpload();
+		if (me->_flags.isRequestFinished)
+			return ;
+		me->_flags.checkedMultipartPath = true;
+	}
 
 
 
-			if (me->_flags.isChunked)
-				parseChunkedData();
-			else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
-			{
-				readAmountSoFar += requestBody.size();
-				if (readAmountSoFar >= contentLength)
-					me->_flags.isRequestFinished = true;
-				parseMultipart();
-			}
-			else
-			{
-				
-				readAmountSoFar += requestBody.size();
-				if (readAmountSoFar >= contentLength)
-				{
-					me->_flags.isRequestFinished = true;
-					outputFile.close();
-				}
-				outputFile.write(requestBody.c_str(), requestBody.size());
-				requestBody = "";
-			}
-
-
-
-
-
-
-
-
-/*******************************************************************************************/
-
-
+	if (me->_flags.isChunked)
+		parseChunkedData();
+	else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
+	{
+		readAmountSoFar += requestBody.size();
+		if (readAmountSoFar >= contentLength)
+			me->_flags.isRequestFinished = true;
+		parseMultipart();
+	}
+	else
+	{
+		size_t	requestBodySize = requestBody.size();
+		readAmountSoFar += requestBodySize;
+		size_t howMuchShouldWrite = (readAmountSoFar <= contentLength) ? requestBodySize : requestBodySize - (readAmountSoFar - contentLength);
+		outputFile.write(requestBody.c_str(), howMuchShouldWrite);
+		if (readAmountSoFar >= contentLength)
+		{
+			outputFile.close();
+			me->_flags.isRequestFinished = true;
+		}
+		requestBody = "";
+	}
 }
-
-
-
-
-
-
-
 
 
 void	Client::Request::parseRequest()
@@ -301,13 +267,9 @@ void	Client::Request::parseRequest()
 			me->_flags.isRequestFinished = true;
 			return ;
 		}
-
 	}
 	else
 	{
-		size_t searchEndOfHeader = 0;//requestHeader.size();
-		// searchEndOfHeader = (searchEndOfHeader > 7) ? searchEndOfHeader - 7 : 0; /*where to start searching*/
-
 		if (!requestTimeStart)
 			requestTimeStart = me->getTimeNow();
 
@@ -315,7 +277,7 @@ void	Client::Request::parseRequest()
 		if (posCrlf == std::string::npos)
 		{
 
-			if (me->getTimeNow() - requestTimeStart > 10)
+			if (me->getTimeNow() - requestTimeStart > 20)
 			{
 				me->_codeStatus = 408;
 				me->_flags.isRequestFinished = true;
@@ -334,7 +296,7 @@ void	Client::Request::parseRequest()
 		}
 
 		/*code for redirection will be here*/
-		if (me->_configData->allLocations[me->_locationKey].redirection.empty() == 0)
+		if (!me->_configData->allLocations[me->_locationKey].redirection.empty())
 		{
 			me->_codeStatus = 301;
 			me->_response.location301 =  me->_configData->allLocations[me->_locationKey].redirection;
@@ -400,12 +362,7 @@ void	Client::Request::parseHeader(size_t crlf)
 	bool		hasTransferEncoding;
 	bool		hasContentType;
 
-	if (requestHeader[0] !='G')
-	{		DBG;
-		std::cout << "-------------------------------->" << requestHeader << "\n";
-		DBG;
-		// exit(80);
-	}
+
 	for (size_t i = 0; i < crlf && !me->_codeStatus; ++i)
 	{
 		const char	&currentChar = requestHeader[i];
@@ -419,9 +376,7 @@ void	Client::Request::parseHeader(size_t crlf)
 				{
 				case eMethode:
 					while (requestHeader[i] >= 'A' && requestHeader[i] <= 'Z')
-					{
 						method.push_back(requestHeader[i++]);
-					}
 					me->_codeStatus = (requestHeader[i] != ' ') ? 400 : me->_codeStatus;
 					cursor = eSlash;
 					break;
@@ -557,7 +512,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 		std::cout << "{" << method << "}\n";
 		me->_codeStatus = 501;
-		exit(40);
+		// exit(40);
 		goto BAD_REQUEST;
 	}
 

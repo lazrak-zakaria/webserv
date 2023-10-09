@@ -51,20 +51,9 @@ void	Client::Response::sendFileToFinalAnswer()
 void	Client::Response::postMethodeResponseDirectory()
 {
 
-	/*end with slash */
-	/* MR YOYAHYA SAID WE SHOULD SEND REDIRECTION */
-	// if (me->_finalPath[me->_finalPath.size() - 1] != '/') /* later 
-	// {
-	// 	me->_codeStatus = 301;
-	// 	location301 = me->_request.path;
-	// 	location301.push_back('/');
-	// 	return ;
-	// }
-
-
 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 	{
-		me->addSlashToFinalPath();
+		// me->addSlashToFinalPath();
 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
 		{
 			std::vector<std::string> &indexes =  me->_configData->allLocations[me->_locationKey].index;

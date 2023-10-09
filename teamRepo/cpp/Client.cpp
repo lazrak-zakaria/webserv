@@ -2,9 +2,10 @@
 
 
 Client::Client() : _configData(NULL), _mimeError(NULL) , 
-	_codeStatus(0)
+	_codeStatus(0) , isCompletelySent(true)
 
 {
+	
 	_request.me = this;
 	_response.me = this;
 	_cgi.me = this;
