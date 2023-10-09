@@ -1,11 +1,5 @@
 #include "../hpp/Client.hpp"
 
-void	Client::Response::setResponseFinished(u_int8_t code)
-{
-	me->_codeStatus = code;
-	me->_flags.isResponseFinished = true;
-}
-
 void	Client::Response::responseClear()
 {
 	responseHeader.clear();
@@ -118,10 +112,6 @@ void	Client::Response::postMethodeResponseFile()
 	}
 }
 
-void	Client::Response::sendCgiHeaders()
-{
-	
-}
 
 void	Client::Response::postMethodeResponse()
 {

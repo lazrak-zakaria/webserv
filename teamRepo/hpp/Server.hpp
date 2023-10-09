@@ -29,6 +29,7 @@ class Server
 		void	setConfigData(ServerConfig	*c);
 		void	setMimeError(MimeAndError	*m);
 		int		getFdSock();
+		void	checkClientsTimeout(fd_set &readSet, fd_set &writeSet);
 };
 
 #endif

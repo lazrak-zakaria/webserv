@@ -17,7 +17,6 @@ class Client
 		std::string		_finalPath;
 		std::string		_locationKey;
 		u_int16_t		_codeStatus;
-		size_t			_timeLastAction;
 
 		std::vector<std::string>			filesToDelete;
 		struct stat 	_st;
@@ -92,15 +91,10 @@ class Client
 
 			std::string				convertToHex(size_t sz);
 
-			void					sendCgiHeaders();
 
 
-			void					sendFileToFinalAnswer();
-			void					responseError();
-			void					generate200Header();					
-			void					generateResponseErrorHeader(void);
+			void					sendFileToFinalAnswer();				
 			void					responseClear();
-			void					setResponseFinished(u_int8_t);
 			std::string				getContentTypeOfFile(std::string &f);
 
 			void					GenerateLastResponseHeader(int status, std::string filename, struct stat *st);
@@ -183,11 +177,13 @@ class Client
 		bool	isMatchedWithCgi(std::string &file);
 		bool	isPathExist(std::string path);
 		size_t	getTimeNow();
+		void	setRequestFinished(u_int16_t codeNum);
 		std::string &trim(std::string& str);
 
 	public:
 		std::string		_finalAnswer;
 		bool			isCompletelySent;
+		size_t			_timeLastAction;
 
 		Client();
 		~Client();

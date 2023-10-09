@@ -40,7 +40,9 @@ void	WebServer::run(std::vector<std::pair<ServerConfig, std::map<std::string, Se
 		const int	&fdServer = itServer->first;
 		FD_SET(fdServer, &readSet);
 	}
-
+	struct timeval timeout;
+	timeout.tv_sec = 120;
+	timeout.tv_usec =0;
 	while (true)
 	{
 		itServer = --(ServersMap.end());
@@ -52,20 +54,28 @@ void	WebServer::run(std::vector<std::pair<ServerConfig, std::map<std::string, Se
 		fd_set	tempReadSet = readSet;
 		fd_set	tempWriteSet = writeSet;
 
-		if (select(maxSocket + 1, &tempReadSet, &tempWriteSet, 0, 0) == -1)
+		int selectAnswer = select(maxSocket + 1, &tempReadSet, &tempWriteSet, 0, &timeout);
+		if (selectAnswer == -1)
 		{
 			perror("Select");
 			exit(1);
 		}
+		else if (selectAnswer)
+		{ 
+			for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
+			{
+				const int &fdServer = itServer->first;
+				if (FD_ISSET(fdServer, &tempReadSet))
+					itServer->second->acceptClient(readSet);
+			}
 
-		for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
-		{
-			const int &fdServer = itServer->first;
-			if (FD_ISSET(fdServer, &tempReadSet))
-				itServer->second->acceptClient(readSet);
+			for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
+				itServer->second->processReadySockets(tempReadSet, tempWriteSet, readSet, writeSet);
 		}
-
-		for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
-			itServer->second->processReadySockets(tempReadSet, tempWriteSet, readSet, writeSet);
+		else
+		{
+			for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
+				itServer->second->checkClientsTimeout(readSet, writeSet);
+		}
 	}
 }

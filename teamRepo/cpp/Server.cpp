@@ -72,6 +72,7 @@ void	Server::acceptClient(fd_set &readSet)
 		std::cerr << "connetion error\n";
         return ;
 	}
+	std::cout << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
 	FD_SET(fdSockTmp, &readSet);
 	serverClients[fdSockTmp];
 	serverClients[fdSockTmp].setAllConfigData(serverNamesConfig);
@@ -91,9 +92,9 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 
 		if (FD_ISSET(clientFdSock, &tempReadSet))
 		{
+
 			char	buf[4096];
 			int		collected = recv(clientFdSock, buf, 4096, 0);
-			DBG << "body+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
 
 			if (collected == -1 || collected == 0)
 			{
@@ -103,7 +104,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				continue ;
 			}
 			
-			
+			clientObj._timeLastAction = time(NULL);
 			clientObj.readRequest(buf, collected);
 
 
@@ -115,12 +116,12 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 		}
 		else if (FD_ISSET(clientFdSock, &tempWriteSet))
 		{
-
+			clientObj._timeLastAction = time(NULL);
 			if (clientObj.isCompletelySent)
 			{
 				clientObj.serveResponse();
-				if (!clientObj._finalAnswer.empty())
-				std::cout << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
+				// if (!clientObj._finalAnswer.empty())//
+				//std::cout << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
 
 				if(clientObj.isResponseFinished())
 					clientObj._finalAnswer.append("\r\n");
@@ -150,8 +151,46 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				FD_SET(clientFdSock, &readSet);
 			}
 		}
+		else
+		{
+			if (time(NULL) - clientObj._timeLastAction > 120)
+			{
+				invalidSockets.push_back(clientFdSock);
+				FD_CLR(clientFdSock, &writeSet);
+				FD_CLR(clientFdSock, &readSet);
+				std::cout << "drop timeout client\n";
+				continue ;
+			}
+		}
 	}
 
+	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
+	{
+		std::cout << "close "<< *it << "\n";
+		close(*it);
+		serverClients.erase(*it);
+	}
+	invalidSockets.clear();
+}
+
+
+void	Server::checkClientsTimeout(fd_set &readSet, fd_set &writeSet)
+{
+	std::map<int , Client>::iterator it;
+	for (it = serverClients.begin(); it != serverClients.end(); ++it)
+	{
+		const int	&clientFdSock = it->first;
+		Client		&clientObj = it->second;
+	
+		if (time(NULL) - clientObj._timeLastAction > 120)
+		{
+			invalidSockets.push_back(clientFdSock);
+			FD_CLR(clientFdSock, &writeSet);
+			FD_CLR(clientFdSock, &readSet);
+			std::cout << "drop timeout client\n";
+			continue ;
+		}
+	}
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
 		std::cout << "close "<< *it << "\n";

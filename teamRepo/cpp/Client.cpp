@@ -14,6 +14,7 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_FdDirectory = NULL;
 	_ReadDirectory = NULL;
 	_allConfigsData = 0;
+	_timeLastAction = time(NULL);
 }
 
 void	Client::clearClient()
@@ -22,7 +23,6 @@ void	Client::clearClient()
 		_locationKey = "";
 		_finalAnswer = "";
 		_codeStatus = 0;
-		_timeLastAction = getTimeNow();
 		_FdDirectory = NULL;
 		_ReadDirectory = NULL;
 		
@@ -37,6 +37,12 @@ void	Client::clearClient()
 		// 	unlink(filesToDelete[i].c_str());
 		filesToDelete.clear();
 		_cgi.clearCgi();
+}
+
+void	Client::setRequestFinished(u_int16_t codeNum)
+{
+	_codeStatus = codeNum;
+	_flags.isRequestFinished = true;
 }
 
 std::string &Client::trim(std::string& str)
@@ -161,11 +167,7 @@ void	Client::detectFinalLocation(void)
 	}
 
 
-	if (_configData->allLocations[_locationKey].allowedMethods.count(_request.method) == 0)
-	{
-		_codeStatus = 405;
-		return ;
-	}
+
 
 	if (!_configData->allLocations[_locationKey].root.empty())
 	{

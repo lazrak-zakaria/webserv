@@ -263,8 +263,7 @@ void	Client::Request::parseRequest()
 		}
 		else
 		{
-			me->_codeStatus = 403;
-			me->_flags.isRequestFinished = true;
+			me->setRequestFinished(403);
 			return ;
 		}
 	}
@@ -279,8 +278,7 @@ void	Client::Request::parseRequest()
 
 			if (me->getTimeNow() - requestTimeStart > 20)
 			{
-				me->_codeStatus = 408;
-				me->_flags.isRequestFinished = true;
+				me->setRequestFinished(408);
 			}
 			return ;
 		}
@@ -295,12 +293,17 @@ void	Client::Request::parseRequest()
 			return ;
 		}
 
+		if (me->_configData->allLocations[me->_locationKey].allowedMethods.count(method) == 0)
+		{
+			me->setRequestFinished(405);
+			return ;
+		}
+
 		/*code for redirection will be here*/
 		if (!me->_configData->allLocations[me->_locationKey].redirection.empty())
 		{
-			me->_codeStatus = 301;
 			me->_response.location301 =  me->_configData->allLocations[me->_locationKey].redirection;
-			me->_flags.isRequestFinished = true;
+			me->setRequestFinished(301);
 			return ;
 		}
 
@@ -308,16 +311,14 @@ void	Client::Request::parseRequest()
 		struct stat sb;
 		if (!me->isPathExist(me->_finalPath))
 		{
-			me->_flags.isRequestFinished = true;
-			me->_codeStatus = 404;
+			me->setRequestFinished(404);
 			std::cout << "I WILL STOP YOU HERE\n" << me->_finalPath << "\n";
 			return;
 		}
 
 		if (requestHeadersMap.count("content-length") && contentLength > me->_configData->limitBodySize)
 		{
-			me->_flags.isRequestFinished = true;
-			me->_codeStatus = 413;
+			me->setRequestFinished(413);
 			return ;
 		}
 
@@ -334,7 +335,7 @@ void	Client::Request::parseRequest()
 		
 		std::string().swap(requestHeader);
 
-		if (!requestBody.empty())
+		if (!requestBody.empty() && !me->_flags.isRequestFinished)
 		{
 			receivedSize = requestBody.size();
 			goto PARSE_REQUEST;
@@ -995,7 +996,7 @@ void	Client::Request::parseChunkedData()
 			if (TotalDataProcessed > me->_configData->limitBodySize)
 			{
 				std::cout << "413 Payload Too Large\n";
-				me->_codeStatus = 413;
+				me->setRequestFinished(413);
 				return ;
 			}
 
@@ -1056,10 +1057,8 @@ void	Client::Request::parseChunkedData()
 			else
 			{
 				std::cout << "Error body should end with crlf\n";
-				DBG;
-				std::cout << requestBody << "}\n";
-				DBG;
-				me->_codeStatus = 400;
+				me->setRequestFinished(400);
+				return ;
 			}
 
 			me->_flags.expectSizeRead = true;
