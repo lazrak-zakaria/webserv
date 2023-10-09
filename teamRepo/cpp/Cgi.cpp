@@ -33,7 +33,6 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
             else if ( (!header.compare(i, sizeLF, crlf) && key.empty())
                 || !header.compare(i, sizeLF*2 , crlf + crlf) )
             {
-				std::cout << "----------------------------------------------------->" << key << "\n";
                 if (!key.empty())
                     cgiHeadersMap[key].push_back(value);
                 return 0;
@@ -41,7 +40,6 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
             else if (!header.compare(i, sizeLF, crlf))
             {
                 cgiHeadersMap[key].push_back(value);
-				std::cout << "----------------------------------------------------->" << key << "\n";
                 key = "";
                 value = "";
                 cursor = efieldName;
@@ -70,50 +68,29 @@ void Client::Cgi::parseCgiHeader()
 
 
 
-		size_t pos = cgiHeader.find("\r\n\r\n");
-		if (pos != std::string::npos)
-			sepCgiCrlf = "\r\n";
-		else
-		{
-			pos = cgiHeader.find("\n\n");
-			if (pos != std::string::npos)
-				sepCgiCrlf = "\n";
-			
-			else
-			{
-				std::cout << "didnot found the end of header\n";
-				std::string().swap(cgiHeader);
-				me->_codeStatus = 500;
-				return ;
-			}
-		}
+	size_t pos = cgiHeader.find("\r\n\r\n");
+	size_t posTmp = cgiHeader.find("\n\n");
+	if (pos == posTmp && pos == std::string::npos)
+	{
+		std::cout << "didnot found the end of header or execve failed\n";
+		std::string().swap(cgiHeader);
+		me->_codeStatus = 500;
+		return ;
+	}
 
+	sepCgiCrlf = (pos < posTmp) ? "\r\n" : "\n";
+	pos = (posTmp < pos) ? posTmp : pos;
 
-		// if ()
-		cgibody = cgiHeader.substr(pos + 2);
-		cgiHeader.erase(pos + 2);
+	cgibody = cgiHeader.substr(pos + 2);
+	cgiHeader.erase(pos + 2);
 
-		if (parseCgiWithCrlf(cgiHeader, sepCgiCrlf))
-		{
-			std::cout << "[[[[[[[" <<pos<< "]]]]]]]\n";
-			me->_response.inputFile.close();
-			me->_codeStatus = 502;
-			std::cout << "something went wrog with parsing the output ogf cgi\n";
-			return ;
-		}
-
-
-
-		std::cout << "{\n" << cgiHeader << "\n}\n";
-
-
-
-
-
-
-
-
-
+	if (parseCgiWithCrlf(cgiHeader, sepCgiCrlf))
+	{
+		me->_response.inputFile.close();
+		me->_codeStatus = 502;
+		std::cout << "something went wrog with parsing the output ogf cgi\n";
+		return ;
+	}
 
 
     if (cgiHeadersMap.count("status"))
@@ -130,7 +107,6 @@ void Client::Cgi::parseCgiHeader()
         {
             if (!isdigit(statusHeader[i]) || j > 2)
             {
-
                 me->_codeStatus = 502;
                 return ;
             }
@@ -156,24 +132,7 @@ void Client::Cgi::parseCgiHeader()
         statusLine = "HTTP/1.1 200 OK\r\n";
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		if (cgiHeadersMap.count("content-type") == 0)
+		if (!cgiHeadersMap.count("content-type"))
 		{
 			std::cout << "i should find content type\n";
 			me->_codeStatus = 502;
@@ -217,8 +176,6 @@ void Client::Cgi::parseCgiHeader()
 
 		ss << "\r\n";
 		me->_finalAnswer = ss.str();
-		std::cout << "________+++++\n";
-
 	}
 
 
@@ -284,8 +241,7 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 		cgibody = "";
 	}
 
-	
-	
+
 }
 
 void		Client::Cgi::clearCgi()
@@ -311,23 +267,16 @@ void Client::Cgi::checkCgiTimeout()
 
 	if (waitpid(processPid, 0, WNOHANG) == processPid)
 	{
-		/*cgi end good && later check exit status*/
-		// me->_flags.canReadInputFile = true;
 		me->_flags.isCgiFinished = true;
 		me->_flags.isCgiRunning = false;
-								// DBG;
-		
-		if (!me->_response.inputFile.is_open())
-		{
 
-			// me->_response.inputFile
-			me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
-			if (me->_response.inputFile.is_open() == 0)
-			{
-				me->_codeStatus = 500;
-				std::cout << "open failed to read cgi output\n";
-				return ;
-			}
+		me->_response.inputFile.close();
+		me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
+		if (me->_response.inputFile.is_open() == 0)
+		{
+			me->_codeStatus = 500;
+			std::cout << "open failed to read cgi output\n";
+			return ;
 		}
 	}
 	else
@@ -349,14 +298,12 @@ void Client::Cgi::checkCgiTimeout()
 
 void	Client::Cgi::executeCgi()
 {
-
-	/*open outputfile here*/
+	outputFileCGi = "./../tmp/TTT";
 	me->generateRandomName(outputFileCGi);
-	outputFileCGi = std::string("./../tmp/TTT").append(outputFileCGi);
 	std::ofstream outfile (outputFileCGi);
 	if (!outfile.is_open())
 	{
-		std::cout << "FAILeD++++\n";
+		std::cout << "failed to open tmpfile output of cgi\n";
 		me->_codeStatus = 500;
 		return ;
 	}
@@ -414,13 +361,13 @@ void	Client::Cgi::executeCgi()
 			if (freopen(inputFileCGi.c_str(), "r", stdin) == NULL)
 			{
 				std::cerr << "CGI INPUT FAIL\n";
-				exit(5);
+				exit(1);
 			}
 		}
 		if (freopen(outputFileCGi.c_str(), "w", stdout) == NULL)
 		{
 			std::cerr << "CGI OUTPUT FAIL\n";
-			exit(5);
+			exit(1);
 		}
 
 		char *argv[3];
@@ -428,7 +375,7 @@ void	Client::Cgi::executeCgi()
 		if (chdir(pathWhereExecute.c_str()))
 		{
 			std::cerr << "chdir FAIL\n";
-			exit(5);
+			exit(1);
 		};
 
 		argv[0] = strdup(programName.c_str());
@@ -438,7 +385,7 @@ void	Client::Cgi::executeCgi()
 		
 		execve(argv[0], argv, env);
 		std::cerr << "execve failed\n";
-		exit(5);
+		exit(1);
 	}
 	else
 	{
