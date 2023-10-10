@@ -178,6 +178,27 @@ std::string	Client::Response::getContentTypeOfFile(std::string &f)
 	return std::string("application/octet-stream");
 }
 
+std::string	Client::Response::connectionHeader()
+{
+	if (me->_request.requestHeadersMap.count("connection"))
+	{
+		std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
+		for (int i = 0; tmp[i] ; ++i)
+			tmp[i] = tolower(tmp[i]);
+		if (tmp.find("close") != std::string::npos)
+		{
+			me->closeMe = true;
+			return std::string("Connection: close\r\n");
+		}
+		else
+		{
+			return std::string("Connection: keep-alive\r\n");
+		}
+	}
+	else
+		return std::string("Connection: keep-alive\r\n");
+}
+
 /************************************************/
 /************************************************/
 /************************************************/
@@ -267,23 +288,7 @@ void Client::Response::ErrorResponse()
         respo += std::string("Date: ") + ctime(&date);
 		respo.pop_back();
 		respo += "\r\n";
-        if (me->_request.requestHeadersMap.count("connection"))
-		{
-			std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
-			for (int i = 0; tmp[i] ; ++i)
-				tmp[i] = tolower(tmp[i]);
-			if (tmp.find("close") != std::string::npos)
-			{
-				respo += "Connection: close\r\n";
-				me->closeMe = true;
-			}
-			else
-			{
-				respo += "Connection: keep-alive\r\n";
-			}
-		}
-		else
-			respo += "Connection: keep-alive\r\n";
+		respo += connectionHeader();
         this->me->_finalAnswer = respo + "\r\n";
 		this->me->_flags.isHeaderResponseSent = true;
         if(opnedfile.empty())
@@ -339,23 +344,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 				respo.pop_back();
 				respo += "\r\n";
 			}
-			if (me->_request.requestHeadersMap.count("connection"))
-			{
-				std::string &tmp = * (--(me->_request.requestHeadersMap["connection"].end()));
-				for (int i = 0; tmp[i] ; ++i)
-					tmp[i] = tolower(tmp[i]);
-				if (tmp.find("close") != std::string::npos)
-				{
-					me->closeMe = true;
-					respo += "Connection: close\r\n";
-				}
-				else
-				{
-					respo += "Connection: keep-alive\r\n";
-				}
-			}
-			else
-					respo += "Connection: keep-alive\r\n";
+			respo += connectionHeader();
 	}
 	this->me->_finalAnswer = respo + "\r\n";
 

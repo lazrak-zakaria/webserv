@@ -174,6 +174,9 @@ void Client::Cgi::parseCgiHeader()
 			}
 		}
 
+		if (!cgiHeadersMap.count("connection"))
+			ss << me->_response.connectionHeader();
+
 		ss << "\r\n";
 		me->_finalAnswer = ss.str();
 	}
