@@ -103,14 +103,16 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 				deleteRead(kq, evList);
 				std::cout << "drop READ client\n";
 			}
-			
-			clientObj._timeLastAction = time(NULL);
-			clientObj.readRequest(buf, collected);
-
-
-			if (clientObj.isRequestFinished())
+			else
 			{
-				changeToWrite(kq, evList);
+				clientObj._timeLastAction = time(NULL);
+				clientObj.readRequest(buf, collected);
+
+
+				if (clientObj.isRequestFinished())
+				{
+					changeToWrite(kq, evList);
+				}
 			}
 		}
 		else if (evList.filter == EVFILT_WRITE)
@@ -135,24 +137,27 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 				std::cout << "drop WRITE client\n";
 
 			}
-
-			if (clientObj._finalAnswer.size() != dataSent)
-			{
-				clientObj._finalAnswer.erase(0, dataSent);
-				clientObj.isCompletelySent = false;
-			}
 			else
-				clientObj.isCompletelySent = true;
-			if (clientObj.isResponseFinished() && clientObj.isCompletelySent)
 			{
-				clientObj.clearClient();
-				if (clientObj.closeMe)
-				{
-					deleteWrite(kq, evList);
-					invalidSockets.push_back(clientFdSock);
+				if (clientObj._finalAnswer.size() != dataSent)
+				{		
+					clientObj._finalAnswer.erase(0, dataSent);
+					
+					clientObj.isCompletelySent = false;
 				}
 				else
-					changeToRead(kq, evList);
+					clientObj.isCompletelySent = true;
+				if (clientObj.isResponseFinished() && clientObj.isCompletelySent)
+				{
+					clientObj.clearClient();
+					if (clientObj.closeMe)
+					{
+						deleteWrite(kq, evList);
+						invalidSockets.push_back(clientFdSock);
+					}
+					else
+						changeToRead(kq, evList);
+				}
 			}
 		}
 		else if (evList.filter & EV_EOF)
@@ -166,6 +171,7 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 		}
 
 //with kqueue it will always be size == 1;
+
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
 		std::cout << "close "<< *it << "\n";
