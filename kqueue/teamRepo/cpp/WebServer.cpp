@@ -101,5 +101,7 @@ void	WebServer::run(std::vector<std::pair<ServerConfig, std::map<std::string, Se
             }
 		}
 
+		delete []eventList;
+
 	}
 }
