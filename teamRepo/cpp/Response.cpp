@@ -93,7 +93,6 @@ void	Client::Response::postMethodeResponseFile()
 	{
 		if (me->isMatchedWithCgi(me->_finalPath)) 
 		{
-
 			std::cout << "-----\nfile i will run cgi\n"; 
 			std::cout << "script file: " << me->_finalPath << "|\n";
 			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
@@ -140,11 +139,10 @@ void	Client::Response::postMethodeResponse()
 	}
 	else
 	{
-		if (me->_configData->allLocations[me->_locationKey].canUpload) // add more flags
+		if (me->_codeStatus == 201) // add more flags
 		{
 			/*201 created*/
 			GenerateLastResponseHeader(201, me->_request.uploadFileName, NULL);
-			// exit(9);
 			return ;
 		}
 
@@ -162,7 +160,7 @@ void	Client::Response::postMethodeResponse()
 		}
 		else
 		{
-			std::cout << "what you requested is not found\n";
+			std::cout << "what you requested is not found ; how you end up here!!\n";
 			me->_codeStatus = 404;
 		}
 	}
@@ -256,7 +254,6 @@ void Client::Response::ErrorResponse()
     if (this->me->_flags.canReadInputFile)
     {
         this->sendFileToFinalAnswer();
-
     }
     else
     {

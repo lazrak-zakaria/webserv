@@ -226,22 +226,14 @@ std::string		&Client::serveResponse(void)
 
 	_finalAnswer = "";
 
+	signal(SIGPIPE, SIG_IGN);
 	START:
-	// exit(90);
-	if (_codeStatus == 301)
-	{
-		std::stringstream ss;
-		ss << "HTTP/1.1 301 Moved Permanently\r\n";
-		ss << "Location: " << _response.location301 << "\r\n\r\n";
-		return (_finalAnswer = ss.str());
-	}
 	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 	{
 		_response.ErrorResponse();
 	}
 	else if (_request.method == "POST")
 	{
-		signal(SIGPIPE, SIG_IGN);
 		_response.postMethodeResponse();
 		if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
 		{
