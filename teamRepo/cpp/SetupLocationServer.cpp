@@ -8,20 +8,20 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 	server1.host = "127.0.0.1";
 	server1.port = 9091;
 	server1.serverNames = "serv";
-	server1.limitBodySize = 500000000;
+	server1.limitBodySize = 819200000;
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "/Users/zlazrak/Desktop/wbmergeaa/kqueue/teamRepo/error/error_pages/x.mp3";
+	loc[0].alias = "/Users/zlazrak/Desktop/combining/teamRepo/";
 	loc[0].index.push_back("login.php");
 	// loc[0].index.push_back("process_login.php");
 	// loc[0].index.push_back("dashboard.php");
 	// loc[0].index.push_back("a.out");
 	// loc[0].index.push_back("mian.cpp");
 	// loc[0].index.push_back("smile.png");
-	// loc[0].autoIndex = true;
+	loc[0].autoIndex = true;
 	// loc[0].cgi[".php"] = "/usr/bin/php-cgi" ;//.insert({".php", "/usr/bin/php-cgi"});
-	// loc[0].cgi[".py"] = "/usr/bin/python3";
+	loc[0].cgi[".py"] = "/usr/bin/python3";
 	// loc[0].cgi.insert({".out", "cgi_bin/a.out"});
 
 	loc[0].allowedMethods.insert("GET");

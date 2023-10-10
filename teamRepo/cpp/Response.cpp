@@ -18,7 +18,7 @@ std::string		Client::Response::convertToHex(size_t decimalNum)
 
 void	Client::Response::sendFileToFinalAnswer()
 {
-	const int 	BUF_SIZE = 5000; 
+	const int 	BUF_SIZE = 8192; 
 	char		buf[BUF_SIZE + 2];
 	inputFile.read(buf, BUF_SIZE);
 

@@ -94,8 +94,8 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 		if (FD_ISSET(clientFdSock, &tempReadSet))
 		{
 
-			char	buf[4096];
-			int		collected = recv(clientFdSock, buf, 4096, 0);
+			char	buf[8192];
+			int		collected = recv(clientFdSock, buf, 8192, 0);
 
 			if (collected == -1 || collected == 0)
 			{
@@ -249,8 +249,8 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 	if (evList.filter == EVFILT_READ)
 		{
 
-			char	buf[4096];
-			int		collected = recv(clientFdSock, buf, 4096, 0);
+			char	buf[8192];
+			int		collected = recv(clientFdSock, buf, 8192, 0);
 
 			if (collected == -1 || collected == 0)
 			{

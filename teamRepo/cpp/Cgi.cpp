@@ -58,7 +58,7 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
 
 void Client::Cgi::parseCgiHeader()
 {
-	const int BUFSIZE = 40000;
+	const int BUFSIZE = 8192*4 + 2;
 	char buffer[BUFSIZE];
 	std::string sepCgiCrlf;
 	me->_response.inputFile.read(buffer, BUFSIZE - 2);
@@ -181,7 +181,7 @@ void Client::Cgi::parseCgiHeader()
 
 void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 {
-	const int BUFERSIZE = 5000;
+	const int BUFERSIZE = 8192;
 	char buf[BUFERSIZE + 2];
 
 	// DBG;
