@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Number Generator</title>
+    <style>
+        /* Style for the body */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Style for the header */
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        /* Style for the form */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Style for form labels */
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* Style for form input fields */
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        /* Style for the "Generate" button */
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Style for the result label */
+        label#resultLabel {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Style for the result table */
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        /* Style for the result table header */
+        th {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Style for the result table rows */
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Style for the result table cells */
+        td {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Random Number Generator</h1>
+    <form id="randomForm" method="get" action="generate.html">
+        <label for="min">Minimum Number:</label>
+        <input type="number" id="min" name="min" required><br>
+
+        <label for="max">Maximum Number:</label>
+        <input type="number" id="max" name="max" required><br>
+
+        <label for="count">How Many Numbers:</label>
+        <input type="number" id="count" name="count" required><br>
+
+        <button type="submit">Generate</button>
+    </form>
+
+    <label id="resultLabel">Generated Numbers:</label>
+
+    <table id="resultTable">
+        <thead>
+            <tr>
+                
+            </tr>
+        </thead>
+        <tbody id="resultBody">
+        </tbody>
+    </table>
+</body>
+</html>
