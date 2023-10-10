@@ -12,24 +12,24 @@ void setLocation(std::map<int, Server *> &mp, ServerConfig &server1, MimeAndErro
 
 	std::vector<location> loc(2);
 
-	loc[0].alias = "/Users/yoyahya/Desktop/web/teamRepo/";
+	loc[0].alias = "/Users/zlazrak/Desktop/wbmergeaa/kqueue/teamRepo/error/error_pages/x.mp3";
 	loc[0].index.push_back("login.php");
 	// loc[0].index.push_back("process_login.php");
 	// loc[0].index.push_back("dashboard.php");
 	// loc[0].index.push_back("a.out");
 	// loc[0].index.push_back("mian.cpp");
 	// loc[0].index.push_back("smile.png");
-	loc[0].autoIndex = true;
-	loc[0].cgi[".php"] = "/usr/bin/php-cgi" ;//.insert({".php", "/usr/bin/php-cgi"});
-	loc[0].cgi[".py"] = "/usr/bin/python3";
+	// loc[0].autoIndex = true;
+	// loc[0].cgi[".php"] = "/usr/bin/php-cgi" ;//.insert({".php", "/usr/bin/php-cgi"});
+	// loc[0].cgi[".py"] = "/usr/bin/python3";
 	// loc[0].cgi.insert({".out", "cgi_bin/a.out"});
 
 	loc[0].allowedMethods.insert("GET");
 	loc[0].allowedMethods.insert("POST");
 	loc[0].allowedMethods.insert("DELETE");
-	// loc[0].canUpload = 1;
+	loc[0].canUpload = 1;
 
-	loc[1].alias = "/Users/zlazrak/Desktop/webs/teamRepo/";
+	loc[1].alias = "/Users/zlazrak/Desktop/kqueue/teamRepo/";
 	loc[1].allowedMethods.insert("POST");
 	loc[1].allowedMethods.insert("GET");
 
