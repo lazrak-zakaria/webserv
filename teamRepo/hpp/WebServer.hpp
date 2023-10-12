@@ -5,10 +5,10 @@
 
 class	WebServer
 {
-		static void initializeSockets(std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > > &serversConfig,
+	static void initializeSockets(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > &serversConfig,
 				std::vector<Server> &serversVec, std::map<int, Server*> &ServersMap, MimeAndError *mime);
 	public:
-		static void	run(std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > >&serversConfig);
+		static void	run(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >&serversConfig);
 
 };
 
@@ -22,5 +22,28 @@ achraf
 
 
 	vector of server
+
+*/
+
+/*
+
+
+[
+	listen 
+	host
+	serverName
+
+	errorPages 404 path1
+	errorPages 403 path1
+
+	location
+	{
+
+	}
+]
+
+[
+	
+]
 
 */

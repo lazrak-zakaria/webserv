@@ -92,7 +92,7 @@ class Client
 			std::string				convertToHex(size_t sz);
 
 
-
+			std::string				connectionHeader();
 			void					sendFileToFinalAnswer();				
 			void					responseClear();
 			std::string				getContentTypeOfFile(std::string &f);

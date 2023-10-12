@@ -22,9 +22,9 @@
 #include <dirent.h>
 #include <sys/time.h>
 #include <ctime>
-     #include <sys/types.h>
-     #include <sys/event.h>
-     #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
 
 
 #include <iostream>
@@ -37,6 +37,7 @@
 #include <sstream>
 #include <fstream>
 #include <set>
+#include <list>
 
 #define SIZE_READ 8
 

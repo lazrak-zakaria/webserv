@@ -2,7 +2,7 @@
 
 
 
-void WebServer::initializeSockets(std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > > &serversConfig,
+void WebServer::initializeSockets(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > &serversConfig,
 				std::vector<Server> &serversVec, std::map<int, Server*> &ServersMap, MimeAndError *mime)
 {
 	size_t i = 0;
@@ -11,7 +11,7 @@ void WebServer::initializeSockets(std::vector<std::pair<ServerConfig, std::map<s
 	for (; i < confSize; ++i)
 	{
 		serversVec[i].setMimeError(mime);
-		serversVec[i].setConfigData(&serversConfig[i].first);
+		serversVec[i].setConfigData(serversConfig[i].first);
 		serversVec[i].setConfigDataServerNames(&serversConfig[i].second);
 
 		serversVec[i].socketBindListen();
@@ -22,7 +22,7 @@ void WebServer::initializeSockets(std::vector<std::pair<ServerConfig, std::map<s
 
 #ifndef _KQUEUE_
 
-void	WebServer::run(std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > >&serversConfig)
+void	WebServer::run(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >&serversConfig)
 {
 	MimeAndError 						mime;
 	std::map<int, Server*> 				ServersMap;
@@ -84,7 +84,7 @@ void	WebServer::run(std::vector<std::pair<ServerConfig, std::map<std::string, Se
 }
 
 #else
-void	WebServer::run(std::vector<std::pair<ServerConfig, std::map<std::string, ServerConfig*> > >&serversConfig)
+void	WebServer::run(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >&serversConfig)
 {
 	MimeAndError 						mime;
 	std::map<int, Server*> 				ServersMap;
