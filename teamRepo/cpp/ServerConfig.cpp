@@ -1,4 +1,4 @@
-#include "/Users/zlazrak/Desktop/combining/teamRepo/hpp/ServerConfig.hpp"
+#include "./../hpp/ServerConfig.hpp"
 
 
 location::location()

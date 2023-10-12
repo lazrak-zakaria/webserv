@@ -12,7 +12,9 @@ void split (const std::string &s, char delim, std::vector<std::string> & vec)
     std::stringstream ss (s);
     std::string item;
     while (getline (ss, item, delim)) {
-        vec.push_back (item);
+        if (item.empty())
+			continue;
+		vec.push_back (item);
     }
 }
 
@@ -33,6 +35,11 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 
 	std::string	error;
 	std::ifstream ifs(configName.c_str());
+	if (!ifs.is_open())
+	{
+		std::cout << "ghayerha\n";
+		exit(1);
+	}
 	std::string	line;
 	bool	done = false;
 	int		serversCounter;
@@ -42,6 +49,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 	int		indexConfig = 0;
 	size_t	portsSize = 0;
 
+	int kk = 0;
 	std::vector<std::string> port;
 	std::vector<std::string> host;
 	std::vector<std::string> serverNames;
@@ -57,7 +65,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 		std::cout << line << "\n";
 		if (line.empty())
 			continue;
-
+		kk = 1;
 		if (insideServerBlock)
 		{
 
@@ -175,8 +183,11 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 					std::vector<std::string> autoindex;
 					split(line, ' ', autoindex);
 					if (autoindex.size() != 2 || (autoindex[1] != "yes" && autoindex[1] != "no"))
+					{
+						std::cout << autoindex.size() << ":\n";
 						printError("location directive autoindex error");
-					sconf.allLocations[locationKey].autoIndex = autoindex[1][0] == 'y';
+					
+					}sconf.allLocations[locationKey].autoIndex = autoindex[1][0] == 'y';
 				}
 				else if (!line.compare(0, 7, "\t\tcgi: "))
 				{
@@ -261,6 +272,8 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 		}
 	}
 
+	if (!kk)
+	printError("ghayerha 2");
 	if (insideLocationBlock || insideServerBlock)
 		printError("please complete the block");
 
