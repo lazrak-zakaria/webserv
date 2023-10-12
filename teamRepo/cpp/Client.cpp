@@ -141,10 +141,14 @@ void	Client::detectFinalLocation(void)
 	if (!_request.requestHeadersMap.count("host"))
 		return ;
 	
-	if (_allConfigsData && _allConfigsData->count(*(_request.requestHeadersMap["host"].end()-1)))
-		_configData = _allConfigsData->at("host");
+	std::cout << "QQ\n";
+	std::string &host = *(_request.requestHeadersMap["host"].end()-1);
+	trim(host);
+	if (_allConfigsData && _allConfigsData->count(host))
+		_configData = _allConfigsData->at(host);
 	else
 		_configData = _defaultConfigData;
+	std::cout << "QQ\n";
 
 
 	// std::cout << "here\n";

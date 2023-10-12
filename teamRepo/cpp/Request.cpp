@@ -522,7 +522,7 @@ void	Client::Request::parseHeader(size_t crlf)
 	if (!requestHeadersMap.count("host") || requestHeadersMap["host"].size() != 1)
 		goto BAD_REQUEST;
 
-
+	
 
 	hasContentLength = requestHeadersMap.count("content-length");
 	hasTransferEncoding = requestHeadersMap.count("transfer-encoding");
