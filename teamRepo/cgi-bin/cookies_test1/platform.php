@@ -1,13 +1,11 @@
-<?php include "header.php"?>
 <?php 
-session_start();
+  session_start();
     if(!isset($_COOKIE['name']) || (!isset($_COOKIE['userid']) && !isset($_SESSION['color']) && !isset($_SESSION['email'])))
     {
         header("location: login.php");
         exit();
     }
 ?>
-
 <?php
 if ($_SERVER['REQUEST_METHOD'] === "POST")
 {
@@ -16,43 +14,33 @@ if ($_SERVER['REQUEST_METHOD'] === "POST")
     if (isset($_POST['singout'])) {
       setcookie('name', $_COOKIE['name'], time() - 3600);   
       header('location: login.php');
-      exit();
+      exit;
     }
     if (isset($_POST['delete']))
     {
+      session_unset();
       session_destroy();
-      setcookie('name', $_POST['name'], time() - 3600);
-      setcookie('userid', $_POST['id'], time() - 3600);
+      setcookie('name', $_COOKIE['name'], time() - 3600);
+      setcookie('userid', $_COOKIE['userid'], time() - 3600);
       header('location: login.php');
-      exit();
+      exit;
     }
     
 }
 ?>
-
-
-<?php
-  session_start();
-
-
-?>
-
-<!-- <h4> <?php echo $_SESSION['name']; ?> </h4>
-<tbody>
-      <tr>
-        <td> <?php echo $_SESSION['id']; ?></td>
-        <td> <?php echo $_SESSION['name']; ?></td>
-        <td> <?php echo $_SESSION['email']; ?></td>
-      </tr>
-    </tbody> -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>platform</title>
+    <title>Login System</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
       body
       {
@@ -69,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST")
       }
     </style >
 </head>
-<body style="background-color: <?php echo $_SESSION['color']; ?>">
+<body style='--bs-bg-opacity: .5;'>
     <div class="container col-12 border rounded mt-3">
   <h1 class=" mt-3 text-center">Welcome, <?php echo $_COOKIE['name']; ?></h1>
   <hr>

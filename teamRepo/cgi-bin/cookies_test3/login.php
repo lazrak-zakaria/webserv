@@ -1,7 +1,5 @@
-<!-- <?php session_start(); ?> -->
-<!-- <?php include "header.php" ?> -->
 <?php
-
+session_start();
 function validate_credential($email, $pass, $id)
 {
     $file = fopen("inputfile.txt", 'r');
@@ -39,18 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST')
     {     
             if ($_POST !== null && isset($_POST['email']) && isset($_POST['password']))
             {
-                // $username = $data['username'];
                 $email = $_POST['email'];
                 $password = $_POST['password'];
-                // if($_COOKIE['email'] === $email && $_COOKIE['password'] === $password)
-                // {
-                //     header('location: dashboard.php?user_id=' . $_SESSION['name']);
-                // }
-                // else
-                // {
-                //   echo "ddddddddddddddddddddd\n";
-                //   // header('location: register.php');
-                // }
                 $userid = $_COOKIE['userid'];
                 if (validate_credential($email, $password, $userid) === 0)
                 {
@@ -63,10 +51,23 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST')
             }
     }
   }
-  else
-    echo "ERROR WHO ARE YOU !";
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login System</title>
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+</head>
+<body class=' bg-secondary text-dark' style='--bs-bg-opacity: .5;'>
 <div class="container col-4 border rounded bg-light mt-5" style='--bs-bg-opacity: .5;'>
   <h1 class="text-center">Sign In</h1>
   <hr>
