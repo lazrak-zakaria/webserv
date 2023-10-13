@@ -53,7 +53,7 @@ if(!isset($_SESSION['email'])){
 <body>
     <div class="container">
         <h2>File Upload Form</h2>
-        <form action="upload.php" method="post" enctype="multipart/form-data">
+        <form action="upload.py" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="file">Choose a file:</label>
                 <input type="file" name="file" id="file" class="file-input" accept=".pdf, .doc, .docx">

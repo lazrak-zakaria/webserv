@@ -51,11 +51,11 @@ if(!isset($_SESSION['email'])){
 
 	<ul>
 		<li><a href="page1.php">upload file</a></li>
-		<li><a href="page2.php">Simple FORM Example:GET Method</a></li>
-		<li><a href="page3.php">Page 3</a></li>
+		<li><a href="page2.php">Name Submission Form</a></li>
+		<li><a href="page3.php">Video</a></li>
 	</ul>
 
-	<a href="deconnexion.php" class="deconnexion">Se Deconnecter</a>
+	<a href="deconnexion.php" class="deconnexion">Sign out</a>
 	<a href="deleteAccount.php" class="deconnexion">delete account</a>
 	
 </body>
