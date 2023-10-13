@@ -64,26 +64,24 @@ void	Client::Response::postMethodeResponseDirectory()
 			if (i == indexes.size())
 			{
 				std::cerr << "no index match or exist with cgi-s\n";
-				me->_codeStatus = 204;
+				me->_codeStatus = 404;
 			}
 			else
 			{
-				std::cerr << "-----\ndirectory i will run cgi\n"; 
-				std::cerr << "script file: " << me->_finalPath << "|\n";
-				std::cerr << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
+				std::cerr << "directory index i will run cgi\n";
 				me->_cgi.executeCgi();
 			}
 		}
 		else
 		{
 			std::cerr << "you requested a directory and did not provide any index \n";
-			me->_codeStatus = 204;
+			me->_codeStatus = 404;
 		}
 	}
 	else
 	{
 		std::cerr << "you are doing a post request and you did not provide an upload nor cgi\n";
-		me->_codeStatus = 204;
+		me->_codeStatus = 403;
 	}
 }
 
@@ -93,21 +91,19 @@ void	Client::Response::postMethodeResponseFile()
 	{
 		if (me->isMatchedWithCgi(me->_finalPath)) 
 		{
-			std::cerr << "-----\nfile i will run cgi\n"; 
-			std::cerr << "script file: " << me->_finalPath << "|\n";
-			std::cerr << "program: " << me->_cgi.cgiKeyProgram << "|\n";
+			std::cerr << "file i will run cgi\n"; 
 			me->_cgi.executeCgi();
 		}
 		else
 		{
-			std::cerr << "you requested a file and did not matched with any cgi\n";
+			std::cerr << "request a file and did not matched with any cgi\n";
 			me->_codeStatus = 403;
 			return ;
 		}
 	}
 	else
 	{
-		me->_codeStatus = 204;
+		me->_codeStatus = 403;
 		return ;
 	}
 }
@@ -141,9 +137,8 @@ void	Client::Response::postMethodeResponse()
 	}
 	else
 	{
-		if (me->_codeStatus == 201) // add more flags
+		if (me->_codeStatus == 201)
 		{
-			/*201 created*/
 			GenerateLastResponseHeader(201, me->_request.uploadFileName, NULL);
 			return ;
 		}
@@ -162,7 +157,7 @@ void	Client::Response::postMethodeResponse()
 		}
 		else
 		{
-			std::cerr << "what you requested is not found ; how you end up here!!\n";
+			std::cerr << "request path is not found ; how you end up here anyway!!\n";
 			me->_codeStatus = 404;
 		}
 	}
@@ -193,9 +188,7 @@ std::string	Client::Response::connectionHeader()
 			return std::string("Connection: close\r\n");
 		}
 		else
-		{
 			return std::string("Connection: keep-alive\r\n");
-		}
 	}
 	else
 		return std::string("Connection: keep-alive\r\n");
