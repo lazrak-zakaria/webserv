@@ -1,0 +1,100 @@
+X-Powered-By: PHP/8.0.2
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #game-board {
+            width: 300px;
+            height: 300px;
+            border: 1px solid #000;
+            position: relative;
+            margin: 20px auto;
+        }
+
+        .snake-segment {
+            width: 20px;
+            height: 20px;
+            background-color: green;
+            position: absolute;
+        }
+
+        .food {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            position: absolute;
+        }
+
+        #restart-button {
+            display: none;
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <p>Use the arrow keys to control the snake.</p>
+    <div id="game-board"></div>
+    <button id="restart-button" onclick="restartGame()">Restart</button>
+
+    <script>
+        const gameBoard = document.getElementById("game-board");
+        const gridSize = 15;
+        const snake = [{ x: 5, y: 5 }];
+        const food = { x: 10, y: 10 };
+        let direction = "right";
+        let isGameOver = false;
+        let gameInterval;
+
+        function updateGame() {
+            if (isGameOver) {
+                return;
+            }
+
+            // Rest of your game logic...
+
+            if (isCollision()) {
+                isGameOver = true;
+                clearInterval(gameInterval);
+                document.getElementById("restart-button").style.display = "block";
+            }
+
+            renderGame();
+        }
+
+        // Rest of your code...
+
+        function restartGame() {
+            snake.length = 1;
+            snake[0] = { x: 5, y: 5 };
+            randomizeFoodPosition();
+            direction = "right";
+            isGameOver = false;
+            document.getElementById("restart-button").style.display = "none";
+            gameInterval = setInterval(updateGame, 150);
+        }
+    </script>
+</body>
+</html>
+
+
+

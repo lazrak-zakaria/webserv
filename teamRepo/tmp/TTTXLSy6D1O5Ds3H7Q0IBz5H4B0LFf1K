@@ -1,3 +1,6 @@
+X-Powered-By: PHP/8.0.2
+Content-type: text/html; charset=UTF-8
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,9 +21,9 @@
 
         		<input type="text" name="prenom" placeholder="Votre Prenom"><br><br> -->
 
-        		<input type="text" name="email" placeholder="Votre Email" value="<?php if(isset($_COOKIE['email'])) echo $_COOKIE['email'];?>"><br><br>       	
+        		<input type="text" name="email" placeholder="Votre Email" value=""><br><br>       	
         		
-        	    <input type="password" name="password" placeholder="Votre Mot de passe" value="<?php if(isset($_COOKIE['password'])) echo $_COOKIE['password'];?>"><br><br>        	
+        	    <input type="password" name="password" placeholder="Votre Mot de passe" value=""><br><br>        	
         	
         		<input type="checkbox" name="check" id="check">
         		<label for="check">se souvenir de moi</label><br><br>

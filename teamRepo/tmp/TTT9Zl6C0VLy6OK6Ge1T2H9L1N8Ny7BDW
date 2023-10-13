@@ -1,12 +1,9 @@
-<?php 
+X-Powered-By: PHP/8.0.2
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
 
-session_start();
-
-if(!isset($_SESSION['email'])){
-	header('location:login.php');
-}else{
-
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,30 +18,17 @@ if(!isset($_SESSION['email'])){
 	<h1>Profil</h1>
 
 	<h2>
-		Hello 
+		Bonjour Monsieur 
 		<span style="color: red;"> 
-			<?php 
-				//echo $_SESSION['nom'] . ' ' . $_SESSION['prenom']; 
-			?> 
+			 
 		</span>
 	</h2>
 
 
 	<h2>
-		Your email: 
+		Voici votre email: 
 		<span style="color: red;"> 
-			<?php
-				if (isset($_COOKIE['email']))
-				{
-					echo 'this email from cookies: ';
-					echo $_COOKIE['email'];
-				}
-				else
-				{
-					echo 'this email from sessions: ';
-					echo $_SESSION['email'];
-				}
-			?> 
+			new 
 		</span>
 	</h2>
 
@@ -56,9 +40,7 @@ if(!isset($_SESSION['email'])){
 	</ul>
 
 	<a href="deconnexion.php" class="deconnexion">Se Deconnecter</a>
-	<a href="deleteAccount.php" class="deconnexion">delete account</a>
 	
 </body>
 </html>
-<?php  } ?>
 

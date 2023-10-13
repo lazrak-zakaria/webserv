@@ -9,35 +9,43 @@ if(!isset($_SESSION['email'])){
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-	<meta charset="UTF-8">
-	<title>Page 3</title>
-	<link rel="stylesheet" href="CSS/profil.css">
+    <title>Video Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        #video-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            width: 100%;
+        }
+    </style>
 </head>
-
-	<h1>Page 3</h1>
-
-	<h2>
-		Bonjour Monsieur 
-		<span style="color: red;"> 
-			<?php 
-				//echo $_SESSION['nom'] . ' ' . $_SESSION['prenom']; 
-			?> 
-		</span>
-	</h2>
-
-
-	<ul>
-		<li><a href="page1.php">Page 1</a></li>
-		<li><a href="page2.php">Page 2</a></li>
-		<li><a href="page3.php" style="background-color: blue; color: white;">Page 3</a></li>
-	</ul>
-
-	<a href="deconnexion.php" class="deconnexion">Se Deconnecter</a>
-	
+<body>
+    <div id="video-container">
+        <h1>Video Player</h1>
+        <video controls>
+            <source src="your-video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
 </body>
 </html>
+
+
 
 <?php  } ?>
 
