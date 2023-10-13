@@ -101,6 +101,7 @@ void	Client::Request::protectPath(std::string &path)
 			path = "/";
 			break;
 		}
+		
 	}
 }
 
@@ -704,7 +705,6 @@ void	Client::Request::parseMultipart()
 				{
 					if (me->_codeStatus != 500)
 						me->_codeStatus = 400;
-					exit(4);
 					me->_flags.isRequestFinished = true;
 					return ;
 				}
@@ -713,7 +713,6 @@ void	Client::Request::parseMultipart()
 			{
 				me->_codeStatus = 400;
 				me->_flags.isRequestFinished = true;
-					exit(4);
 				return ;
 			}
 			requestBody.erase(0, multipartCompleteHeader + 4);
@@ -785,7 +784,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				tmp.push_back(tolower(requestBody[i]));
 			if (tmp != "content-disposition: form-data; name=")
 			{
-					exit(4);
 				return false;
 			}
 			--i;
@@ -804,7 +802,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 					break;
 			if (requestBody[i] != '\"')
 			{
-					exit(4);
 				return 0;
 			}
 			cursor = eCheck;
@@ -817,8 +814,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			{
 				if (requestBody[i + 1] != '\n')
 				{
-					exit(4);
-
 					return false;
 				}
 				++i;
@@ -829,8 +824,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				cursor = eFilename;
 				if (requestBody[++i] != ' ')
 				{
-					exit(4);
-
 					return false;
 				}
 			}
@@ -850,7 +843,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				
 				if (requestBody[i++] != '\"')
 				{
-					exit(4);
 					return false;
 				}
 				for (; i < multipartHeaderCrlf; ++i)
@@ -861,8 +853,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 				}
 				if (requestBody[i] != '\"')
 				{
-					exit(4);
-
 					return false;
 				}
 				cursor = eCr;
@@ -870,8 +860,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			}
 			else
 			{
-					exit(4);
-
 				return false;
 			}
 		}
@@ -881,8 +869,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		{
 			if (requestBody[i] != '\r')
 			{
-					exit(4);
-
 				return false;
 			}
 			cursor = eLf;
@@ -893,8 +879,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		{
 			if (requestBody[i] != '\n')
 			{
-					exit(4);
-
 				return false;
 			}
 			if (optionalContentType)
@@ -914,10 +898,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			}
 			if (tmp != "content-type")
 			{
-					exit(4);
-
 				return false;
-			
 			}
 			else
 			{
@@ -932,8 +913,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 			}
 			if (requestBody.compare(i, 2, "\r\n") != 0)
 			{
-					exit(4);
-
 				return false;
 			}
 			i++;
@@ -971,8 +950,6 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		}
 		contentTypeTmp = "";
 		me->_codeStatus = 201;
-		me->_flags.multicanw = true;
-		std::cerr << "CREAT FILE\n";
 		isFileNameEmpty = true;
 	}
 
@@ -1048,7 +1025,6 @@ void	Client::Request::parseChunkedData()
 
 			outputFile.write(contentToStore.c_str(), contentToStore.size());
 		}
-
 
 		if (me->_flags.crlfRequired && requestBody.size() >= 2)
 		{

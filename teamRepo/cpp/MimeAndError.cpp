@@ -156,7 +156,11 @@ MimeAndError::MimeAndError()
 	mimeReverse["audio/mp3"] = ".mp3";
 
 
-	errors[400] = "./../error/error_pages/400.html"; 
+
+	errors[201] = "./../error/error_pages/201.html";
+	errors[204] = "./../error/error_pages/204.html";
+
+	errors[400] = "./../error/error_pages/400.html";
 	errors[403] = "./../error/error_pages/403.html";;
 	errors[404] = "./../error/error_pages/404.html";
 	errors[405] = "./../error/error_pages/405.html";

@@ -1,9 +1,6 @@
-#!/usr/bin/php-cgi
-
-<!-- <?php include "header.php" ?> -->
-
+<?php session_start();?>
+<?php include "header.php" ?>
 <?php
-    session_start();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $input = file_get_contents("php://stdin");
@@ -18,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['color'] = $_POST['color'];
     $_SESSION['name'] = $_POST['name'];
     header('location: platform.php?userid='. $_SESSION['userid']);
-    exit();
+    exit ;
 }
 ?>
 

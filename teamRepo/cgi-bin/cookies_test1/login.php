@@ -1,9 +1,6 @@
-#!/usr/bin/php-cgi
-
-<!-- <?php include "header.php" ?> -->
-
+<?php session_start();?>
+<?php include "header.php" ?>
 <?php
-    session_start();
 if (isset($_COOKIE['userid']) && isset($_COOKIE['name']) && isset($_SESSION['userid']) && isset($_SESSION['email']) && isset($_SESSION['color']))
 {
     if ($_COOKIE['userid'] === $_SESSION['userid'] && $_COOKIE['name'] === $_SESSION['name'])

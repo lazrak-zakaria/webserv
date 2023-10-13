@@ -253,7 +253,11 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 			}
 			else if (!line.compare(0, 16, "\tlimitBodySize: "))
 			{
-
+				std::vector<std::string> loc;
+				split(line, ' ', loc);
+				if (loc.size() != 2)
+					printError("limit error");
+				sconf.limitBodySize = atoi(loc[1].c_str());
 			}
 			else 
 			{

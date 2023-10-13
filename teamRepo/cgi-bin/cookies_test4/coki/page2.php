@@ -30,6 +30,7 @@ if(!isset($_SESSION['email'])){
 
         .form-group {
             margin: 10px 0;
+			padding-right: 20px;
         }
 
         .form-group label {
@@ -52,6 +53,7 @@ if(!isset($_SESSION['email'])){
             border-radius: 5px;
             cursor: pointer;
         }
+
     </style>
 </head>
 <body>

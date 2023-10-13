@@ -116,7 +116,9 @@ void	Client::Response::postMethodeResponseFile()
 void	Client::Response::postMethodeResponse()
 {
 	if (me->_flags.canReadInputFile && !me->_flags.isCgiFinished)
+	{
 		sendFileToFinalAnswer();
+	}
 	else if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
 
@@ -284,6 +286,8 @@ void Client::Response::ErrorResponse()
         std::string respo(this->me->_mimeError->statusCode[this->me->_codeStatus] + "\r\n");
 		if (!opnedfile.empty())
         	respo += "Content-type: " + this->getContentTypeOfFile(opnedfile) + "\r\n";
+		if (me->_codeStatus == 201)
+			respo += "location: " +  this->me->_request.path + me->_request.uploadFileName + "\r\n";
         respo += "Transfer-encoding: chunked\r\n";
         respo += std::string("Date: ") + ctime(&date);
 		respo.pop_back();
@@ -291,13 +295,14 @@ void Client::Response::ErrorResponse()
 		respo += connectionHeader();
         this->me->_finalAnswer = respo + "\r\n";
 		this->me->_flags.isHeaderResponseSent = true;
+
         if(opnedfile.empty())
         {
             this->me->_flags.isResponseFinished = true;
             this->me->_flags.canReadInputFile = false;
             std::string tmp("<html><h1>Wach Mamragtich</h1></html>\r\n");
-            this->me->_finalAnswer += "\r\n" + convertToHex(tmp.size()).append("\r\n") + tmp.append("\r\n0\r\n");
-        }
+            this->me->_finalAnswer += convertToHex(tmp.size()).append("\r\n") + tmp.append("\r\n0\r\n");
+		}
         else
         	this->me->_flags.canReadInputFile = true;
     }
@@ -315,14 +320,11 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			this->me->_flags.isResponseFinished = true;
 			break;
 		case 201:
-			respo += "location: " + this->me->_request.path + filename + "\r\n";
-			respo += "transfer-encoding: chunked\r\n\r\n0\r\n";
-			this->me->_flags.isResponseFinished = true;
-			break;
+			ErrorResponse();
+			return ;
 		case 204:
-			// respo;
-			this->me->_flags.isResponseFinished = true;
-			break;
+			ErrorResponse();
+			return ;
 		case 200:
 			if (!filename.empty())
 			{

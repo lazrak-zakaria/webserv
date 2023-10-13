@@ -233,7 +233,7 @@ std::string		&Client::serveResponse(void)
 
 	signal(SIGPIPE, SIG_IGN);
 	START:
-	if (_codeStatus != 200 && _codeStatus != 201 && _codeStatus)
+	if (_codeStatus != 200 && _codeStatus != 201  && _codeStatus != 204 && _codeStatus)
 	{
 		_response.ErrorResponse();
 	}
@@ -250,7 +250,7 @@ std::string		&Client::serveResponse(void)
 	{
 		signal(SIGPIPE, SIG_IGN);
 		_response.GetMethodResponse();
-		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus)
+		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus != 204 && _codeStatus)
 		{
 			_response.inputFile.close();
 			goto START;
@@ -259,6 +259,11 @@ std::string		&Client::serveResponse(void)
 	else if(_request.method == "DELETE")
 	{
 		_response.DeleteMethodResponse();
+		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus != 204 && _codeStatus)
+		{
+			_response.inputFile.close();
+			goto START;
+		}
 	}
 	return _finalAnswer;
 }

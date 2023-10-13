@@ -1,0 +1,22 @@
+X-Powered-By: PHP/8.0.2
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
+
+
+<div class="container col-4 border rounded bg-light mt-5" style='--bs-bg-opacity: .5;'>
+    <h1 class="text-center">Sign In</h1>
+    <hr>
+    <form action="" method="post">
+    <div class="mb-3">
+        <label for="username" class="form-label">UserName</label>
+        <input type="text" class="form-control" name="name" placeholder="Enter your UserName" autocomplete="off" required>
+        <small class="text-muted">Your UserName is safe with us.</small>
+    </div>
+    <input type="submit" name="signin" value="Sign In" class="btn btn-primary">
+    </form>
+    <form action="" method="post">
+        <input type="submit" name="register" value="register" class="btn btn-primary">
+    </form>
+  </div>
