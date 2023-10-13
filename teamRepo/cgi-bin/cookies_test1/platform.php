@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST")
     }
     if (isset($_POST['delete']))
     {
+      setcookie(session_name(), "", time() - 3600);
       session_unset();
       session_destroy();
       setcookie('name', $_COOKIE['name'], time() - 3600);

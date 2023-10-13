@@ -42,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST')
                 $userid = $_COOKIE['userid'];
                 if (validate_credential($email, $password, $userid) === 0)
                 {
+                  $_SESSION['userid'] = $userid;
                   header('location: dashboard.php?user_id=' . $_COOKIE['userid']);
                 }
                 else

@@ -1,18 +1,31 @@
 <?php
-  session_start();
+$timeout = 2;
+// ini_set( "session.gc_maxlifetime", $timeout );
+// ini_set( "session.cookie_lifetime", $timeout );
+session_start();
 
-  if ($_SERVER['REQUEST_METHOD'] === "POST")
-  {
+if ($_SERVER['REQUEST_METHOD'] === "POST")
+{
     $input = file_get_contents("php://stdin");
     parse_str($input, $_POST);
-  }
-
-if(isset($_POST['increment'])) { 
-    if(isset($_SESSION['counter'])) {
-        $_SESSION['counter']++;
+    $s_s = session_name();
+    if(isset( $_COOKIE[ $s_s ] )) {
+        setcookie( $s_s, $_COOKIE[ $s_s ], time() + $timeout, '/' );
+    
+        echo "Session is created for $s_s.<br/>";
     } else {
-        $_SESSION['counter'] = 1;
-        echo "Counter set to 1";
+        echo "Session is expired.<br/>";
+    }
+    if(isset($_POST['increment'])) { 
+        if(isset($_SESSION['counter'])) {
+            $_SESSION['counter']++;
+        } else {
+            $_SESSION['counter'] = 1;
+        }
+    }
+    if(isset($_POST['result'])) { 
+        if(isset($_SESSION['counter'])) {
+            echo $_SESSION['counter'];}
     }
 }
 ?>
@@ -26,6 +39,7 @@ if(isset($_POST['increment'])) {
     <h1>Counter: <?php echo isset($_SESSION['counter']) ? $_SESSION['counter'] : 0; ?></h1>
     <form method="POST">
         <button type="submit" name="increment">Increment Counter</button>
+        <button type="submit" name="result">result</button>
     </form>
 </body>
 </html>
