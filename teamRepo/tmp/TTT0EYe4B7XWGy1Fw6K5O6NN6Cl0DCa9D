@@ -1,0 +1,10 @@
+Status: 302 Found
+X-Powered-By: PHP/8.0.2
+Set-Cookie: PHPSESSID=9ff662d7d64887d13aa755d791e915e3; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+location:login.php
+Content-type: text/html; charset=UTF-8
+
+

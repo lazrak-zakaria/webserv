@@ -135,6 +135,8 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 					{
 						insideLocationBlock = false;
 						locationOn = false;
+						if (sconf.allLocations[locationKey].allowedMethods.empty())
+							sconf.allLocations[locationKey].allowedMethods.insert("GET");
 					}
 					else
 					{

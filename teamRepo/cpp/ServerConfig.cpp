@@ -3,7 +3,6 @@
 
 location::location()
 {
-	allowedMethods.insert("GET");
 	canUpload = true;
 	autoIndex = true;
 }
