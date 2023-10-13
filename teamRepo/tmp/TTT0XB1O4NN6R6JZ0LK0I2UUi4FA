@@ -1,0 +1,10 @@
+Content-type: text/html
+
+<html>
+<head>
+<title>CGI Script</title>
+</head>
+<body>
+<h1>Hello, CGI World!</h1>
+</body>
+</html>

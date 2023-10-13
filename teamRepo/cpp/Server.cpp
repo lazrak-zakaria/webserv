@@ -34,7 +34,7 @@ void	Server::socketBindListen()
     addrServer.sin_family = AF_INET;
 	// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
     addrServer.sin_addr.s_addr = INADDR_ANY;
-    addrServer.sin_port = htons(40);
+    addrServer.sin_port = htons(configData->port);
 	std::cout << "------------------++++++----------------:" << configData->port << '\n';
 	int optval = 1;
 	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
