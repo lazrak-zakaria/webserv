@@ -1,0 +1,35 @@
+X-Powered-By: PHP/8.0.2
+Content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>LearnToCode</title>
+	<link rel="stylesheet" href="CSS/login.css">
+</head>
+<body>
+
+	
+
+        <form method="POST" action="connexion.php">
+
+        	<h1>Connection page:</h1>
+        	       	
+        
+
+        		<input type="text" name="email" placeholder="Email" value="a@a"><br><br>       	
+        		
+        	    <input type="password" name="password" placeholder="Password" value="a"><br><br>        	
+        	
+        		<input type="checkbox" name="check" id="check">
+        		<label for="check">se souvenir de moi</label><br><br>
+        	         		
+        		
+                <td align="center"><br><input type="submit" value="Sign in">
+                 	
+
+        </form>
+
+</body>
+</html>
