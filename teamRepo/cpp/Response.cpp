@@ -63,26 +63,26 @@ void	Client::Response::postMethodeResponseDirectory()
 
 			if (i == indexes.size())
 			{
-				std::cout << "no index match or exist with cgi-s\n";
+				std::cerr << "no index match or exist with cgi-s\n";
 				me->_codeStatus = 204;
 			}
 			else
 			{
-				std::cout << "-----\ndirectory i will run cgi\n"; 
-				std::cout << "script file: " << me->_finalPath << "|\n";
-				std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
+				std::cerr << "-----\ndirectory i will run cgi\n"; 
+				std::cerr << "script file: " << me->_finalPath << "|\n";
+				std::cerr << "program: " << me->_cgi.cgiKeyProgram << "|\n-----\n";
 				me->_cgi.executeCgi();
 			}
 		}
 		else
 		{
-			std::cout << "you requested a directory and did not provide any index \n";
+			std::cerr << "you requested a directory and did not provide any index \n";
 			me->_codeStatus = 204;
 		}
 	}
 	else
 	{
-		std::cout << "you are doing a post request and you did not provide an upload nor cgi\n";
+		std::cerr << "you are doing a post request and you did not provide an upload nor cgi\n";
 		me->_codeStatus = 204;
 	}
 }
@@ -93,14 +93,14 @@ void	Client::Response::postMethodeResponseFile()
 	{
 		if (me->isMatchedWithCgi(me->_finalPath)) 
 		{
-			std::cout << "-----\nfile i will run cgi\n"; 
-			std::cout << "script file: " << me->_finalPath << "|\n";
-			std::cout << "program: " << me->_cgi.cgiKeyProgram << "|\n";
+			std::cerr << "-----\nfile i will run cgi\n"; 
+			std::cerr << "script file: " << me->_finalPath << "|\n";
+			std::cerr << "program: " << me->_cgi.cgiKeyProgram << "|\n";
 			me->_cgi.executeCgi();
 		}
 		else
 		{
-			std::cout << "you requested a file and did not matched with any cgi\n";
+			std::cerr << "you requested a file and did not matched with any cgi\n";
 			me->_codeStatus = 403;
 			return ;
 		}
@@ -160,7 +160,7 @@ void	Client::Response::postMethodeResponse()
 		}
 		else
 		{
-			std::cout << "what you requested is not found ; how you end up here!!\n";
+			std::cerr << "what you requested is not found ; how you end up here!!\n";
 			me->_codeStatus = 404;
 		}
 	}
@@ -280,7 +280,7 @@ void Client::Response::ErrorResponse()
     {
 		opnedfile = FindFileToOpen();
 
-		std::cout << "++++++++++" << opnedfile << std::endl;
+		std::cerr << "++++++++++" << opnedfile << std::endl;
         std::string respo(this->me->_mimeError->statusCode[this->me->_codeStatus] + "\r\n");
 		if (!opnedfile.empty())
         	respo += "Content-type: " + this->getContentTypeOfFile(opnedfile) + "\r\n";
@@ -307,9 +307,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 {
 	std::string respo (this->me->_mimeError->statusCode[status]);
 	respo.append("\r\n");
-	// DBG;
-	// std::cout<<"|" <<  respo << "|\n";
-	// DBG;
+
 	switch (status)
 	{
 		case 301:
@@ -362,7 +360,7 @@ void Client::Response::GetMethodResponse()
 	{
 		if (me->_flags.isCgiRunning)
 		{
-			// std::cout << "+++++++++++++++\n";
+			// std::cerr << "+++++++++++++++\n";
 			me->_cgi.checkCgiTimeout();
 		}
 		if (me->_flags.isCgiFinished)
@@ -383,7 +381,7 @@ void Client::Response::GetMethodResponse()
 	if (!this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
 	{
 		this->GenerateLastResponseHeader(301, "", NULL);
-		std::cout << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
+		std::cerr << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
 	}
 	st = stat(this->me->_finalPath.c_str(), &this->me->_st);
 	if (st < 0)
@@ -412,13 +410,13 @@ void Client::Response::GetDirectory()
 	if (this->me->_request.path[this->me->_request.path.size() - 1] != '/')
 	{
 		this->me->_codeStatus = 301;
-		std::cout << "Redirect to 301 url don't have / at the end url => " << this->me->_request.path<< std::endl;
+		std::cerr << "Redirect to 301 url don't have / at the end url => " << this->me->_request.path<< std::endl;
 		this->GenerateLastResponseHeader(301, "", NULL);
 		return ;
 	}
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
 	{
-		std::cout << "index" << std::endl;
+		std::cerr << "index" << std::endl;
 		if (this->me->_flags.canReadInputFile)
 		{
 			this->sendFileToFinalAnswer();
@@ -433,7 +431,7 @@ void Client::Response::GetDirectory()
 				{
 					if (this->me->isMatchedWithCgi(*Iit))
 					{
-						std::cout << "------------cgi---------" << std::endl;
+						std::cerr << "------------cgi---------" << std::endl;
 						me->_finalPath.append(*Iit);
 						this->me->_cgi.executeCgi();
 						return ;
@@ -458,7 +456,7 @@ void Client::Response::GetDirectory()
 	}
 	if (this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
 	{
-		std::cout << "autoindex" << std::endl;
+		std::cerr << "autoindex" << std::endl;
 		if (this->me->_flags.CanReadInputDir)
 		{
 			html = this->generatehtml(this->readdirectory());
@@ -498,7 +496,7 @@ void Client::Response::GetDirectory()
 	else
 	{
 		this->me->_codeStatus = 403;
-		std::cout << "not autoindex and index" << std::endl;
+		std::cerr << "not autoindex and index" << std::endl;
 	}
 }
 
@@ -620,7 +618,7 @@ void Client::Response::DeleteMethodResponse()
 			if (unlink(this->me->_finalPath.c_str()) == 0)
 			{
 				this->me->_codeStatus = 204;
-				std::cout << "204 no content" << std::endl;
+				std::cerr << "204 no content" << std::endl;
 				// this->GenerateLastResponseHeader(204, this->me->_finalPath, )
 				return;
 			}
@@ -634,7 +632,7 @@ void Client::Response::DeleteMethodResponse()
 		else
 		{
 			this->me->_codeStatus = 403;
-			std::cout << "403 permission" << std::endl;
+			std::cerr << "403 permission" << std::endl;
 		}
 	}
 	else if (S_ISDIR(this->me->_st.st_mode))
@@ -642,7 +640,7 @@ void Client::Response::DeleteMethodResponse()
 		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
 		{
 			this->me->_codeStatus = 409;
-			std::cout << "409 conflict" << std::endl;
+			std::cerr << "409 conflict" << std::endl;
 		}
 		else if(this->me->_st.st_mode & S_IWUSR)
 		{
@@ -650,7 +648,7 @@ void Client::Response::DeleteMethodResponse()
 			{
 				if (rmdir(this->me->_finalPath.c_str()) == -1)
 				{
-					std::cout << this->me->_finalPath.c_str() << std::endl;
+					std::cerr << this->me->_finalPath.c_str() << std::endl;
 					perror("Error Rmdir Fail: ");
 					this->me->_codeStatus = 500;
 					return ;
@@ -666,7 +664,7 @@ void Client::Response::DeleteMethodResponse()
 		else
 		{
 			this->me->_codeStatus = 403;
-			std::cout << "403 permission" << std::endl;
+			std::cerr << "403 permission" << std::endl;
 		}
 	}
 }
@@ -680,7 +678,7 @@ int Client::Response::deletedir(std::string path)
 	if (this->delflag == 1)
 		return 1;
 	if (it->empty())
-		std::cout << "/////  " <<it->empty() << std::endl;
+		std::cerr << "/////  " <<it->empty() << std::endl;
 	while(it != dir.end())
 	{
 		if(*it == "." || *it == "..")
@@ -707,7 +705,7 @@ int Client::Response::deletedir(std::string path)
 					this->delflag = 1;
 					return 1;
 				}
-				std::cout << "delete file ==> " << it->c_str() << std::endl;
+				std::cerr << "delete file ==> " << it->c_str() << std::endl;
 			}
 			else
 			{

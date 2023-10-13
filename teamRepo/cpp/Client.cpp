@@ -17,6 +17,13 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_timeLastAction = time(NULL);
 }
 
+
+Client::~Client()
+{
+	if (this->_FdDirectory)
+		closedir(this->_FdDirectory);
+}
+
 void	Client::clearClient()
 {
 		_finalPath = "";
@@ -49,8 +56,8 @@ void	Client::setRequestFinished(u_int16_t codeNum)
 
 std::string &Client::trim(std::string& str)
 {
-    str.erase(str.find_last_not_of(' ')+1);         //suffixing spaces
-    str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
+    str.erase(str.find_last_not_of(' ')+1);
+    str.erase(0, str.find_first_not_of(' '));
     return str;
 }
 
@@ -141,18 +148,12 @@ void	Client::detectFinalLocation(void)
 	if (!_request.requestHeadersMap.count("host"))
 		return ;
 	
-	std::cout << "QQ\n";
 	std::string &host = *(_request.requestHeadersMap["host"].end()-1);
 	trim(host);
 	if (_allConfigsData && _allConfigsData->count(host))
 		_configData = _allConfigsData->at(host);
 	else
 		_configData = _defaultConfigData;
-	std::cout << "QQ\n";
-
-
-	// std::cout << "here\n";
-
 
 	std::vector<std::string> 					locationSet;
 	std::map<std::string, location>::iterator	it;
@@ -260,14 +261,4 @@ std::string		&Client::serveResponse(void)
 		_response.DeleteMethodResponse();
 	}
 	return _finalAnswer;
-}
-
-
-
-//// dstructor
-
-Client::~Client()
-{
-	if (this->_FdDirectory)
-		closedir(this->_FdDirectory);
 }

@@ -10,31 +10,31 @@
 // {
 // 	ServerConfig & s = *ser;
 
-// 	std::cout << "--------------------------------------------------\n";
-// 	std::cout << s.host << " : " << s.port << "\n";
-// 	std::cout << "limit: " << s.limitBodySize << "\n";
+// 	std::cerr << "--------------------------------------------------\n";
+// 	std::cerr << s.host << " : " << s.port << "\n";
+// 	std::cerr << "limit: " << s.limitBodySize << "\n";
 // 	for (auto it = s.errorPages.begin(); it != s.errorPages.end(); ++it)
-// 		std::cout << it->first << " " << it->second << "\n";
+// 		std::cerr << it->first << " " << it->second << "\n";
 	
 // 	for (auto it = s.allLocations.begin(); it != s.allLocations.end(); ++it)
 // 	{
-// 		std::cout << it->first << "\n" ;
-// 		std::cout << "\t\talias " << it->second.alias << "\n";
-// 		std::cout << "\t\tautoIndex " << it->second.autoIndex << "\n";
-// 		std::cout << "\t\tcanUpload " << it->second.canUpload << "\n";
-// 		std::cout << "\t\tredirection " << it->second.redirection << "\n";
-// 		std::cout << "\t\troot " << it->second.root << "\n";
+// 		std::cerr << it->first << "\n" ;
+// 		std::cerr << "\t\talias " << it->second.alias << "\n";
+// 		std::cerr << "\t\tautoIndex " << it->second.autoIndex << "\n";
+// 		std::cerr << "\t\tcanUpload " << it->second.canUpload << "\n";
+// 		std::cerr << "\t\tredirection " << it->second.redirection << "\n";
+// 		std::cerr << "\t\troot " << it->second.root << "\n";
 
 // 		for (auto itt = it->second.allowedMethods.begin(); itt != it->second.allowedMethods.end(); ++itt)
-// 			std::cout << "\t\t" << *itt << "\n";
+// 			std::cerr << "\t\t" << *itt << "\n";
 		
 // 		for (auto itt = it->second.index.begin(); itt != it->second.index.end(); ++itt)
-// 				std::cout << "\t\t" << *itt << "\n";
+// 				std::cerr << "\t\t" << *itt << "\n";
 
 // 		for (auto itt = it->second.cgi.begin(); itt != it->second.cgi.end(); ++itt)
-// 				std::cout << "\t\t" << itt->first << " " << itt->second << "\n";
+// 				std::cerr << "\t\t" << itt->first << " " << itt->second << "\n";
 // 	}
-// 	std::cout << "--------------------------------------------------\n";
+// 	std::cerr << "--------------------------------------------------\n";
 // }
 
 int main(int ac, char **argv)
@@ -61,7 +61,7 @@ int main(int ac, char **argv)
 	// 	{
 	// 		for (auto itt = it->second.begin(); itt != it->second.end(); ++itt)
 	// 		{
-	// 			std::cout << "server name: " << itt->first << "\n";
+	// 			std::cerr << "server name: " << itt->first << "\n";
 	// 			printServer(itt->second);
 	// 		}
 	// 	}

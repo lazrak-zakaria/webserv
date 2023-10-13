@@ -37,7 +37,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 	std::ifstream ifs(configName.c_str());
 	if (!ifs.is_open())
 	{
-		std::cout << "ghayerha\n";
+		std::cerr << "ghayerha\n";
 		exit(1);
 	}
 	std::string	line;
@@ -62,7 +62,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 	bool	locationOn  = false; // == '{'->true;
 	while (getline(ifs, line, '\n'))
 	{
-		std::cout << line << "\n";
+		std::cerr << line << "\n";
 		if (line.empty())
 			continue;
 		kk = 1;
@@ -186,7 +186,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 					split(line, ' ', autoindex);
 					if (autoindex.size() != 2 || (autoindex[1] != "yes" && autoindex[1] != "no"))
 					{
-						std::cout << autoindex.size() << ":\n";
+						std::cerr << autoindex.size() << ":\n";
 						printError("location directive autoindex error");
 					
 					}sconf.allLocations[locationKey].autoIndex = autoindex[1][0] == 'y';
@@ -208,7 +208,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 				}
 				else
 				{
-					std::cout << line << "<\n";
+					std::cerr << line << "<\n";
 					printError("what !?");
 				}
 				continue;
@@ -257,7 +257,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 			}
 			else 
 			{
-				std::cout << line << '\n';
+				std::cerr << line << '\n';
 				printError("what is this !?");
 			}
 			continue;
@@ -280,7 +280,7 @@ void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
 		printError("please complete the block");
 
 	std::map<std::string, std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >::iterator it;
-	// std::cout <<"{" << c.size() << ";" << c[c.size()-1].host <<"<<\n";	
+	// std::cerr <<"{" << c.size() << ";" << c[c.size()-1].host <<"<<\n";	
 	for (it  = hostPort.begin(); it != hostPort.end(); ++it)
 		answer.push_back(it->second);
 

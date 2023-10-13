@@ -57,7 +57,6 @@ bool	Client::Request::isFieldValueValid(const char &c) const
 
 void	Client::Request::protectPath(std::string &path)
 {
-	//     /path/../path/../path/path/../../..
 	size_t i = 1;
 	size_t pathSize = path.size();
 
@@ -98,7 +97,10 @@ void	Client::Request::protectPath(std::string &path)
 		}
 
 		if (dots > validPath)
+		{
 			path = "/";
+			break;
+		}
 	}
 }
 
@@ -312,8 +314,8 @@ void	Client::Request::parseRequest()
 		if (!me->isPathExist(me->_finalPath))
 		{
 			me->setRequestFinished(404);
-			std::cout << me->_finalPath << "-----------------------------*****\n";
-			std::cout << "I WILL STOP YOU HERE\n" << me->_finalPath << "\n";
+			std::cerr << me->_finalPath << "-----------------------------*****\n";
+			std::cerr << "I WILL STOP YOU HERE\n" << me->_finalPath << "\n";
 			return;
 		}
 
@@ -512,7 +514,7 @@ void	Client::Request::parseHeader(size_t crlf)
 	if (method.compare("POST") && method.compare("GET") && method.compare("DELETE"))
 	{
 
-		std::cout << "{" << method << "}\n";
+		std::cerr << "{" << method << "}\n";
 		me->_codeStatus = 501;
 		// exit(40);
 		goto BAD_REQUEST;
@@ -575,7 +577,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	if (hasTransferEncoding)
 	{
-				// std::cout << "here\n";
+				// std::cerr << "here\n";
 		std::string &transferEncoding = *(--requestHeadersMap["transfer-encoding"].end());
 		std::string	tmp;
 		
@@ -633,7 +635,7 @@ void	Client::Request::parseHeader(size_t crlf)
 		// if (i != contentTypeTmp.size()) /* i comment this in, [oct 7 14:39]*/
 		// 		goto BAD_REQUEST;
 
-		// std::cout << contentType << "["<< boundary<< "]\n";
+		// std::cerr << contentType << "["<< boundary<< "]\n";
 	}
 
 
@@ -643,20 +645,20 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	/***********************************************************************************/
 /*	if (me->_codeStatus)
-		std::cout << "Error\n";
+		std::cerr << "Error\n";
 	else
 	{
-		std::cout << "Method: " << method << "\n";
-		std::cout << "Path: " << path << "\n";
-		std::cout << "Query: " << query << "\n";
-		std::cout << "bpundary: " << boundary << "\n";
+		std::cerr << "Method: " << method << "\n";
+		std::cerr << "Path: " << path << "\n";
+		std::cerr << "Query: " << query << "\n";
+		std::cerr << "bpundary: " << boundary << "\n";
 
 		for (auto it = requestHeadersMap.begin(); it != requestHeadersMap.end(); ++it)
 		{
-			std::cout << it->first << "|\t|" ;
+			std::cerr << it->first << "|\t|" ;
 			for (auto j = it->second.begin(); j != it->second.end(); ++j)
-				std::cout << *j << "|\t";
-			std::cout << "\n";
+				std::cerr << *j << "|\t";
+			std::cerr << "\n";
 		}
 	}*/
 	/***********************************************************************************/
@@ -668,7 +670,7 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	BAD_REQUEST:
 		me->_codeStatus = me->_codeStatus ? me->_codeStatus : 400;
-		std::cout << "Error bad request " << me->_codeStatus << "\n";
+		std::cerr << "Error bad request " << me->_codeStatus << "\n";
 		me->_flags.isRequestFinished = true;
 }
 
@@ -733,14 +735,14 @@ void	Client::Request::parseMultipart()
 
 		if (isBoundaryFound != std::string::npos)
 		{
-			// std::cout << requestBody.substr(0, isBoundaryFound) << "}\n";
+			// std::cerr << requestBody.substr(0, isBoundaryFound) << "}\n";
 			if (outputFile.is_open())
 			{
 				outputFile.write(requestBody.substr(0, isBoundaryFound).c_str(), isBoundaryFound);
 				outputFile.close();
 			}
 			requestBody = requestBody.erase(0, isBoundaryFound+2);
-			// std::cout << requestBody << ":\n";
+			// std::cerr << requestBody << ":\n";
 			me->_flags.inMultipartBody = false;
 			bodyEnd = true;
 		}
@@ -970,7 +972,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		contentTypeTmp = "";
 		me->_codeStatus = 201;
 		me->_flags.multicanw = true;
-		std::cout << "CREAT FILE\n";
+		std::cerr << "CREAT FILE\n";
 		isFileNameEmpty = true;
 	}
 
@@ -996,7 +998,7 @@ void	Client::Request::parseChunkedData()
 			TotalDataProcessed += expectedBytesToRead;
 			if (TotalDataProcessed > me->_configData->limitBodySize)
 			{
-				std::cout << "413 Payload Too Large\n";
+				std::cerr << "413 Payload Too Large\n";
 				me->setRequestFinished(413);
 				return ;
 			}
@@ -1031,7 +1033,7 @@ void	Client::Request::parseChunkedData()
 				contentToStore.append(requestBody, 0, (expectedBytesToRead - readAmountSoFar));
 
 				requestBody.erase(0, (expectedBytesToRead - readAmountSoFar));
-				// std::cout << requestBody << "blabla\n";
+				// std::cerr << requestBody << "blabla\n";
 				// exit(7);
 				readAmountSoFar = expectedBytesToRead = 0;
 				me->_flags.crlfRequired = true;
@@ -1057,7 +1059,7 @@ void	Client::Request::parseChunkedData()
 			}
 			else
 			{
-				std::cout << "Error body should end with crlf\n";
+				std::cerr << "Error body should end with crlf\n";
 				me->setRequestFinished(400);
 				return ;
 			}

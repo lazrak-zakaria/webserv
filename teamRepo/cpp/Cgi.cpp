@@ -72,7 +72,7 @@ void Client::Cgi::parseCgiHeader()
 	size_t posTmp = cgiHeader.find("\n\n");
 	if (pos == posTmp && pos == std::string::npos)
 	{
-		std::cout << "didnot found the end of header or execve failed\n";
+		std::cerr << "didnot found the end of header or execve failed\n";
 		std::string().swap(cgiHeader);
 		me->_codeStatus = 500;
 		return ;
@@ -88,7 +88,7 @@ void Client::Cgi::parseCgiHeader()
 	{
 		me->_response.inputFile.close();
 		me->_codeStatus = 502;
-		std::cout << "something went wrog with parsing the output ogf cgi\n";
+		std::cerr << "something went wrong with parsing the output of cgi\n";
 		return ;
 	}
 
@@ -134,7 +134,7 @@ void Client::Cgi::parseCgiHeader()
 
 		if (!cgiHeadersMap.count("content-type"))
 		{
-			std::cout << "i should find content type\n";
+			std::cerr << "i should find content type\n";
 			me->_codeStatus = 502;
 			return ;
 		}
@@ -142,17 +142,13 @@ void Client::Cgi::parseCgiHeader()
 		std::map<std::string, std::vector<std::string> >::iterator it;
 		std::stringstream ss;
 		ss << statusLine;
-		std::cout << "--------------------------------------\n";
 		for (it = cgiHeadersMap.begin(); it != cgiHeadersMap.end(); ++it)
 		{
 			std::vector<std::string>::iterator itVector = cgiHeadersMap[it->first].begin();
 			for (; itVector != cgiHeadersMap[it->first].end(); itVector++)
-			{
-				std::cout << "|" << it->first <<"| |" << *itVector << "|\r\n";
 				ss << it->first << ": " << *itVector << "\r\n"; 
-			}
+
 		}
-		std::cout << "--------------------------------------\n";
 		
 		if (cgiHeadersMap.count("server") == 0)
 			ss << "server: servingThings\r\n";
@@ -278,7 +274,7 @@ void Client::Cgi::checkCgiTimeout()
 		if (me->_response.inputFile.is_open() == 0)
 		{
 			me->_codeStatus = 500;
-			std::cout << "open failed to read cgi output\n";
+			std::cerr << "open failed to read cgi output\n";
 			return ;
 		}
 	}
@@ -306,7 +302,7 @@ void	Client::Cgi::executeCgi()
 	std::ofstream outfile (outputFileCGi);
 	if (!outfile.is_open())
 	{
-		std::cout << "failed to open tmpfile output of cgi\n";
+		std::cerr << "failed to open tmpfile output of cgi\n";
 		me->_codeStatus = 500;
 		return ;
 	}
@@ -377,7 +373,7 @@ void	Client::Cgi::executeCgi()
 		std::string pathWhereExecute = me->_finalPath.substr(0, me->_finalPath.find_last_of('/'));
 		if (chdir(pathWhereExecute.c_str()))
 		{
-			std::cerr << "chdir FAIL\n";
+			perror("chdir");
 			exit(1);
 		};
 
@@ -387,7 +383,7 @@ void	Client::Cgi::executeCgi()
 		std::cerr << "--" << pathWhereExecute << ";" <<  argv[0] <<  "++" << argv[1] << "\n";
 		
 		execve(argv[0], argv, env);
-		std::cerr << "execve failed\n";
+		perror("execve");
 		exit(1);
 	}
 	else
@@ -405,7 +401,7 @@ void	Client::Cgi::executeCgi()
 			if (me->_response.inputFile.is_open() == 0)
 			{
 				me->_codeStatus = 500;
-				std::cout << "open failed to read cgi output\n";
+				std::cerr << "open failed to read cgi output\n";
 			}
 		}
 		else if (ret == 0)

@@ -35,7 +35,7 @@ void	Server::socketBindListen()
 	// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
     addrServer.sin_addr.s_addr = INADDR_ANY;
     addrServer.sin_port = htons(configData->port);
-	std::cout << "------------------++++++----------------:" << configData->port << '\n';
+	std::cerr << "------------------++++++----------------:" << configData->port << '\n';
 	int optval = 1;
 	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
     if (bind(fdSock, (struct sockaddr *) &addrServer,
@@ -75,7 +75,7 @@ void	Server::acceptClient(fd_set &readSet)
         return ;
 	}
 
-	std::cout << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
+	std::cerr << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
 	FD_SET(fdSockTmp, &readSet);
 	serverClients[fdSockTmp];
 	serverClients[fdSockTmp].setAllConfigData(serverNamesConfig);
@@ -102,7 +102,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			{
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &readSet);
-				std::cout << "drop READ client\n";
+				std::cerr << "drop READ client\n";
 				continue ;
 			}
 			
@@ -123,7 +123,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			{
 				clientObj.serveResponse();
 				// if (!clientObj._finalAnswer.empty())//
-				//std::cout << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
+				//std::cerr << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
 
 				if(clientObj.isResponseFinished())
 					clientObj._finalAnswer.append("\r\n");
@@ -135,7 +135,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			{
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &writeSet);
-				std::cout << "drop WRITE client\n";
+				std::cerr << "drop WRITE client\n";
 				continue ;
 			}
 
@@ -165,7 +165,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &writeSet);
 				FD_CLR(clientFdSock, &readSet);
-				std::cout << "drop timeout client\n";
+				std::cerr << "drop timeout client\n";
 				continue ;
 			}
 		}
@@ -173,7 +173,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
-		std::cout << "close "<< *it << "\n";
+		std::cerr << "close "<< *it << "\n";
 		close(*it);
 		serverClients.erase(*it);
 	}
@@ -193,13 +193,13 @@ void	Server::checkClientsTimeout(fd_set &readSet, fd_set &writeSet)
 			invalidSockets.push_back(clientFdSock);
 			FD_CLR(clientFdSock, &writeSet);
 			FD_CLR(clientFdSock, &readSet);
-			std::cout << "drop timeout client\n";
+			std::cerr << "drop timeout client\n";
 			continue ;
 		}
 	}
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
-		std::cout << "close "<< *it << "\n";
+		std::cerr << "close "<< *it << "\n";
 		close(*it);
 		serverClients.erase(*it);
 	}
@@ -230,7 +230,7 @@ void	Server::acceptClient(int kq)
         return ;
 	}
 
-	std::cout << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
+	std::cerr << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
 	struct kevent evSet;
 	EV_SET(&evSet, fdSockTmp, EVFILT_READ, EV_ADD, 0, 0, NULL);
     kevent(kq, &evSet, 1, NULL, 0, NULL);
@@ -257,7 +257,7 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 			{
 				invalidSockets.push_back(clientFdSock);
 				deleteRead(kq, evList);
-				std::cout << "drop READ client\n";
+				std::cerr << "drop READ client\n";
 			}
 			else
 			{
@@ -278,7 +278,7 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 			{
 				clientObj.serveResponse();
 				// if (!clientObj._finalAnswer.empty())//
-				//std::cout << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
+				//std::cerr << "||||||" <<clientObj._finalAnswer<< "|||||||||||\n";
 
 				if(clientObj.isResponseFinished())
 					clientObj._finalAnswer.append("\r\n");
@@ -290,7 +290,7 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 			{
 				invalidSockets.push_back(clientFdSock);
 				deleteWrite(kq, evList);
-				std::cout << "drop WRITE client\n";
+				std::cerr << "drop WRITE client\n";
 
 			}
 			else
@@ -330,7 +330,7 @@ void	Server::processReadySockets(int kq, struct kevent& evList)
 
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
-		std::cout << "close "<< *it << "\n";
+		std::cerr << "close "<< *it << "\n";
 		close(*it);
 		serverClients.erase(*it);
 	}
