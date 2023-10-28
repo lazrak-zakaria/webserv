@@ -1,291 +1,296 @@
-#include "../hpp/ConfigFile.hpp"
+#include "../hpp/headers.hpp"
+#include "../hpp/ServerConfig.hpp"
 
-
-#define LISTEN 0
-#define HOST 1
-#define REDIRECT 2
-
-
-
-void split (const std::string &s, char delim, std::vector<std::string> & vec)
+std::vector<std::string> split(std::string str, char limiter)
 {
-    std::stringstream ss (s);
-    std::string item;
-    while (getline (ss, item, delim)) {
-        if (item.empty())
-			continue;
-		vec.push_back (item);
+    std::stringstream ss(str);
+    std::string a;
+    std::vector<std::string> result;
+
+    while (std::getline(ss, a, limiter)) {
+        result.push_back(a);
+    }
+    return (result);
+}
+
+void    printError_exit(std::string strError)
+{
+    std::cout << strError << std::endl;
+    exit (1);
+}
+
+size_t  getSise_t(std::string str)
+{
+    int count = 0;
+    for (int i = 0; i < str.size(); i++) {
+        if (!std::isdigit(str[i]))
+            printError_exit("limitBodySize is not digit !");
+        count++;
+    }
+    if (count > 17)
+        printError_exit("limitBodySize = max size_t");
+    std::stringstream   ss(str);
+    size_t              result = 0;
+    ss >> result;
+    if (result > 18446744073709551)
+        printError_exit("limitBodySize = max size_t");
+    return (result);
+}
+
+int get_numberError(std::string str) {
+    int count = 0;
+    int result;
+
+    for (int i = 0; i < str.size(); i++, count++) {
+        if (!std::isdigit(str[i]))
+            printError_exit("errorPages is not digit !");
+    }
+    result = std::atoi(str.c_str());
+    if (count > 3 || result > 599)
+        printError_exit("errorPages is Greater than allowed !");
+    return (result);
+}
+
+void    checkPorts_andCopy(std::vector<std::string> &_split, std::vector<int> &listen)
+{
+    int j;
+    int count;
+    for (int i = 0; i < _split.size(); i++) {
+        std::string str = _split[i];
+        for (count = 0, j = 0; j < str.size(); j++, count++) {
+            if (!std::isdigit(str[j]))
+                printError_exit("listen is not digit !");
+        }
+        listen.push_back(std::atoi(str.c_str()));
+        if (count > 5 || listen[i] > 65535)
+            printError_exit("maximum port out of rang !");
     }
 }
 
-
-void	printError(std::string s)
+void    ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string configName,
+	std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > &answer)
 {
-	std::cerr << s << "\n";
-	exit(1);
-}
+    int                         i;
+    std::string                 host_port;
+    std::vector<std::string>    _split;
+    std::ifstream               inputFile(configName);
+    int                         flag_location = 0;
+    std::string                 path_location;
+    int                         flag_path = 0;
+    int                         flag_server = 0;
+    int                         flag_Size = 0;
+    int                         flag_poort_alias = 0;
+    std::vector<int>            tlisten;
+    std::vector<std::string>    server_name;
+    ServerConfig                _newServer;
+    location                    _newLocation;
+    std::map<std::string, std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > _check;
+    if (!inputFile) {
+        std::cerr << "Error: Failed to open the input file." << std::endl;
+        exit (1);
+    }
+    //                         0      1      2              3             4                  5                    6          7         8        9                           10                 11              12                13            14            15          16     17      18                19        
+    std::string _server[] = {"[\n", "]\n", "\thost: ", "\tlisten: ", "\terror_page ", "\tlimitBodySize: ", "\tlocation: ", "\t{\n", "\t}\n", "\t\tallowedMethods: ", "\t\tredirection: ", "\t\troot: ", "\t\tautoIndex: ", "\t\tindex: ", "\t\tcgi: ", "\t\tcanUpload: ", "\n", "#", "\t\talias: ", "\tserverName: "};
+    std::string line;
+    while(std::getline(inputFile, line)) {
+        line += '\n';
+        for (i = 0; i < 20; i++) {
+            if (!line.compare(0, _server[i].size(), _server[i]))
+                break ;
+        }
+        switch (i) {
+            case 0:  // "[\n"
+                if (flag_server)
+                    printError_exit("error in config file : case 0");
+                flag_server = 1;
+                break ;
+            case 1:  // "]\n"
+                if (!flag_server)
+                    printError_exit("error in config file : case 1");
+                flag_server = 0;
+                if (tlisten.empty() || _newServer.host.empty())
+                    printError_exit("error in config file : case 1 : port || host is empty");
+                for (int j = 0; j < tlisten.size(); j++) {
+                    std::stringstream ss;
+                    ss << tlisten[j];
 
+                    _newServer.port = tlisten[j];
+                    allConfigs.push_back(_newServer);
+                    host_port = _newServer.host + ss.str();
+                    if (!_check.count(host_port)) {
+                        _check[host_port];
+                        _check[host_port].first = & *(--allConfigs.end());
+                    }
+                    for (int j = 0; j < server_name.size(); j++) {
+                        if (_check[host_port].second.count(server_name[j]))
+                            printError_exit("error in config file : same server name");
+                        _check[host_port].second[server_name[j]];
+                        _check[host_port].second[server_name[j]] = & *(--allConfigs.end());
+                    }
+                }
+                server_name.clear();
+                tlisten.clear();
+                _newServer.clear();
+                break ;
+            case 2:  // "\thost: "
+                line.pop_back();
+                if (!flag_server || flag_location || !_newServer.host.empty())
+                    printError_exit("error in config file : case 2");
+                _newServer.host = line.substr(_server[i].size(), line.size());
+                break ;
+            case 3: // "\tlisten: "
+                line.pop_back();
+                if (!flag_server || flag_location || !tlisten.empty())
+                    printError_exit("error in config file : case 3");
+                _split = split (line.substr(_server[i].size(), line.size()), ' ');
+                if (_split.empty())
+                    printError_exit("error in config file : case 3 : tlisten");
+                checkPorts_andCopy(_split, tlisten);
+                _split.clear();
+                break ;
+            case 4: // "\terror_page "
+                line.pop_back();
+                if (!flag_server || flag_location)
+                    printError_exit("error in config file : case 4");
+                _split = split(line.substr(_server[i].size(), line.size()), ' ');
+                if (_split.size() != 2)
+                    printError_exit("error in config file : case 4 : terror_page");
+                _newServer.errorPages[get_numberError(_split[0])] = _split[1];
+                _split.clear();
+                break ;
+            case 5:  // "\tlimitBodySize: "
+                line.pop_back();
+                if (!flag_server || flag_location || flag_Size)
+                    printError_exit("error in config file : case 5");
+                flag_Size = 1;
+                _newServer.limitBodySize = getSise_t(line.substr(_server[i].size(), line.size()));
+                break ;
+            case 6:  // "\tlocation "
+                line.pop_back();
+                if (!flag_server || flag_location || flag_path)
+                    printError_exit("error in config file : case 6");
+                path_location = line.substr(_server[i].size(), line.size());
+                if (path_location.empty())
+                    printError_exit("error in config file : path_location is emty");
+                flag_path = 1;
+                break ;
+            case 7:  // "\t{\n"
+                if (!flag_server || flag_location || !flag_path)
+                    printError_exit("error in config file : case 7");
+                flag_location = 1;
+                break ;
+            case 8:  // "\t}\n"
+                if (!flag_server || !flag_location)
+                    printError_exit("error in config file : case 8");
+                flag_location = 0;
+                flag_path = 0;
+                flag_poort_alias = 0;
+                _newServer.allLocations[path_location] = _newLocation;
+                _newLocation.free_all();
+                break ;
+            case 9:   // "\t\tallowedMethods: "
+                line.pop_back();
+                if (!flag_server || !flag_location || !_newLocation.allowedMethods.empty())
+                    printError_exit("error in config file : case 9");
+                // std::string test = line.substr(_server[i].size(), line.size()); // zayda 
+                _split = split(line.substr(_server[i].size(), line.size()), ' ');
+                if (_split.empty())
+                    printError_exit("error in config file : path_location is emty");
+                for (int j = 0; j < _split.size(); j++) {
+                    if (!_newLocation.allowedMethods.insert(_split[j]).second)
+                        printError_exit("error in config file : set<>");
+                }
+                _split.clear();
+                break ;
+            case 10:  // "\t\tredirection: "
+                line.pop_back();
+                if (!flag_server || !flag_location || !_newLocation.redirection.empty())
+                    printError_exit("error in config file : case 10");
+                _newLocation.redirection = line.substr(_server[i].size(), line.size());
+                if (_newLocation.redirection.empty())
+                    printError_exit("error in config file : redirection is emty");
+                break ;
+            case 11:  // "\t\troot: "
+                line.pop_back();
+                if (!flag_server || !flag_location || !_newLocation.root.empty() || flag_poort_alias)
+                    printError_exit("error in config file : case 11");
+                flag_poort_alias = 1;
+                _newLocation.root = line.substr(_server[i].size(), line.size());
+                if (_newLocation.root.empty())
+                    printError_exit("error in config file : root is emty");
+                break ;
+            case 12:  //"\t\tautoIndex: "
+                line.pop_back();
+                if (!flag_server || !flag_location)
+                    printError_exit("error in config file : case 12");
+                if (line.substr(_server[i].size(), line.size()) == "yes")
+                    _newLocation.autoIndex = 1;
+                else if (line.substr(_server[i].size(), line.size()) == "no")
+                    _newLocation.autoIndex = 0;
+                else
+                    printError_exit("error in config file : case 12 : else (yes, no)");
+                break ;
+            case 13:  //"\t\tindex: "
+                line.pop_back();
+                if (!flag_server || !flag_location || !_newLocation.index.empty())
+                    printError_exit("error in config file : case 13");
+                _newLocation.index = split(line.substr(_server[i].size(), line.size()), ' ');
+                if (_newLocation.index.empty())
+                    printError_exit("error in config file : index is emty");
+                break ;
+            case 14: // "\t\tcgi: "
+                line.pop_back();
+                if (!flag_server || !flag_location)
+                    printError_exit("error in config file : case 14");
+                _split = split(line.substr(_server[i].size(), line.size()), ' ');
+                if (_split.size() != 2)
+                    printError_exit("error in config file : cgi");
+                _newLocation.cgi[_split[0]] = _split[1];
+                _split.clear();
+                break ;
+            case 15:  // "\t\tcanUpload: "
+                line.pop_back();
+                if (!flag_server || !flag_location)
+                    printError_exit("error in config file : case 15");
+                if (line.substr(_server[i].size(), line.size()) == "yes")
+                    _newLocation.canUpload = 1;
+                else if (line.substr(_server[i].size(), line.size()) == "no")
+                    _newLocation.canUpload = 0;
+                else
+                    printError_exit("error in config file : case 15 : else (no, yes)");
+                break ;
+            case 16: // "\n"
+                break ;
+            case 17: // "#"
+                break ;
+            case 18: // "\t\talias: "
+                line.pop_back();
+                if (!flag_server || !flag_location || !_newLocation.alias.empty() || flag_poort_alias)
+                    printError_exit("error in config file : case 18");
+                flag_poort_alias = 1;
+                _newLocation.alias = line.substr(_server[i].size(), line.size());
+                if (_newLocation.alias.empty())
+                    printError_exit("error in config file : alias is emty");
+                break ;
+            case 19:  // "\tserverName: "
+                line.pop_back();
+                if (!flag_server || flag_location || !server_name.empty())
+                    printError_exit("error in config file : case 19");
+                _split = split(line.substr(_server[i].size(), line.size()), ' ');
+                if (_split.empty())
+                    printError_exit("error in config file : case 19 : empty");
+                server_name = _split;
+                _split.clear();
+                break ;
+            default:
+                printError_exit("error in config file : default");
+        }
 
+        std::map<std::string, std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >::iterator it;
+        for (it = _check.begin();it != _check.end(); it++) {
+            answer.push_back(it->second);
+        }
+    }
 
-void ConfigFile::parseConfig(std::list<ServerConfig> &c, std::string configName,
-								std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >	&answer)
-{
-	std::set<std::string> ports;
-	std::map<std::string, std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > hostPort;
-
-	std::string	error;
-	std::ifstream ifs(configName.c_str());
-	if (!ifs.is_open())
-	{
-		std::cerr << "ghayerha\n";
-		exit(1);
-	}
-	std::string	line;
-	bool	done = false;
-	int		serversCounter;
-	bool	insideServerBlock = false;
-	bool	insideLocationBlock = false;
-	bool	config[3] = {};
-	int		indexConfig = 0;
-	size_t	portsSize = 0;
-
-	int kk = 0;
-	std::vector<std::string> port;
-	std::vector<std::string> host;
-	std::vector<std::string> serverNames;
-	ServerConfig sconf;
-	std::string				locationKey;
-
-	std::map<std::string, std::set<std::string> > hostServerNames;
-	int start = 0, end = 0;
-
-	bool	locationOn  = false; // == '{'->true;
-	while (getline(ifs, line, '\n'))
-	{
-		std::cerr << line << "\n";
-		if (line.empty())
-			continue;
-		kk = 1;
-		if (insideServerBlock)
-		{
-
-			if (line == "[")
-			{
-				printError("close first server block first");
-
-			}
-			else if (line == "]")
-			{
-				if (!config[0] || !config[1])
-				{
-					printError("provide a host ip and port");
-
-				}
-				else
-				{
-
-					// do the job;
-					insideServerBlock = false;
-
-					for (size_t i = 1; i < port.size(); ++i)
-					{
-						std::string newPort = host[1] + port[i];
-						sconf.host = host[1];
-						sconf.port = atoi(port[i].c_str());
-						c.push_back(sconf);
-						if (!hostPort.count(newPort))
-						{
-							hostPort[newPort].first = &  *(--c.end());
-							for (size_t j = 1; j < serverNames.size(); ++j)
-							{
-								hostPort[newPort].second[serverNames[j]] = hostPort[newPort].first;
-							}
-						}
-						else
-						{
-							for (size_t j = 1; j < serverNames.size(); ++j)
-							{
-								if (hostPort[newPort].second.count(serverNames[j]))
-									printError("same host with same port with same servename ====> ERROR");
-								hostPort[newPort].second[serverNames[j]] = &  *(--c.end());
-												
-							}
-						}
-					}
-					insideLocationBlock = false;
-					insideServerBlock = false;
-					serverNames.clear();
-					port.clear();
-					host.clear();
-					ServerConfig sssss;//()
-					sconf = sssss;
-					locationKey = "";
-					// memset(config, 0, sizeof(config));
-					continue;
-				}
-			}
-
-			if (insideLocationBlock)
-			{
-				if (line == "\t{")
-					locationOn = true;
-				else if (line == "\t}")
-				{
-					if (locationOn)
-					{
-						insideLocationBlock = false;
-						locationOn = false;
-						if (sconf.allLocations[locationKey].allowedMethods.empty())
-							sconf.allLocations[locationKey].allowedMethods.insert("GET");
-					}
-					else
-					{
-						printError("open location first");
-					}
-				}
-				else if (!line.compare(0, 15, "\t\tredirection: "))
-				{
-					std::vector<std::string> redir;
-					split(line, ' ', redir);
-					if (redir.size() != 2)
-						printError("location directive redirection error");
-
-					sconf.allLocations[locationKey].redirection = redir[1];
-				}
-				else if (!line.compare(0, 18, "\t\tallowedMethods: "))
-				{
-					std::vector<std::string> methodes;
-					split(line, ' ', methodes);
-					if (methodes.size() < 2)
-						printError("location directive methodes error");
-					for (size_t i = 0; i < methodes.size(); ++i)
-						sconf.allLocations[locationKey].allowedMethods.insert(methodes[i]);
-				}
-				else if (!line.compare(0, 8, "\t\troot: ") || !line.compare(0, 9, "\t\talias: "))
-				{
-					std::vector<std::string> rootAlias;
-					split(line, ' ', rootAlias);
-					if (rootAlias.size() != 2)
-						printError("location directive methodes error");
-					if (rootAlias[0][2] == 'r')
-						sconf.allLocations[locationKey].root = rootAlias[1];
-					else
-						sconf.allLocations[locationKey].alias = rootAlias[1];
-				}
-				else if (!line.compare(0, 13, "\t\tcanUpload: "))
-				{
-					std::vector<std::string> upload;
-					split(line, ' ', upload);
-					if (upload.size() != 2 || (upload[1] != "yes" && upload[1] != "no"))
-						printError("location directive upload error");
-					sconf.allLocations[locationKey].canUpload = upload[1][0] == 'y';
-				}
-				else if (!line.compare(0, 13, "\t\tautoIndex: "))
-				{
-					std::vector<std::string> autoindex;
-					split(line, ' ', autoindex);
-					if (autoindex.size() != 2 || (autoindex[1] != "yes" && autoindex[1] != "no"))
-					{
-						std::cerr << autoindex.size() << ":\n";
-						printError("location directive autoindex error");
-					
-					}sconf.allLocations[locationKey].autoIndex = autoindex[1][0] == 'y';
-				}
-				else if (!line.compare(0, 7, "\t\tcgi: "))
-				{
-					std::vector<std::string> cgi;
-					split(line, ' ', cgi);
-					if (cgi.size() != 3)
-						printError("location directive cgi error");
-					sconf.allLocations[locationKey].cgi[cgi[1]] = cgi[2];
-				}
-				else if (!line.compare(0, 9, "\t\tindex: "))
-				{
-					split(line, ' ', sconf.allLocations[locationKey].index);
-					if (sconf.allLocations[locationKey].index.size() < 2)
-						printError("location directive index error");
-					sconf.allLocations[locationKey].index.erase(sconf.allLocations[locationKey].index.begin());
-				}
-				else
-				{
-					std::cerr << line << "<\n";
-					printError("what !?");
-				}
-				continue;
-			}
-
-			if (!line.compare(0, 9, "\tlisten: "))
-			{
-				split(line, ' ', port);
-				if (port.size() < 2)
-					printError("port directive error");
-				config[1] = true;
-			}
-			else if (!line.compare(0, 7, "\thost: "))
-			{
-				split(line, ' ', host);
-				if (host.size() != 2)
-					printError("host directive error");
-					config[0] = true;
-			}
-			else if (!line.compare(0, 13, "\tserverName: "))
-			{
-				split(line, ' ', serverNames);
-				if (serverNames.size() < 2)
-					printError("servername directive error");
-			}
-			else if (!line.compare(0, 12, "\terrorPage: "))
-			{
-				
-			}
-			else if (!line.compare(0, 11, "\tlocation: "))
-			{
-				std::vector<std::string> loc;
-				split(line, ' ', loc);
-				if (loc.size() != 2)
-					printError("location directive error");
-				insideLocationBlock = true;
-
-				if (sconf.allLocations.count(loc[1]))
-					printError("location directive duplicate error");
-				sconf.allLocations[loc[1]];
-				locationKey = loc[1];
-			}
-			else if (!line.compare(0, 16, "\tlimitBodySize: "))
-			{
-				std::vector<std::string> loc;
-				split(line, ' ', loc);
-				if (loc.size() != 2)
-					printError("limit error");
-				sconf.limitBodySize = atoi(loc[1].c_str());
-			}
-			else 
-			{
-				std::cerr << line << '\n';
-				printError("what is this !?");
-			}
-			continue;
-		}
-
-
-		if (line == "[")
-		{
-			insideServerBlock = true;
-		}
-		else
-		{
-			printError("didn't find the entry to the server block");
-		}
-	}
-
-	if (!kk)
-	printError("ghayerha 2");
-	if (insideLocationBlock || insideServerBlock)
-		printError("please complete the block");
-
-	std::map<std::string, std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >::iterator it;
-	// std::cerr <<"{" << c.size() << ";" << c[c.size()-1].host <<"<<\n";	
-	for (it  = hostPort.begin(); it != hostPort.end(); ++it)
-		answer.push_back(it->second);
-
+    inputFile.close();
 }

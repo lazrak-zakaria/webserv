@@ -1,2 +1,23 @@
-all:
-	c++ Cgi.cpp Client.cpp MimeAndError.cpp Request.cpp Response.cpp Server.cpp SetupLocationServer.cpp WebServer.cpp mainStart.cpp -fsanitize=address -g3 -o  webser
+NAME = Webserv
+
+CXX = c++
+
+CXXFLAGS = #-Wall -Wextra -Werror -std=c++98
+
+SRC = Client.cpp newMain.cpp Request.cpp WebServer.cpp Cgi.cpp\
+		ConfigFile.cpp MimeAndError.cpp Response.cpp Server.cpp
+
+OBJ = $(SRC:.cpp=.o)
+
+all : $(NAME)
+
+$(NAME) : $(OBJ)
+	$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
+
+clean :
+	rm -f $(OBJ)
+
+fclean : clean
+	rm -f $(NAME)
+
+re : fclean all

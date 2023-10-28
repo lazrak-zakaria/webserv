@@ -2,57 +2,60 @@
 #include "../hpp/Client.hpp"
 #include "../hpp/Server.hpp"
 #include "../hpp/WebServer.hpp"
-#include "../hpp/ConfigFile.hpp"
 
 
+void print_server(std::list<ServerConfig> &servers) {
 
-// void printServer(ServerConfig* ser)
-// {
-// 	ServerConfig & s = *ser;
-
-// 	std::cerr << "--------------------------------------------------\n";
-// 	std::cerr << s.host << " : " << s.port << "\n";
-// 	std::cerr << "limit: " << s.limitBodySize << "\n";
-// 	for (auto it = s.errorPages.begin(); it != s.errorPages.end(); ++it)
-// 		std::cerr << it->first << " " << it->second << "\n";
-	
-// 	for (auto it = s.allLocations.begin(); it != s.allLocations.end(); ++it)
-// 	{
-// 		std::cerr << it->first << "\n" ;
-// 		std::cerr << "\t\talias " << it->second.alias << "\n";
-// 		std::cerr << "\t\tautoIndex " << it->second.autoIndex << "\n";
-// 		std::cerr << "\t\tcanUpload " << it->second.canUpload << "\n";
-// 		std::cerr << "\t\tredirection " << it->second.redirection << "\n";
-// 		std::cerr << "\t\troot " << it->second.root << "\n";
-
-// 		for (auto itt = it->second.allowedMethods.begin(); itt != it->second.allowedMethods.end(); ++itt)
-// 			std::cerr << "\t\t" << *itt << "\n";
-		
-// 		for (auto itt = it->second.index.begin(); itt != it->second.index.end(); ++itt)
-// 				std::cerr << "\t\t" << *itt << "\n";
-
-// 		for (auto itt = it->second.cgi.begin(); itt != it->second.cgi.end(); ++itt)
-// 				std::cerr << "\t\t" << itt->first << " " << itt->second << "\n";
-// 	}
-// 	std::cerr << "--------------------------------------------------\n";
-// }
+	std::list<ServerConfig>::iterator it = servers.begin();
+	for (int i = 1;it != servers.end(); it++, i++)
+	{
+		std::cout << "===============server[" << i << "]===============\n";
+		std::cout << "port = (" << it->port << ")\n";
+		std::cout << "host = (" << it->host << ")\n";
+		for (std::map<int, std::string>::iterator it1 = it->errorPages.begin(); it1 != it->errorPages.end(); it1++) {
+			std::cout << "error_page = (" << it1->first << ") (" << it1->second << ")\n";
+		}
+		std::cout << "limitBodySize = (" << it->limitBodySize << ")\n";
+		std::map<std::string, location>::iterator it2 = it->allLocations.begin();
+		for (int j = 1; it2 != it->allLocations.end(); it2++, j++) {
+			std::cout << "------------location[" << j << "]------------\n";
+			std::cout << "path_location = (" << it2->first << ")\n";
+			std::cout << "allowedMethods = ";
+			for (std::set<std::string>::iterator it3 = it2->second.allowedMethods.begin(); it3 != it2->second.allowedMethods.end(); it3++)
+				std::cout << "(" << *it3 << ") ";
+			std::cout << '\n';
+			std::cout << "redirection = (" << it2->second.redirection << ")\n";
+			std::cout << "root = (" << it2->second.root << ")\n";
+			std::cout << "alias = (" << it2->second.alias << ")\n";
+			std::cout << "autoIndex = (" << it2->second.autoIndex << ")\n";
+			std::cout << "allowedMethods = ";
+			for (int c = 0; c < it2->second.index.size(); c++)
+				std::cout << "(" << it2->second.index[c] << ") ";
+			std::cout << "\n";
+			for (std::map<std::string, std::string>::iterator it4 = it2->second.cgi.begin(); it4 != it2->second.cgi.end(); it4++) {
+				std::cout << "cgi: (" << it4->first << ") (" << it4->second << ")\n";
+			}
+			std::cout << "canUpload = (" << it2->second.canUpload << ")\n";
+		}
+	}
+}
 
 int main(int ac, char **argv)
 {
 	if (ac > 2)
 	{
 		std::cerr << "accept only one config file\n";
-		exit(0); 
+		exit(0);
 	}
 	
 	std::list<ServerConfig> allConfigs;
 	std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > serverConfigs;
-	ConfigFile::parseConfig(allConfigs, argv[1] ? argv[1] : "./../default.config", serverConfigs);
-	
+	ServerConfig::parseConfig(allConfigs, argv[1] ? argv[1] : "./../default.config", serverConfigs);
+
+	print_server(allConfigs);
 	WebServer::run(serverConfigs);
 	exit(0);
-	
-	
+
 	// for (auto it = serverConfigs.begin(); it != serverConfigs.end(); ++it)
 	// {
 	// 	if (it->second.empty())
