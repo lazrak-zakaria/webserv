@@ -395,9 +395,11 @@ void Client::Response::GetDirectory()
 	int Ret_St;
 
 	if (this->me->_request.path[this->me->_request.path.size() - 1] != '/')
+	{
 		this->me->_codeStatus = 301;
 		this->GenerateLastResponseHeader(301, "", NULL);
 		return ;
+	}
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
 	{
 		std::cerr << "index" << std::endl;
