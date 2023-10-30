@@ -354,10 +354,7 @@ void Client::Response::GetMethodResponse()
 	if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
 		if (me->_flags.isCgiRunning)
-		{
-			// std::cerr << "+++++++++++++++\n";
 			me->_cgi.checkCgiTimeout();
-		}
 		if (me->_flags.isCgiFinished)
 		{
 			if (!me->_flags.isCgiHeaderSent)
@@ -366,18 +363,13 @@ void Client::Response::GetMethodResponse()
 				me->_flags.isCgiHeaderSent = true;
 			}
 			else
-			{
 				me->_cgi.sendCgiBodyToFinaleAnswer();
-			}
 		}
 		return ;
 	}
 	int st;
 	if (!this->me->_configData->allLocations[this->me->_locationKey].redirection.empty())
-	{
 		this->GenerateLastResponseHeader(301, "", NULL);
-		std::cerr << "redirect to 301 from config file  -->  " << this->me->_configData->allLocations[this->me->_locationKey].redirection << std::endl;
-	}
 	st = stat(this->me->_finalPath.c_str(), &this->me->_st);
 	if (st < 0)
 	{
@@ -403,12 +395,9 @@ void Client::Response::GetDirectory()
 	int Ret_St;
 
 	if (this->me->_request.path[this->me->_request.path.size() - 1] != '/')
-	{
 		this->me->_codeStatus = 301;
-		std::cerr << "Redirect to 301 url don't have / at the end url => " << this->me->_request.path<< std::endl;
 		this->GenerateLastResponseHeader(301, "", NULL);
 		return ;
-	}
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
 	{
 		std::cerr << "index" << std::endl;
@@ -426,7 +415,6 @@ void Client::Response::GetDirectory()
 				{
 					if (this->me->isMatchedWithCgi(*Iit))
 					{
-						std::cerr << "------------cgi---------" << std::endl;
 						me->_finalPath.append(*Iit);
 						this->me->_cgi.executeCgi();
 						return ;
@@ -451,7 +439,6 @@ void Client::Response::GetDirectory()
 	}
 	if (this->me->_configData->allLocations[this->me->_locationKey].autoIndex)
 	{
-		std::cerr << "autoindex" << std::endl;
 		if (this->me->_flags.CanReadInputDir)
 		{
 			html = this->generatehtml(this->readdirectory());
@@ -489,10 +476,7 @@ void Client::Response::GetDirectory()
 		html.clear();
 	}
 	else
-	{
 		this->me->_codeStatus = 403;
-		std::cerr << "not autoindex and index" << std::endl;
-	}
 }
 
 std::vector<std::string> Client::Response::readdirectory()
@@ -501,8 +485,6 @@ std::vector<std::string> Client::Response::readdirectory()
 	int i = 4;
     while(this->me->_ReadDirectory && i >= 0)
     {
-		//&& this->me->_ReadDirectory->d_name && this->me->_ReadDirectory->d_name[0]
-			//can be NULL ?!	
 		if (this->me->_ReadDirectory)
         	content.push_back(this->me->_ReadDirectory->d_name);
 		this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
@@ -613,7 +595,6 @@ void Client::Response::DeleteMethodResponse()
 			if (unlink(this->me->_finalPath.c_str()) == 0)
 			{
 				this->me->_codeStatus = 204;
-				std::cerr << "204 no content" << std::endl;
 				// this->GenerateLastResponseHeader(204, this->me->_finalPath, )
 				return;
 			}
@@ -625,18 +606,12 @@ void Client::Response::DeleteMethodResponse()
 			}
 		}
 		else
-		{
 			this->me->_codeStatus = 403;
-			std::cerr << "403 permission" << std::endl;
-		}
 	}
 	else if (S_ISDIR(this->me->_st.st_mode))
 	{
 		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
-		{
 			this->me->_codeStatus = 409;
-			std::cerr << "409 conflict" << std::endl;
-		}
 		else if(this->me->_st.st_mode & S_IWUSR)
 		{
 			if (this->deletedir(this->me->_finalPath) == 0)
@@ -657,10 +632,7 @@ void Client::Response::DeleteMethodResponse()
 			}
 		}
 		else
-		{
 			this->me->_codeStatus = 403;
-			std::cerr << "403 permission" << std::endl;
-		}
 	}
 }
 
@@ -672,8 +644,6 @@ int Client::Response::deletedir(std::string path)
 	int st_ret;
 	if (this->delflag == 1)
 		return 1;
-	if (it->empty())
-		std::cerr << "/////  " <<it->empty() << std::endl;
 	while(it != dir.end())
 	{
 		if(*it == "." || *it == "..")
@@ -700,7 +670,6 @@ int Client::Response::deletedir(std::string path)
 					this->delflag = 1;
 					return 1;
 				}
-				std::cerr << "delete file ==> " << it->c_str() << std::endl;
 			}
 			else
 			{
