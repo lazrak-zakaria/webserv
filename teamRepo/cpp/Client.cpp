@@ -43,8 +43,8 @@ void	Client::clearClient()
 		_response.responseClear();
 
 
-		for (size_t i = 0 ; i < filesToDelete.size(); ++i)
-			unlink(filesToDelete[i].c_str());
+		// for (size_t i = 0 ; i < filesToDelete.size(); ++i)
+		// 	unlink(filesToDelete[i].c_str());
 		filesToDelete.clear();
 		_cgi.clearCgi();
 }
@@ -236,7 +236,10 @@ std::string		&Client::serveResponse(void)
 	START:
 	if (_codeStatus != 200 && _codeStatus != 201  && _codeStatus != 204 && _codeStatus)
 	{
-		_response.ErrorResponse();
+		if (_codeStatus == 307)
+			_response.GenerateLastResponseHeader(307, "", NULL);
+		else
+			_response.ErrorResponse();
 	}
 	else if (_request.method == "POST")
 	{

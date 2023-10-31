@@ -107,7 +107,7 @@ void	Client::Request::postCgiRequest()
 		{
 			if (me->_request.path[me->_request.path.size() - 1] != '/')
 			{
-				me->_codeStatus = 301;
+				me->_codeStatus = 307;
 				me->_flags.isRequestFinished = true;
 				return ;
 			}
@@ -118,7 +118,7 @@ void	Client::Request::postCgiRequest()
 	{
 		std::string name;
 		me->generateRandomName(name);
-		name = std::string("/tmp/").append(name);
+		name = std::string("../tmp/").append(name);
 		outputFile.open(name, std::ios::binary);
 		if (!outputFile.is_open())
 		{
@@ -157,7 +157,7 @@ void	Client::Request::isDirectoryUpload()
 		{
 			if (me->_request.path[me->_request.path.size() - 1] != '/')
 			{
-				me->_codeStatus = 301;
+				me->_codeStatus = 307;
 				me->_flags.isRequestFinished = true;
 				return ;
 			}

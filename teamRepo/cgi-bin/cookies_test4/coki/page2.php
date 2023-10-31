@@ -59,7 +59,7 @@ if(!isset($_SESSION['email'])){
 <body>
     <div class="container">
         <h2>Name Submission Form</h2>
-        <form action="/hello_get.py" method="get">
+        <form action="/redirect" method="get">
             <div class="form-group">
                 <label for="first_name">First Name:</label>
                 <input type="text" name="first_name" id="first_name" class="form-input" required>

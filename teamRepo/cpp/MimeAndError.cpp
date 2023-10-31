@@ -73,6 +73,7 @@ MimeAndError::MimeAndError()
 	statusCode[200] = "HTTP/1.1 200 OK";
 	statusCode[204] = "HTTP/1.1 204 No Content";
 	statusCode[301] = "HTTP/1.1 301 Moved Permanently";
+	statusCode[307] = "HTTP/1.1 307 Temporary Redirect";
 	statusCode[201] = "HTTP/1.1 201 Created";
 	statusCode[400] = "HTTP/1.1 400 Bad Request";
 	statusCode[403] = "HTTP/1.1 403 Forbidden";

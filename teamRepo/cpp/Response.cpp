@@ -285,6 +285,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 
 	switch (status)
 	{
+		case 307:
 		case 301:
 			respo += "location: " + this->me->_request.path + "/\r\n";
 			this->me->_flags.isResponseFinished = true;
