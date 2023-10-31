@@ -1,0 +1,27 @@
+Content-type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hello - CGI Program</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f2f2f2;
+  }
+  .container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  }
+</style>
+</head>
+<body>
+<div class='container'>
+<h2>Hello, d d</h2>
+</div>
+</body>
+</html>
