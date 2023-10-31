@@ -147,7 +147,6 @@ void	Client::Request::postCgiRequest()
 	}
 }
 
-
 void	Client::Request::isDirectoryUpload()
 {
 	struct stat sb;
@@ -183,6 +182,7 @@ void	Client::Request::postUploadRequest()
 	if (!me->_flags.isMultipart && !outputFile.is_open())
 	{
 		isDirectoryUpload();
+
 		if (me->_flags.isRequestFinished)
 			return ;
 
@@ -276,6 +276,8 @@ void	Client::Request::parseRequest()
 		protectPath(path);
 		me->detectFinalLocation();
 
+			std::cout << "----------------path = " << me->_finalPath << "\n";
+			std::cout << "----------------method = " << method << "\n";
 		if (me->_codeStatus)
 		{
 			me->_flags.isRequestFinished = true;
@@ -326,6 +328,7 @@ void	Client::Request::parseRequest()
 			receivedSize = requestBody.size();
 			goto PARSE_REQUEST;
 		}
+
 	}
 }
 

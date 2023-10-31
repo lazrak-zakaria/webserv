@@ -236,7 +236,10 @@ std::string		&Client::serveResponse(void)
 	START:
 	if (_codeStatus != 200 && _codeStatus != 201  && _codeStatus != 204 && _codeStatus)
 	{
-		_response.ErrorResponse();
+		if (_codeStatus == 301)
+			_response.GenerateLastResponseHeader(301, "", NULL);
+		else
+			_response.ErrorResponse();
 	}
 	else if (_request.method == "POST")
 	{
