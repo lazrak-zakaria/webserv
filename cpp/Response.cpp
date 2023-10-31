@@ -270,8 +270,8 @@ void Client::Response::ErrorResponse()
         {
             this->me->_flags.isResponseFinished = true;
             this->me->_flags.canReadInputFile = false;
-            std::string tmp("<html><h1>Wach Mamragtich</h1></html>\r\n");
-            this->me->_finalAnswer += convertToHex(tmp.size()).append("\r\n") + tmp.append("\r\n0\r\n");
+            std::string tmp("<h1>Wach Mamragtich</h1>");
+            this->me->_finalAnswer.append(convertToHex(tmp.size()).append("\r\n") + tmp.append("0\r\n"));
 		}
         else
         	this->me->_flags.canReadInputFile = true;

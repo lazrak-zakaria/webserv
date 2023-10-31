@@ -188,6 +188,7 @@ void	Client::detectFinalLocation(void)
 	else
 		_finalPath = _request.path;
 	
+	std::cout << _finalPath << "{{{{{{}}}}}}\n";
 }
 
 

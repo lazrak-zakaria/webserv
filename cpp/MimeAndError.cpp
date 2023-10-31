@@ -158,21 +158,21 @@ MimeAndError::MimeAndError()
 
 
 
-	errors[201] = "../error/error_pages/201.html";
-	errors[204] = "../error/error_pages/204.html";
+	errors[201] = "../error/201.html";
+	errors[204] = "../error/204.html";
 
-	errors[400] = "../error/error_pages/400.html";
-	errors[403] = "../error/error_pages/403.html";;
-	errors[404] = "../error/error_pages/404.html";
-	errors[405] = "../error/error_pages/405.html";
-	errors[408] = "../error/error_pages/408.html";
-	errors[409] = "../error/error_pages/409.html";
-	errors[411] = "../error/error_pages/411.html";
-	errors[413] = "../error/error_pages/413.html";
-	errors[414] = "../error/error_pages/414.html";
-	errors[500] = "../error/error_pages/500.html";
-	errors[501] = "../error/error_pages/501.html";
-	errors[502] = "../error/error_pages/502.html";
-	errors[504] = "../error/error_pages/504.html";
-	errors[505] = "../error/error_pages/505.html";
+	errors[400] = "../error/400.html";
+	errors[403] = "../error/403.html";
+	errors[404] = "../error/404.html";
+	errors[405] = "../error/405.html";
+	errors[408] = "../error/408.html";
+	errors[409] = "../error/409.html";
+	errors[411] = "../error/411.html";
+	errors[413] = "../error/413.html";
+	errors[414] = "../error/414.html";
+	errors[500] = "../error/500.html";
+	errors[501] = "../error/501.html";
+	errors[502] = "../error/502.html";
+	errors[504] = "../error/504.html";
+	errors[505] = "../error/505.html";
 }

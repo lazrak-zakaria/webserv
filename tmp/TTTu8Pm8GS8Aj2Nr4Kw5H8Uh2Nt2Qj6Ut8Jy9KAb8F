@@ -1,12 +1,8 @@
-<?php 
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
 
-session_start();
-
-if(!isset($_SESSION['email'])){
-	header('location:login.php');
-}else{
-
-?>
 
 <!DOCTYPE html>
 <html>
@@ -53,7 +49,7 @@ if(!isset($_SESSION['email'])){
 <body>
     <div class="container">
         <h2>File Upload Form</h2>
-        <form action="redirect/" method="post" enctype="multipart/form-data">
+        <form action="redirect" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="file">Choose a file:</label>
                 <input type="file" name="filename" id="file" class="file-input">
@@ -65,5 +61,4 @@ if(!isset($_SESSION['email'])){
 </html>
 
 
-<?php  } ?>
 
