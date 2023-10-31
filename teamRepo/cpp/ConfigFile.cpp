@@ -121,11 +121,11 @@ void    ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::stri
                         _check[host_port];
                         _check[host_port].first = & *(--allConfigs.end());
                     }
-                    for (int j = 0; j < server_name.size(); j++) {
-                        if (_check[host_port].second.count(server_name[j]))
+                    for (int l = 0; l < server_name.size(); l++) {
+                        if (_check[host_port].second.count(server_name[l]))
                             printError_exit("error in config file : same server name");
-                        _check[host_port].second[server_name[j]];
-                        _check[host_port].second[server_name[j]] = & *(--allConfigs.end());
+                        _check[host_port].second[server_name[l]];
+                        _check[host_port].second[server_name[l]] = & *(--allConfigs.end());
                     }
                 }
                 server_name.clear();
