@@ -316,7 +316,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 }
 
 
-// ---------------------------  GET --------------------------//
+// ---------------------------  GET --------------------------------//
 
 void Client::Response::GetMethodResponse()
 {

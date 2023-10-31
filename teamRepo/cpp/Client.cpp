@@ -232,7 +232,6 @@ std::string		&Client::serveResponse(void)
 
 	_finalAnswer = "";
 
-	signal(SIGPIPE, SIG_IGN);
 	START:
 	if (_codeStatus != 200 && _codeStatus != 201  && _codeStatus != 204 && _codeStatus)
 	{
@@ -252,7 +251,6 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "GET")
 	{
-		signal(SIGPIPE, SIG_IGN);
 		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus != 204 && _codeStatus)
 		{

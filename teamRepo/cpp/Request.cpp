@@ -276,8 +276,6 @@ void	Client::Request::parseRequest()
 		protectPath(path);
 		me->detectFinalLocation();
 
-			std::cout << "----------------path = " << me->_finalPath << "\n";
-			std::cout << "----------------method = " << method << "\n";
 		if (me->_codeStatus)
 		{
 			me->_flags.isRequestFinished = true;
