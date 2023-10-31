@@ -284,13 +284,11 @@ void    ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::stri
                 break ;
             default:
                 printError_exit("error in config file : default");
+            }
         }
-
         std::map<std::string, std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >::iterator it;
         for (it = _check.begin();it != _check.end(); it++) {
             answer.push_back(it->second);
         }
-    }
-
     inputFile.close();
 }
