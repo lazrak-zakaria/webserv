@@ -2,7 +2,7 @@ NAME = Webserv
 
 CXX = c++
 
-CXXFLAGS = #-Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -fsanitize=address -g3 #-Wall -Wextra -Werror -std=c++98
 
 SRC = Client.cpp newMain.cpp Request.cpp WebServer.cpp Cgi.cpp\
 		ConfigFile.cpp MimeAndError.cpp Response.cpp Server.cpp

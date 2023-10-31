@@ -326,7 +326,7 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			respo += std::string("Date: ") + ctime(&date);
 			respo.pop_back();
 			respo += "\r\n";
-			if (!filename.empty() && !st)
+			if (!filename.empty() && st)
 			{
 				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime);
 				respo.pop_back();
