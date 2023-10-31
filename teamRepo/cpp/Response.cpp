@@ -316,22 +316,17 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			ErrorResponse();
 			return ;
 		case 204:
-			ErrorResponse();
-			return ;
 		case 200:
 			if (!filename.empty())
 			{
 				respo += "content-type: " + this->getContentTypeOfFile(filename) + "\r\n";
 			}
 			respo += "transfer-encoding: chunked\r\n";
+			time_t date = time(NULL);
+			respo += std::string("Date: ") + ctime(&date);
+			respo.pop_back();
+			respo += "\r\n";
 			if (!filename.empty() && !st)
-			{
-				time_t date = time(NULL);
-				respo += std::string("Date: ") + ctime(&date);
-				respo.pop_back();
-				respo += "\r\n";
-			}
-			else
 			{
 				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime);
 				respo.pop_back();
@@ -402,7 +397,6 @@ void Client::Response::GetDirectory()
 	}
 	else if(!this->me->_configData->allLocations[this->me->_locationKey].index.empty())
 	{
-		std::cerr << "index" << std::endl;
 		if (this->me->_flags.canReadInputFile)
 		{
 			this->sendFileToFinalAnswer();
@@ -470,7 +464,8 @@ void Client::Response::GetDirectory()
 		}
 		this->me->_flags.CanReadInputDir = true;
 		this->GenerateLastResponseHeader(200, ".html", NULL);
-		html += "<html><ul>" + this->generatehtml(this->readdirectory());
+		html += std::string("<html><br /><h1 style=\"display:inline\">Index: </h1>") + "<h3 style=\"display:inline\">" + this->me->_request.path + "</h3>" + "<hr style=\" height:2px; background-color:black\">";
+		html += "<ul>" + this->generatehtml(this->readdirectory());
 		this->me->_finalAnswer += this->convertToHex(html.size()).append("\r\n") + html + "\r\n";
 		if (this->me->_flags.isResponseFinished)
 			this->me->_finalAnswer.append("0\r\n");
@@ -583,6 +578,11 @@ std::vector<std::string> Client::Response::DelReadDir(std::string path)
 void Client::Response::DeleteMethodResponse()
 {
 	this->delflag = 0;
+	if (this->me->_flags.canReadInputFile)
+	{
+		this->sendFileToFinalAnswer();
+		return ;
+	}
 	int st = stat(this->me->_finalPath.c_str(), &this->me->_st);
 	if (st < 0)
 	{
@@ -597,7 +597,7 @@ void Client::Response::DeleteMethodResponse()
 			if (unlink(this->me->_finalPath.c_str()) == 0)
 			{
 				this->me->_codeStatus = 204;
-				// this->GenerateLastResponseHeader(204, this->me->_finalPath, )
+				this->GenerateLastResponseHeader(204, "", NULL);
 				return;
 			}
 			else
@@ -627,9 +627,10 @@ void Client::Response::DeleteMethodResponse()
 				}
 				else
 				{
-					me->_codeStatus = 200;
-					// this->GenerateLastResponseHeader(200, )
-					me->_flags.canReadInputFile = true;
+					me->_codeStatus = 204;
+					GenerateLastResponseHeader(204, "", NULL);
+					me->_flags.isResponseFinished = true;
+					this->me->_finalAnswer.append("0\r\n");
 				}
 			}
 		}
