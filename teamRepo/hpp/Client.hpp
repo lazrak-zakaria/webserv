@@ -50,11 +50,12 @@ class Client
 			size_t								requestTimeStart;
 			Client								*me;
 
+			static bool	isUriValid(const char &c);
+			static bool	isFieldNameValid(const char &c);
+			static bool	isFieldValueValid(const char &c);
+
 			void	parseRequest();
 			void	parseHeader(size_t crlf);
-			bool	isUriValid(const char &c) const;
-			bool	isFieldNameValid(const char &c) const;
-			bool	isFieldValueValid(const char &c) const;
 			void	protectPath(std::string &path);
 
 			void	parseMultipart();
@@ -67,8 +68,6 @@ class Client
 			void	isDirectoryUpload();
 
 			void	requestClear();
-			void	setMe(Client *);
-
 
 			Request();
 		} _request;
@@ -140,6 +139,8 @@ class Client
 			u_int16_t	parseCgiWithCrlf(std::string &header, std::string crlf);
 			Client 		*me;
 			void		executeCgi();
+
+			Cgi();
 		} _cgi;
 
 		struct Flags
@@ -165,19 +166,19 @@ class Client
 			
 			/*cgi*/
 			bool	isCgiRunning;
-			bool	isCgiFinished;     //set this flag if and only if cgi terminate properly
+			bool	isCgiFinished;
 			bool	isCgiHeaderSent;
 			bool	isCgiHaveContentLength;
 			bool	isCgi;
 		} _flags;
 
-		bool	isLocationMatched(const std::string &locationDirective, const std::string &p);
-		void	detectFinalLocation(void);
-		void	addSlashToFinalPath();
-		bool	isMatchedWithCgi(std::string &file);
-		bool	isPathExist(std::string path);
-		size_t	getTimeNow();
-		void	setRequestFinished(u_int16_t codeNum);
+		bool		isLocationMatched(const std::string &locationDirective, const std::string &p);
+		void		detectFinalLocation(void);
+		void		addSlashToFinalPath();
+		bool		isMatchedWithCgi(std::string &file);
+		bool		isPathExist(std::string path);
+		size_t		getTimeNow();
+		void		setRequestFinished(u_int16_t codeNum);
 		std::string &trim(std::string& str);
 
 	public:

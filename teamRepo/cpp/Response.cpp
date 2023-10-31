@@ -36,16 +36,12 @@ void	Client::Response::sendFileToFinalAnswer()
 		inputFile.close();
 	}
 
-
 	if ((howMuchRead != BUF_SIZE && howMuchRead) || !howMuchRead)
-	{
-		me->_flags.isResponseFinished = true; /*make sure this flag is only here*/
-	}
+		me->_flags.isResponseFinished = true;
 }
 
 void	Client::Response::postMethodeResponseDirectory()
 {
-
 	if (me->_configData->allLocations[me->_locationKey].cgi.empty() == 0)
 	{
 		if (me->_configData->allLocations[me->_locationKey].index.empty() == 0)
@@ -63,24 +59,21 @@ void	Client::Response::postMethodeResponseDirectory()
 
 			if (i == indexes.size())
 			{
-				std::cerr << "no index match or exist with cgi-s\n";
+				std::cerr << "no index match or exist with cgi\n";
 				me->_codeStatus = 404;
 			}
 			else
-			{
-				std::cerr << "directory index i will run cgi\n";
 				me->_cgi.executeCgi();
-			}
 		}
 		else
 		{
-			std::cerr << "you requested a directory and did not provide any index \n";
+			std::cerr << "directory request need cgi-index\n";
 			me->_codeStatus = 404;
 		}
 	}
 	else
 	{
-		std::cerr << "you are doing a post request and you did not provide an upload nor cgi\n";
+		std::cerr << "post request with no [cgi or upload]\n";
 		me->_codeStatus = 403;
 	}
 }
@@ -90,13 +83,10 @@ void	Client::Response::postMethodeResponseFile()
 	if (!me->_configData->allLocations[me->_locationKey].cgi.empty())
 	{
 		if (me->isMatchedWithCgi(me->_finalPath)) 
-		{
-			std::cerr << "file i will run cgi\n"; 
 			me->_cgi.executeCgi();
-		}
 		else
 		{
-			std::cerr << "request a file and did not matched with any cgi\n";
+			std::cerr << "cgi not matched\n";
 			me->_codeStatus = 403;
 			return ;
 		}
@@ -112,16 +102,12 @@ void	Client::Response::postMethodeResponseFile()
 void	Client::Response::postMethodeResponse()
 {
 	if (me->_flags.canReadInputFile && !me->_flags.isCgiFinished)
-	{
 		sendFileToFinalAnswer();
-	}
 	else if (me->_flags.isCgiRunning || me->_flags.isCgiFinished)
 	{
-
 		if (me->_flags.isCgiRunning)
-		{
 			me->_cgi.checkCgiTimeout();
-		}
+
 		if (me->_flags.isCgiFinished)
 		{
 			if (!me->_flags.isCgiHeaderSent)
@@ -130,9 +116,7 @@ void	Client::Response::postMethodeResponse()
 				me->_flags.isCgiHeaderSent = true;
 			}
 			else
-			{
 				me->_cgi.sendCgiBodyToFinaleAnswer();
-			}
 		}
 	}
 	else
@@ -147,9 +131,7 @@ void	Client::Response::postMethodeResponse()
 		if (stat(me->_finalPath.c_str(), &sb) == 0)
 		{
 			if (S_ISDIR(sb.st_mode))
-			{
 				postMethodeResponseDirectory();
-			}
 			else if (S_ISREG(sb.st_mode))
 				postMethodeResponseFile();
 			else
@@ -193,10 +175,6 @@ std::string	Client::Response::connectionHeader()
 	else
 		return std::string("Connection: keep-alive\r\n");
 }
-
-/************************************************/
-/************************************************/
-/************************************************/
 
 std::string Client::Response::FindFileToOpen()
 {
@@ -275,7 +253,6 @@ void Client::Response::ErrorResponse()
     {
 		opnedfile = FindFileToOpen();
 
-		std::cerr << "++++++++++" << opnedfile << std::endl;
         std::string respo(this->me->_mimeError->statusCode[this->me->_codeStatus] + "\r\n");
 		if (!opnedfile.empty())
         	respo += "Content-type: " + this->getContentTypeOfFile(opnedfile) + "\r\n";
@@ -340,8 +317,6 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 
 
 // ---------------------------  GET --------------------------------//
-
-
 
 void Client::Response::GetMethodResponse()
 {

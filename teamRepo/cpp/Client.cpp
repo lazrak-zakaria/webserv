@@ -22,6 +22,7 @@ Client::~Client()
 {
 	if (this->_FdDirectory)
 		closedir(this->_FdDirectory);
+	clearClient();
 }
 
 void	Client::clearClient()

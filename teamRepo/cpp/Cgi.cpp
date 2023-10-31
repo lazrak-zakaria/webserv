@@ -1,5 +1,9 @@
 #include "../hpp/Client.hpp"
 
+Client::Cgi::Cgi()
+{
+	processPid = -1;
+}
 
 u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
 {
@@ -22,9 +26,7 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
             else if (!header.compare(i, sizeLF, crlf) && key.empty())
                 return 0;
             else
-            {
                 return 502;
-            }
         }
         else
         {
@@ -47,9 +49,7 @@ u_int16_t	Client::Cgi::parseCgiWithCrlf(std::string &header, std::string crlf)
                 	i++;
             }
             else
-            {
 				return 502;
-			}
         }
     } 
     return 0;
@@ -66,13 +66,11 @@ void Client::Cgi::parseCgiHeader()
 	int	howMuchRead = me->_response.inputFile.gcount();
 	cgiHeader.append(buffer, howMuchRead);
 
-
-
 	size_t pos = cgiHeader.find("\r\n\r\n");
 	size_t posTmp = cgiHeader.find("\n\n");
 	if (pos == posTmp && pos == std::string::npos)
 	{
-		std::cerr << "didnot found the end of header or execve failed\n";
+		std::cerr << "cgi response: end of headers\n";
 		std::string().swap(cgiHeader);
 		me->_codeStatus = 500;
 		return ;
@@ -88,10 +86,9 @@ void Client::Cgi::parseCgiHeader()
 	{
 		me->_response.inputFile.close();
 		me->_codeStatus = 502;
-		std::cerr << "something went wrong with parsing the output of cgi\n";
+		std::cerr << "cgi response: bad response\n";
 		return ;
 	}
-
 
     if (cgiHeadersMap.count("status"))
 	{
@@ -134,7 +131,7 @@ void Client::Cgi::parseCgiHeader()
 
 		if (!cgiHeadersMap.count("content-type"))
 		{
-			std::cerr << "i should find content type\n";
+			std::cerr << "cgi response: content-type\n";
 			me->_codeStatus = 502;
 			return ;
 		}
@@ -150,10 +147,10 @@ void Client::Cgi::parseCgiHeader()
 
 		}
 		
-		if (cgiHeadersMap.count("server") == 0)
+		if (!cgiHeadersMap.count("server"))
 			ss << "server: servingThings\r\n";
 
-		if (cgiHeadersMap.count("content-length") == 0)
+		if (!cgiHeadersMap.count("content-length"))
 			ss << "transfer-encoding: chunked\r\n";
 		else
 		{
@@ -183,7 +180,6 @@ void		Client::Cgi::sendCgiBodyToFinaleAnswer()
 	const int BUFERSIZE = 8192;
 	char buf[BUFERSIZE + 2];
 
-	// DBG;
 	if (cgibody.empty())
 	{
 		me->_response.inputFile.read(buf, BUFERSIZE);
@@ -255,8 +251,14 @@ void		Client::Cgi::clearCgi()
 
 	inputFileCGi.clear();
 	outputFileCGi.clear();
-			
+
 	cgiKeyProgram.clear();
+	if (processPid != -1)
+	{
+		kill(processPid, SIGKILL);
+		waitpid(processPid, 0, WNOHANG);
+	}
+	processPid = -1;
 }
 
 
@@ -268,13 +270,13 @@ void Client::Cgi::checkCgiTimeout()
 	{
 		me->_flags.isCgiFinished = true;
 		me->_flags.isCgiRunning = false;
-
+		processPid = -1;
 		me->_response.inputFile.close();
 		me->_response.inputFile.open(me->_cgi.outputFileCGi.c_str(), std::ios::binary);
 		if (me->_response.inputFile.is_open() == 0)
 		{
+			perror("response cgi output");
 			me->_codeStatus = 500;
-			std::cerr << "open failed to read cgi output\n";
 			return ;
 		}
 	}
@@ -287,6 +289,7 @@ void Client::Cgi::checkCgiTimeout()
 		{
 			kill(processPid, SIGKILL);
 			waitpid(processPid, 0, WNOHANG);
+			processPid = -1;
 			me->_codeStatus = 504;
 			me->_flags.isCgiRunning = false;
 			me->_flags.isCgiFinished = false;
@@ -302,13 +305,18 @@ void	Client::Cgi::executeCgi()
 	std::ofstream outfile (outputFileCGi);
 	if (!outfile.is_open())
 	{
-		std::cerr << "failed to open tmpfile output of cgi\n";
+		perror("cgi output");
 		me->_codeStatus = 500;
 		return ;
 	}
 	me->filesToDelete.push_back(outputFileCGi);
 	outfile.close();
 	processPid = fork();
+	if (processPid == -1)
+	{
+		perror("fork");
+		exit(1);
+	}
 	if (processPid == 0)
 	{
 		/*Setup env variables*/
@@ -326,7 +334,7 @@ void	Client::Cgi::executeCgi()
 		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
 		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
 		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(me->_finalPath).c_str());
-		if (me->_request.method == "POST" && me->_request.requestHeadersMap.count("content-type"))
+		if (me->_request.method[0] == 'P' && me->_request.requestHeadersMap.count("content-type"))
 		{
 			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
 			env[i++] = strdup(std::string("CONTENT_TYPE=").append(tmp).c_str());
@@ -355,20 +363,14 @@ void	Client::Cgi::executeCgi()
 		std::string	&programName 	= me->_configData->allLocations[me->_locationKey].cgi[cgiKeyProgram];
 		std::string	&scriptToexec	= me->_finalPath;
 		
-		if (inputFileCGi.empty() == false) /*for post*/
+		if (inputFileCGi.empty() == false) /*post*/
 		{
 			if (freopen(inputFileCGi.c_str(), "r", stdin) == NULL)
-			{
-				std::cerr << "CGI INPUT FAIL\n";
 				exit(1);
-			}
 		}
 		if (freopen(outputFileCGi.c_str(), "w", stdout) == NULL)
-		{
-			std::cerr << "CGI OUTPUT FAIL\n";
 			exit(1);
-		}
-
+		
 		char *argv[3];
 		std::string pathWhereExecute = me->_finalPath.substr(0, me->_finalPath.find_last_of('/'));
 		if (chdir(pathWhereExecute.c_str()))
@@ -380,7 +382,6 @@ void	Client::Cgi::executeCgi()
 		argv[0] = strdup(programName.c_str());
 		argv[1] = strdup(scriptToexec.c_str());
 		argv[2] = NULL;
-		std::cerr << "--" << pathWhereExecute << ";" <<  argv[0] <<  "++" << argv[1] << "\n";
 		
 		execve(argv[0], argv, env);
 		perror("execve");
@@ -403,6 +404,7 @@ void	Client::Cgi::executeCgi()
 				me->_codeStatus = 500;
 				std::cerr << "open failed to read cgi output\n";
 			}
+			processPid = -1;
 		}
 		else if (ret == 0)
 			me->_flags.isCgiRunning = true;
