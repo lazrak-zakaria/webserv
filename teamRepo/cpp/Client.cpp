@@ -232,13 +232,11 @@ std::string		&Client::serveResponse(void)
 
 	_finalAnswer = "";
 
+	signal(SIGPIPE, SIG_IGN);
 	START:
 	if (_codeStatus != 200 && _codeStatus != 201  && _codeStatus != 204 && _codeStatus)
 	{
-		if (_codeStatus == 301)
-			_response.GenerateLastResponseHeader(301, "", NULL);
-		else
-			_response.ErrorResponse();
+		_response.ErrorResponse();
 	}
 	else if (_request.method == "POST")
 	{
@@ -251,6 +249,7 @@ std::string		&Client::serveResponse(void)
 	}
 	else if (_request.method == "GET")
 	{
+		signal(SIGPIPE, SIG_IGN);
 		_response.GetMethodResponse();
 		if (_codeStatus != 200 && _codeStatus != 301 && _codeStatus != 204 && _codeStatus)
 		{

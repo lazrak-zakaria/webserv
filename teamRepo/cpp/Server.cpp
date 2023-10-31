@@ -125,8 +125,8 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				if(clientObj.isResponseFinished())
 					clientObj._finalAnswer.append("\r\n");
 			}
-			std::cout << "[\n"<<clientObj._finalAnswer <<"]\n";
-			int dataSent = send(clientFdSock, clientObj._finalAnswer.c_str(), clientObj._finalAnswer.size(), MSG_NOSIGNAL);
+			
+			int dataSent = send(clientFdSock, clientObj._finalAnswer.c_str(), clientObj._finalAnswer.size(), 0);
 
 			if (dataSent == -1)
 			{
