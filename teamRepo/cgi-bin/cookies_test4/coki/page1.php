@@ -56,7 +56,7 @@ if(!isset($_SESSION['email'])){
         <form action="upload.py" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="file">Choose a file:</label>
-                <input type="file" name="file" id="file" class="file-input" accept=".pdf, .doc, .docx">
+                <input type="file" name="filename" id="file" class="file-input" accept=".pdf, .doc, .docx">
             </div>
             <input type="submit" value="Upload" class="btn-submit">
         </form>

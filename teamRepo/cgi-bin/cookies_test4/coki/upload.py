@@ -17,7 +17,6 @@ if fileitem.filename:
    
 else:
    message = 'No file was uploaded'
-   
-print ("Status: 404 not found")
+
 print ("Content-Type: text/html\n")
-print ("<h1>HI</h1>")
+print ("<p>{}</p>".format(message))
