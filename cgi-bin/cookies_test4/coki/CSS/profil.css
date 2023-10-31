@@ -1,0 +1,42 @@
+@font-face{
+	src: url('fonts/Raleway-Regular.ttf');
+	font-family: raleway;
+}
+
+body{
+	font-family: raleway;
+	background-color: #e6e7e8;
+}
+
+h1{
+	text-align: center;
+	width: 200px;
+	border-radius: 5px;
+	box-shadow: 5px 5px 5px;
+	margin: auto;
+	margin-top: 50px;
+}
+
+a{
+	text-decoration: none;
+}
+
+a:hover{
+	text-decoration: underline;
+}
+
+li{
+	margin: 10px;
+}
+
+.deconnexion{
+	background-color: white;
+	padding: 10px;
+	border-radius: 10px;
+	color: red;
+}
+
+.deconnexion:hover{
+	background-color: red;
+	color: white;
+}

@@ -1,0 +1,81 @@
+@font-face{
+	src: url('fonts/Raleway-Regular.ttf');
+	font-family: raleway;
+}
+
+body{
+	font-family: raleway;
+	margin: 0px;
+	background-color: #4e8ef5;
+}
+
+h1{
+	margin-bottom: 50px;
+	color: #0f6afc;
+}
+
+form{
+	text-align: center;
+	border: 2px solid #e6e7e8;
+	border-radius: 5px;
+	width: 700px;
+	padding: 20px;
+	background-color: #e6e7e8;
+	margin: auto;
+	margin-bottom: 20px;
+	margin-top: 50px;
+}
+
+.label-class{
+	font-weight: bold;
+}
+
+input[type=text],input[type=password]{
+	padding: 10px;
+	border-radius: 10px;
+	font-size: 17px;
+	border: 2px solid #0f6afc;
+}
+
+input[type=text],input[type=password],input[type=submit]:focus{
+	outline: none;
+}
+
+input[type=submit]{
+	font-family: raleway;
+	border-radius: 10px;
+	border: 2px solid #0f6afc;
+	background-color: #0f6afc;
+	padding: 10px;
+	cursor: pointer;
+	font-size: 15px;
+	color: white;
+}
+
+input[type=submit]:hover{
+	background-color: #0057e3;
+	border: 2px solid #0057e3;
+}
+
+input:
+
+td{
+	border: 2px solid #99bdf7;
+}
+
+.titre{
+	background-color: #99bdf7;
+}
+.erreur{
+	color: red;
+	font-size: 12px;
+}
+
+footer{
+	background-color: black;
+	color: #e3dfde;
+	padding: 20px;
+	text-align: center;
+}
+
+
