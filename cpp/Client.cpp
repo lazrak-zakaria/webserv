@@ -236,6 +236,12 @@ std::string		&Client::serveResponse(void)
 	{
 		if (_codeStatus == 307)
 			_response.GenerateLastResponseHeader(307, "", NULL);
+		else if (_codeStatus == 301)
+		{
+			_finalAnswer = _mimeError->statusCode[301] + "\r\n";
+			_finalAnswer += "location: " + _response.location301 + "\r\n\r\n";
+			_flags.isResponseFinished = true;
+		}
 		else
 			_response.ErrorResponse();
 	}
