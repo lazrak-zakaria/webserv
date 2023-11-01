@@ -323,10 +323,13 @@ void	Client::Cgi::executeCgi()
 		u_int8_t i = 0;
 		size_t envSize = me->_request.requestHeadersMap.count("cookie") ? me->_request.requestHeadersMap.size() : 0;
 		envSize += 16;
+	
+		size_t pos = me->_finalPath.find_last_of('/');
+		std::string	scriptToexec = pos != std::string::npos ? me->_finalPath.substr(pos+1) : me->_finalPath;
+
 		char** env = new char*[envSize];
 
-		size_t pos = me->_finalPath.find_last_of('/');
-		std::string scriptToexec = pos != std::string::npos ? me->_finalPath.substr(pos + 1) : me->_finalPath;
+
 
 		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
 		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
@@ -364,6 +367,7 @@ void	Client::Cgi::executeCgi()
 		
 		me->_response.inputFile.close();
 		std::string	&programName 	= me->_configData->allLocations[me->_locationKey].cgi[cgiKeyProgram];
+		
 		
 		if (inputFileCGi.empty() == false) /*post*/
 		{
