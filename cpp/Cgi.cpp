@@ -325,6 +325,9 @@ void	Client::Cgi::executeCgi()
 		envSize += 16;
 		char** env = new char*[envSize];
 
+		size_t pos = me->_finalPath.find_last_of('/');
+		std::string scriptToexec = pos != std::string::npos ? me->_finalPath.substr(pos + 1) : me->_finalPath;
+
 		env[i++] = strdup("SERVER_SOFTWARE=webserver0.0");
 		env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
 		env[i++] = strdup(std::string("SERVER_NAME=").append(*(me->_request.requestHeadersMap["host"].end()-1)).c_str());
@@ -333,7 +336,7 @@ void	Client::Cgi::executeCgi()
 		env[i++] = strdup(std::string("REQUEST_METHOD=").append(me->_request.method).c_str());
 		env[i++] = strdup(std::string("PATH_INFO=").append(me->_finalPath).c_str());
 		env[i++] = strdup(std::string("QUERY_STRING=").append(me->_request.query).c_str());
-		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(me->_finalPath).c_str());
+		env[i++] = strdup(std::string("SCRIPT_FILENAME=").append(scriptToexec).c_str());
 		if (me->_request.method[0] == 'P' && me->_request.requestHeadersMap.count("content-type"))
 		{
 			std::string tmp = *(me->_request.requestHeadersMap["content-type"].end() - 1);
@@ -361,7 +364,6 @@ void	Client::Cgi::executeCgi()
 		
 		me->_response.inputFile.close();
 		std::string	&programName 	= me->_configData->allLocations[me->_locationKey].cgi[cgiKeyProgram];
-		std::string	&scriptToexec	= me->_finalPath;
 		
 		if (inputFileCGi.empty() == false) /*post*/
 		{
