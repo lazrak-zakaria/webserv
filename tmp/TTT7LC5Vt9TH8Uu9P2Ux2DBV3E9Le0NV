@@ -1,8 +1,0 @@
-Status: 302 Found
-Set-Cookie: PHPSESSID=sk875fp5ehbevvlhkotnntirra; path=/
-Expires: Thu, 19 Nov 1981 08:52:00 GMT
-Cache-Control: no-store, no-cache, must-revalidate
-Pragma: no-cache
-location:register.php
-Content-type: text/html; charset=UTF-8
-

@@ -118,7 +118,7 @@ void	Client::Request::postCgiRequest()
 	{
 		std::string name;
 		me->generateRandomName(name);
-		name = std::string("../tmp/").append(name);
+		name = std::string("./tmp/").append(name);
 		outputFile.open(name, std::ios::binary);
 		if (!outputFile.is_open())
 		{

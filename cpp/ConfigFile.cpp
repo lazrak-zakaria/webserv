@@ -185,14 +185,15 @@ void    ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::stri
                 flag_location = 0;
                 flag_path = 0;
                 flag_poort_alias = 0;
+                if (_newLocation.allowedMethods.empty())
+                    _newLocation.allowedMethods.insert("GET");
                 _newServer.allLocations[path_location] = _newLocation;
                 _newLocation.free_all();
                 break ;
             case 9:   // "\t\tallowedMethods: "
                 line.pop_back();
                 if (!flag_server || !flag_location || !_newLocation.allowedMethods.empty())
-                    printError_exit("error in config file : case 9");
-                // std::string test = line.substr(_server[i].size(), line.size()); // zayda 
+                    printError_exit("error in config file : case 9"); 
                 _split = split(line.substr(_server[i].size(), line.size()), ' ');
                 if (_split.empty())
                     printError_exit("error in config file : path_location is emty");

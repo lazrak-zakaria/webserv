@@ -4,10 +4,8 @@ CXX = c++
 
 CXXFLAGS = -fsanitize=address -g3 #-Wall -Wextra -Werror -std=c++98
 
-SRC = Client.cpp newMain.cpp Request.cpp WebServer.cpp Cgi.cpp\
-		ConfigFile.cpp MimeAndError.cpp Response.cpp Server.cpp
-
-OBJ = $(SRC:.cpp=.o)
+OBJ = ./cpp/Client.o ./cpp/newMain.o ./cpp/Request.o ./cpp/WebServer.o ./cpp/Cgi.o\
+		./cpp/ConfigFile.o ./cpp/MimeAndError.o ./cpp/Response.o ./cpp/Server.o ./cpp/ServerConfig.o
 
 all : $(NAME)
 

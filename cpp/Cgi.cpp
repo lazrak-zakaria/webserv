@@ -300,7 +300,7 @@ void Client::Cgi::checkCgiTimeout()
 
 void	Client::Cgi::executeCgi()
 {
-	outputFileCGi = "../tmp/TTT";
+	outputFileCGi = "./tmp/TTT";
 	me->generateRandomName(outputFileCGi);
 	std::ofstream outfile (outputFileCGi);
 	if (!outfile.is_open())

@@ -5,7 +5,7 @@ MimeAndError::MimeAndError()
 {
 	mime["aac"] = "audio/aac";
 	mime["abw"] = "application/x-abiword";
-	mime["arc"] = "application/octet-stream";
+	mime["arc"] = "application/x-freearc";
 	mime["avi"] = "video/x-msvideo";
 	mime["azw"] = "application/vnd.amazon.ebook";
 	mime["bin"] = "application/octet-stream";
@@ -22,7 +22,7 @@ MimeAndError::MimeAndError()
 	mime["gif"] = "image/gif";
 	mime["htm"] = "text/html";
 	mime["html"] = "text/html";
-	mime["ico"] = "image/x-icon";
+	mime["ico"] = "image/vnd.microsoft.icon";
 	mime["ics"] = "text/calendar";
 	mime["jar"] = "application/java-archive";
 	mime["jpeg"] = "image/jpeg";
@@ -31,6 +31,7 @@ MimeAndError::MimeAndError()
 	mime["json"] = "application/json";
 	mime["mid"] = "audio/midi";
 	mime["midi"] = "audio/midi";
+	mime["mjs"] = "text/javascript";
 	mime["mpeg"] = "video/mpeg";
 	mime["mpkg"] = "application/vnd.apple.installer+xml";
 	mime["odp"] = "application/vnd.oasis.opendocument.presentation";
@@ -42,9 +43,10 @@ MimeAndError::MimeAndError()
 	mime["otf"] = "font/otf";
 	mime["png"] = "image/png";
 	mime["pdf"] = "application/pdf";
+	mime["php"] = "aapplication/x-httpd-php";
 	mime["ppt"] = "application/vnd.ms-powerpoint";
 	mime["pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-	mime["rar"] = "application/x-rar-compressed";
+	mime["rar"] = "application/vnd.rar";
 	mime["rtf"] = "application/rtf";
 	mime["sh"] = "application/x-sh";
 	mime["svg"] = "image/svg+xml";
@@ -54,6 +56,7 @@ MimeAndError::MimeAndError()
 	mime["tiff"] = "image/tiff";
 	mime["ts"] = "application/typescript";
 	mime["ttf"] = "font/ttf";
+	mime["txt"] = "text/plain";
 	mime["vsd"] = "application/vnd.visio";
 	mime["wav"] = "audio/x-wav";
 	mime["weba"] = "audio/webm";
@@ -69,6 +72,7 @@ MimeAndError::MimeAndError()
 	mime["zip"] = "application/zip";
 	mime["7z"] = "application/x-7z-compressed";
 	mime["mp3"] = "audio/mpeg";
+	mime["mp4"] = "video/mp4";
 
 	statusCode[200] = "HTTP/1.1 200 OK";
 	statusCode[204] = "HTTP/1.1 204 No Content";
@@ -91,7 +95,7 @@ MimeAndError::MimeAndError()
 
 	mimeReverse ["audio/aac"] = ".aac";
 	mimeReverse ["application/x-abiword"]= ".abw";
-	mimeReverse ["application/octet-stream"]= ".arc" ;
+	mimeReverse ["application/x-freearc"]= ".arc" ;
 	mimeReverse ["video/x-msvideo"]= ".avi" ;
 	mimeReverse ["application/vnd.amazon.ebook"]= ".azw";
 	mimeReverse ["application/octet-stream"]= ".bin";
@@ -109,14 +113,14 @@ MimeAndError::MimeAndError()
 	mimeReverse ["text/html"]= ".htm";
 	mimeReverse ["text/html"]= ".html";
 	mimeReverse ["image/x-icon"]= ".ico";
-	mimeReverse ["text/calendar"]= ".ics";
+	mimeReverse ["image/vnd.microsoft.icon"]= ".ics";
 	mimeReverse ["application/java-archive"]= ".jar";
 	mimeReverse ["image/jpeg"]= ".jpeg";
 	mimeReverse ["image/jpeg"]= ".jpg";
 	mimeReverse ["application/javascript"]= ".js";
 	mimeReverse ["application/json"]= ".json";
 	mimeReverse ["audio/midi"]= ".mid";
-	mimeReverse ["audio/midi"]= ".midi";
+	mimeReverse ["text/javascript"]= ".mjs";
 	mimeReverse ["video/mpeg"]= ".mpeg";
 	mimeReverse ["application/vnd.apple.installer+xml"]= ".mpkg";
 	mimeReverse [ "application/vnd.oasis.opendocument.presentation"]= ".odp";
@@ -127,6 +131,7 @@ MimeAndError::MimeAndError()
 	mimeReverse ["application/ogg"]= ".ogx";
 	mimeReverse ["font/otf"]= ".otf";
 	mimeReverse ["image/png"]= ".png";
+	mimeReverse ["application/x-httpd-php"]= ".php";
 	mimeReverse ["application/pdf"]= ".pdf";
 	mimeReverse ["application/vnd.ms-powerpoint"]= ".ppt";
 	mimeReverse ["application/vnd.openxmlformats-officedocument.presentationml.presentation"]= ".pptx";
@@ -154,25 +159,27 @@ MimeAndError::MimeAndError()
 	mimeReverse ["application/vnd.mozilla.xul+xml"]= ".xul";
 	mimeReverse ["application/zip"] = ".zip";
 	mimeReverse ["application/x-7z-compressed"]= ".7z";
-	mimeReverse["audio/mp3"] = ".mp3";
+	mimeReverse ["audio/mp3"] = ".mp3";
+	mimeReverse ["text/plain"] = ".txt";
+	mimeReverse ["video/mp4"] = ".mp4";
 
 
 
-	errors[201] = "../error/201.html";
-	errors[204] = "../error/204.html";
+	errors[201] = "./error/201.html";
+	errors[204] = "./error/204.html";
 
-	errors[400] = "../error/400.html";
-	errors[403] = "../error/403.html";
-	errors[404] = "../error/404.html";
-	errors[405] = "../error/405.html";
-	errors[408] = "../error/408.html";
-	errors[409] = "../error/409.html";
-	errors[411] = "../error/411.html";
-	errors[413] = "../error/413.html";
-	errors[414] = "../error/414.html";
-	errors[500] = "../error/500.html";
-	errors[501] = "../error/501.html";
-	errors[502] = "../error/502.html";
-	errors[504] = "../error/504.html";
-	errors[505] = "../error/505.html";
+	errors[400] = "./error/400.html";
+	errors[403] = "./error/403.html";
+	errors[404] = "./error/404.html";
+	errors[405] = "./error/405.html";
+	errors[408] = "./error/408.html";
+	errors[409] = "./error/409.html";
+	errors[411] = "./error/411.html";
+	errors[413] = "./error/413.html";
+	errors[414] = "./error/414.html";
+	errors[500] = "./error/500.html";
+	errors[501] = "./error/501.html";
+	errors[502] = "./error/502.html";
+	errors[504] = "./error/504.html";
+	errors[505] = "./error/505.html";
 }

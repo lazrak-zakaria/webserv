@@ -1,9 +1,0 @@
-Status: 302 Found
-Expires: Thu, 19 Nov 1981 08:52:00 GMT
-Cache-Control: no-store, no-cache, must-revalidate
-Pragma: no-cache
-Set-Cookie: email=z%40z; expires=Thu, 31-Oct-2024 15:40:23 GMT; Max-Age=31536000; HttpOnly
-Set-Cookie: password=z; expires=Thu, 31-Oct-2024 15:40:23 GMT; Max-Age=31536000; HttpOnly
-location:profil.php
-Content-type: text/html; charset=UTF-8
-
