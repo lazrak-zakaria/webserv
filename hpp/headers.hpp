@@ -38,6 +38,7 @@
 #include <fstream>
 #include <set>
 #include <list>
+#include <utility>
 
 #define SIZE_READ 8
 

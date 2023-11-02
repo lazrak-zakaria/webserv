@@ -70,6 +70,10 @@ class Client
 			void	requestClear();
 
 			Request();
+			Request (const Request& r);
+			Request& operator = (const Request& r);
+			~Request();
+
 		} _request;
 
 		struct Response
@@ -114,6 +118,10 @@ class Client
 			std::vector<std::string> DelReadDir(std::string path);			int delflag;
 
 
+			Response();
+			Response (const Response& r);
+			Response& operator = (const Response& r);
+			~Response();
 		} _response;
 
 
@@ -188,7 +196,10 @@ class Client
 		bool			closeMe;
 
 		Client();
+		Client( const Client &c );
+		const Client& operator = ( const Client &c );
 		~Client();
+
 		void	clearClient();
 
 		void	test();

@@ -23,7 +23,7 @@ void printError_exit(std::string strError)
 size_t getSise_t(std::string str)
 {
     int count = 0;
-    for (int i = 0; i < str.size(); i++)
+    for (size_t i = 0; i < str.size(); i++)
     {
         if (!std::isdigit(str[i]))
             printError_exit("limitBodySize is not digit !");
@@ -44,7 +44,7 @@ int get_numberError(std::string str)
     int count = 0;
     int result;
 
-    for (int i = 0; i < str.size(); i++, count++)
+    for (size_t i = 0; i < str.size(); i++, count++)
     {
         if (!std::isdigit(str[i]))
             printError_exit("errorPages is not digit !");
@@ -57,9 +57,9 @@ int get_numberError(std::string str)
 
 void checkPorts_andCopy(std::vector<std::string> &_split, std::vector<int> &listen)
 {
-    int j;
+    size_t j;
     int count;
-    for (int i = 0; i < _split.size(); i++)
+    for (size_t i = 0; i < _split.size(); i++)
     {
         std::string str = _split[i];
         for (count = 0, j = 0; j < str.size(); j++, count++)
@@ -74,12 +74,12 @@ void checkPorts_andCopy(std::vector<std::string> &_split, std::vector<int> &list
 }
 
 void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string configName,
-                               std::vector<std::pair<ServerConfig *, std::map<std::string, ServerConfig *>>> &answer)
+                               std::vector<std::pair<ServerConfig *, std::map<std::string, ServerConfig *> > > &answer)
 {
     int i;
     std::string host_port;
     std::vector<std::string> _split;
-    std::ifstream inputFile(configName);
+    std::ifstream inputFile(configName.c_str());
     int flag_location = 0;
     std::string path_location;
     int flag_path = 0;
@@ -90,7 +90,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
     std::vector<std::string> server_name;
     ServerConfig _newServer;
     location _newLocation;
-    std::map<std::string, std::pair<ServerConfig *, std::map<std::string, ServerConfig *>>> _check;
+    std::map<std::string, std::pair<ServerConfig *, std::map<std::string, ServerConfig *> > > _check;
     if (!inputFile)
     {
         std::cerr << "Error: Failed to open the input file." << std::endl;
@@ -120,7 +120,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             flag_server = 0;
             if (tlisten.empty() || _newServer.host.empty())
                 printError_exit("error in config file : case 1 : port || host is empty");
-            for (int j = 0; j < tlisten.size(); j++)
+            for (size_t j = 0; j < tlisten.size(); j++)
             {
                 std::stringstream ss;
                 ss << tlisten[j];
@@ -133,7 +133,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
                     _check[host_port];
                     _check[host_port].first = &*(--allConfigs.end());
                 }
-                for (int l = 0; l < server_name.size(); l++)
+                for (size_t l = 0; l < server_name.size(); l++)
                 {
                     if (_check[host_port].second.count(server_name[l]))
                         printError_exit("error in config file : same server name");
@@ -146,13 +146,13 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             _newServer.clear();
             break;
         case 2: // "\thost: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || flag_location || !_newServer.host.empty())
                 printError_exit("error in config file : case 2");
             _newServer.host = line.substr(_server[i].size(), line.size());
             break;
         case 3: // "\tlisten: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || flag_location || !tlisten.empty())
                 printError_exit("error in config file : case 3");
             _split = split(line.substr(_server[i].size(), line.size()), ' ');
@@ -162,7 +162,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             _split.clear();
             break;
         case 4: // "\terror_page "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || flag_location)
                 printError_exit("error in config file : case 4");
             _split = split(line.substr(_server[i].size(), line.size()), ' ');
@@ -172,14 +172,14 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             _split.clear();
             break;
         case 5: // "\tlimitBodySize: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || flag_location || flag_Size)
                 printError_exit("error in config file : case 5");
             flag_Size = 1;
             _newServer.limitBodySize = getSise_t(line.substr(_server[i].size(), line.size()));
             break;
         case 6: // "\tlocation "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || flag_location || flag_path)
                 printError_exit("error in config file : case 6");
             path_location = line.substr(_server[i].size(), line.size());
@@ -206,13 +206,13 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             _newLocation.free_all();
             break;
         case 9: // "\t\tallowedMethods: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location || !_newLocation.allowedMethods.empty())
                 printError_exit("error in config file : case 9");
             _split = split(line.substr(_server[i].size(), line.size()), ' ');
             if (_split.empty())
                 printError_exit("error in config file : path_location is emty");
-            for (int j = 0; j < _split.size(); j++)
+            for (size_t j = 0; j < _split.size(); j++)
             {
                 if (!_newLocation.allowedMethods.insert(_split[j]).second)
                     printError_exit("error in config file : set<>");
@@ -220,7 +220,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             _split.clear();
             break;
         case 10: // "\t\tredirection: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location || !_newLocation.redirection.empty())
                 printError_exit("error in config file : case 10");
             _newLocation.redirection = line.substr(_server[i].size(), line.size());
@@ -228,7 +228,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
                 printError_exit("error in config file : redirection is emty");
             break;
         case 11: // "\t\troot: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location || !_newLocation.root.empty() || flag_poort_alias)
                 printError_exit("error in config file : case 11");
             flag_poort_alias = 1;
@@ -237,7 +237,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
                 printError_exit("error in config file : root is emty");
             break;
         case 12: //"\t\tautoIndex: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location)
                 printError_exit("error in config file : case 12");
             if (line.substr(_server[i].size(), line.size()) == "yes")
@@ -248,7 +248,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
                 printError_exit("error in config file : case 12 : else (yes, no)");
             break;
         case 13: //"\t\tindex: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location || !_newLocation.index.empty())
                 printError_exit("error in config file : case 13");
             _newLocation.index = split(line.substr(_server[i].size(), line.size()), ' ');
@@ -256,7 +256,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
                 printError_exit("error in config file : index is emty");
             break;
         case 14: // "\t\tcgi: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location)
                 printError_exit("error in config file : case 14");
             _split = split(line.substr(_server[i].size(), line.size()), ' ');
@@ -266,7 +266,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             _split.clear();
             break;
         case 15: // "\t\tcanUpload: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location)
                 printError_exit("error in config file : case 15");
             if (line.substr(_server[i].size(), line.size()) == "yes")
@@ -281,7 +281,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
         case 17: // "#"
             break;
         case 18: // "\t\talias: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || !flag_location || !_newLocation.alias.empty() || flag_poort_alias)
                 printError_exit("error in config file : case 18");
             flag_poort_alias = 1;
@@ -290,7 +290,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
                 printError_exit("error in config file : alias is emty");
             break;
         case 19: // "\tserverName: "
-            line.pop_back();
+            line.erase(--line.end());
             if (!flag_server || flag_location || !server_name.empty())
                 printError_exit("error in config file : case 19");
             _split = split(line.substr(_server[i].size(), line.size()), ' ');
@@ -303,7 +303,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             printError_exit("error in config file : default");
         }
     }
-    std::map<std::string, std::pair<ServerConfig *, std::map<std::string, ServerConfig *>>>::iterator it;
+    std::map<std::string, std::pair<ServerConfig *, std::map<std::string, ServerConfig *> > >::iterator it;
     for (it = _check.begin(); it != _check.end(); it++)
     {
         answer.push_back(it->second);

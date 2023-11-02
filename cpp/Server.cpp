@@ -1,6 +1,27 @@
 #include "../hpp/Server.hpp"
 
 
+const Server& Server::operator =(const Server& s)
+{
+	fdSock = s.fdSock;
+	addrServer = s.addrServer;
+	configData = s.configData;
+	serverNamesConfig = s.serverNamesConfig;
+	serverClients = s.serverClients;
+	mimeError = s.mimeError;
+	invalidSockets = s.invalidSockets;
+	return *this;
+}
+
+Server::Server()
+{
+}
+
+Server::Server(const Server& s)
+{
+	*this = s;
+}
+
 void	Server::setConfigData(ServerConfig	*c)
 {
 	configData = c;
@@ -133,7 +154,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				continue ;
 			}
 
-			if (clientObj._finalAnswer.size() != dataSent)
+			if (clientObj._finalAnswer.size() != (size_t)dataSent)
 			{
 				clientObj._finalAnswer.erase(0, dataSent);
 				clientObj.isCompletelySent = false;
@@ -159,7 +180,7 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &writeSet);
 				FD_CLR(clientFdSock, &readSet);
-				std::cerr << "drop timeout client\n";
+				std::cerr << "drop select timeout client\n";
 				continue ;
 			}
 		}

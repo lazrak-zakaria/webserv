@@ -302,7 +302,7 @@ void	Client::Cgi::executeCgi()
 {
 	outputFileCGi = "./tmp/TTT";
 	me->generateRandomName(outputFileCGi);
-	std::ofstream outfile (outputFileCGi);
+	std::ofstream outfile (outputFileCGi.c_str());
 	if (!outfile.is_open())
 	{
 		perror("cgi output");

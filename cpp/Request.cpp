@@ -6,6 +6,25 @@ Client::Request::Request() :receivedSize(0),
 {
 }
 
+Client::Request::Request(const Request& r)
+{
+	if (this != &r)
+		*this = r;
+}
+
+Client::Request& Client::Request::operator = (const Request& r)
+{
+	(void)r;
+	receivedSize  = contentLength = readAmountSoFar = 0;
+	expectedBytesToRead = TotalDataProcessed =requestTimeStart = 0;
+	return *this;
+}
+
+Client::Request::~Request()
+{
+
+}
+
 void	Client::Request::requestClear()
 {
 		method.clear();
@@ -119,7 +138,7 @@ void	Client::Request::postCgiRequest()
 		std::string name;
 		me->generateRandomName(name);
 		name = std::string("./tmp/").append(name);
-		outputFile.open(name, std::ios::binary);
+		outputFile.open(name.c_str(), std::ios::binary);
 		if (!outputFile.is_open())
 		{
 			me->_codeStatus = 500;
@@ -295,7 +314,6 @@ void	Client::Request::parseRequest()
 			return ;
 		}
 
-		struct stat sb;
 		if (!me->isPathExist(me->_finalPath))
 		{
 			me->setRequestFinished(404);
@@ -707,7 +725,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 	bool		optionalContentType = 0;
 	std::string	contentTypeTmp;
 
-	for (int i = start; i < multipartHeaderCrlf; ++i)
+	for (size_t i = start; i < multipartHeaderCrlf; ++i)
 	{
 		switch (cursor)
 		{
@@ -859,7 +877,7 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 		uploadFileName = tmpFileName + extension;
 		std::string tmpPath = me->_finalPath + tmpFileName + extension;
 
-		outputFile.open(tmpPath, std::ios::binary);
+		outputFile.open(tmpPath.c_str(), std::ios::binary);
 		if (!outputFile.is_open())
 		{
 			me->_codeStatus = 500;

@@ -29,7 +29,7 @@ void print_server(std::list<ServerConfig> &servers) {
 			std::cout << "alias = (" << it2->second.alias << ")\n";
 			std::cout << "autoIndex = (" << it2->second.autoIndex << ")\n";
 			std::cout << "allowedMethods = ";
-			for (int c = 0; c < it2->second.index.size(); c++)
+			for (size_t c = 0; c < it2->second.index.size(); c++)
 				std::cout << "(" << it2->second.index[c] << ") ";
 			std::cout << "\n";
 			for (std::map<std::string, std::string>::iterator it4 = it2->second.cgi.begin(); it4 != it2->second.cgi.end(); it4++) {

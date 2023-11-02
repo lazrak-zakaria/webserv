@@ -17,6 +17,33 @@ Client::Client() : _configData(NULL), _mimeError(NULL) ,
 	_timeLastAction = time(NULL);
 }
 
+const Client& Client::operator = ( const Client &c )
+{
+	_configData = NULL;
+	_mimeError = (NULL); 
+	_codeStatus = (0);
+	isCompletelySent = (true);
+
+	closeMe = false;
+	_request.me = this;
+	_response.me = this;
+	_cgi.me = this;
+	memset(&_flags, 0, sizeof(_flags));
+	_flags.expectSizeRead = true;
+	_FdDirectory = NULL;
+	_ReadDirectory = NULL;
+	_allConfigsData = 0;
+	_timeLastAction = time(NULL);
+	(void)c;
+
+	return *this;
+}
+
+Client::Client( const Client &c )
+{
+	if (this != &c)
+		*this = c;
+}
 
 Client::~Client()
 {
@@ -196,7 +223,7 @@ void	Client::generateRandomName(std::string &name) const
 {
 	struct timeval	tm;
 	srand(time(NULL));
-	for (u_int8_t i = 0; i < 15; ++i)
+	for (u_int8_t i = 0; i < 20; ++i)
 	{
 		gettimeofday(&tm, NULL);
 		size_t k = rand() + tm.tv_usec;
@@ -204,8 +231,10 @@ void	Client::generateRandomName(std::string &name) const
 		{
 			case 0:
 				name.push_back((rand() + tm.tv_usec) % 26 + 'a');
+				break;
 			case 1:
 				name.push_back((rand() + tm.tv_usec ) % 10 + '0');
+				break;
 			case 2:
 				name.push_back((rand() + tm.tv_sec) % 26 + 'A');
 		}

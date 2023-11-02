@@ -1,5 +1,29 @@
 #include "../hpp/Client.hpp"
 
+
+Client::Response::Response()
+{
+
+}
+
+Client::Response::Response (const Response& r)
+{
+	if (this != &r)
+		*this = r;
+}
+Client::Response& Client::Response::operator = (const Response& r)
+{
+	responseHeader = r.responseHeader;
+	chunkedSize = r.chunkedSize;
+	location301 = r.location301;
+	return *this;
+}
+
+Client::Response::~Response()
+{
+
+}
+
 void	Client::Response::responseClear()
 {
 	responseHeader.clear();
@@ -8,6 +32,7 @@ void	Client::Response::responseClear()
 	location301.clear();
 
 }
+
 
 std::string		Client::Response::convertToHex(size_t decimalNum)
 {
@@ -187,7 +212,7 @@ std::string Client::Response::FindFileToOpen()
         ret_st = stat(this->me->_configData->errorPages[this->me->_codeStatus].c_str(), &st);
         if (ret_st == 0)
         {
-            this->inputFile.open(this->me->_configData->errorPages[this->me->_codeStatus] , std::ios::binary);
+            this->inputFile.open(this->me->_configData->errorPages[this->me->_codeStatus].c_str() , std::ios::binary);
             if (this->inputFile.is_open())
             {
                 return this->me->_configData->errorPages[this->me->_codeStatus];
@@ -205,7 +230,7 @@ std::string Client::Response::FindFileToOpen()
         ret_st = stat(this->me->_mimeError->errors[this->me->_codeStatus].c_str(), &st);
         if (ret_st == 0)
         {
-            this->inputFile.open(this->me->_mimeError->errors[this->me->_codeStatus] , std::ios::binary);
+            this->inputFile.open(this->me->_mimeError->errors[this->me->_codeStatus].c_str() , std::ios::binary);
             if (this->inputFile.is_open())
             {
                 return this->me->_mimeError->errors[this->me->_codeStatus];
@@ -223,7 +248,7 @@ std::string Client::Response::FindFileToOpen()
         ret_st = stat(this->me->_mimeError->errors[code].c_str(), &st);
         if (ret_st == 0)
         {
-            this->inputFile.open(this->me->_mimeError->errors[code] , std::ios::binary);
+            this->inputFile.open(this->me->_mimeError->errors[code].c_str() , std::ios::binary);
             if (this->inputFile.is_open())
             {
 				this->me->_codeStatus = code;
@@ -259,8 +284,9 @@ void Client::Response::ErrorResponse()
 		if (me->_codeStatus == 201)
 			respo += "location: " +  this->me->_request.path + me->_request.uploadFileName + "\r\n";
         respo += "Transfer-encoding: chunked\r\n";
+		
         respo += std::string("Date: ") + ctime(&date);
-		respo.pop_back();
+		respo.erase(--respo.end());
 		respo += "\r\n";
 		respo += connectionHeader();
         this->me->_finalAnswer = respo + "\r\n";
@@ -303,12 +329,12 @@ void Client::Response::GenerateLastResponseHeader(int status, std::string filena
 			respo += "transfer-encoding: chunked\r\n";
 			time_t date = time(NULL);
 			respo += std::string("Date: ") + ctime(&date);
-			respo.pop_back();
+			respo.erase(--respo.end());
 			respo += "\r\n";
 			if (!filename.empty() && st)
 			{
 				respo += std::string("Last-Modified: ") + ctime(&st->st_mtime);
-				respo.pop_back();
+				respo.erase(--respo.end());
 				respo += "\r\n";
 			}
 			respo += connectionHeader();
@@ -394,7 +420,7 @@ void Client::Response::GetDirectory()
 					}
 					else
 					{
-						this->inputFile.open(this->me->_finalPath + *Iit , std::ios::binary);
+						this->inputFile.open((this->me->_finalPath + *Iit).c_str(), std::ios::binary);
 						if (!this->inputFile.is_open())
 						{
 							perror("Error open Fail: ");
@@ -422,7 +448,7 @@ void Client::Response::GetDirectory()
 			return ;
 		}
 		std::vector<std::string> content;
-		int i = 4;
+
 		if  (this->me->_FdDirectory)
 			closedir(this->me->_FdDirectory);
     	this->me->_FdDirectory = opendir(this->me->_finalPath.c_str());
@@ -508,7 +534,7 @@ void Client::Response::GetFile()
 			this->me->_codeStatus = 403;
 			return ;
 		}
-		this->inputFile.open(this->me->_finalPath, std::ios::binary);
+		this->inputFile.open(this->me->_finalPath.c_str(), std::ios::binary);
 		if (!this->inputFile.is_open())
 		{
 			perror("Error Open Fail: ");

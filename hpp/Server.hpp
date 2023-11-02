@@ -27,7 +27,9 @@ class Server
 		void	setMimeError(MimeAndError	*m);
 		int		getFdSock();
 
-
+		const Server& operator =(const Server& s);
+		Server();
+		Server(const Server& s);
 		#ifndef _KQUEUE_
 		void	checkClientsTimeout(fd_set &readSet, fd_set &writeSet);
 		void	acceptClient(fd_set &readSet);
