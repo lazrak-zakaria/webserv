@@ -42,6 +42,7 @@ int		Server::getFdSock()
 	return fdSock;
 }
 
+// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
 void	Server::socketBindListen()
 {
 	fdSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -53,8 +54,7 @@ void	Server::socketBindListen()
 	fcntl(fdSock, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
-	// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
-    addrServer.sin_addr.s_addr = INADDR_ANY;
+    addrServer.sin_addr.s_addr = inet_addr(configData->host.c_str());
     addrServer.sin_port = htons(configData->port);
 	int optval = 1;
 	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
@@ -64,7 +64,7 @@ void	Server::socketBindListen()
         perror("bind");
         exit(1);
     }
-    listen(fdSock, 1000); // change the 10 later;
+    listen(fdSock, SOMAXCONN);
 }
 
 int	Server::maxSockClient() const
