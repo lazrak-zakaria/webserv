@@ -50,7 +50,7 @@ int main(int ac, char **argv)
 	
 	std::list<ServerConfig> allConfigs;
 	std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > serverConfigs;
-	ServerConfig::parseConfig(allConfigs, argv[1] ? argv[1] : "./default.config", serverConfigs);
+	ServerConfig::parseConfig(allConfigs, argv[1] ? argv[1] : "./configFiles/default.config", serverConfigs);
 
 	// print_server(allConfigs);
 	WebServer::run(serverConfigs);
@@ -69,5 +69,4 @@ int main(int ac, char **argv)
 	// 		}
 	// 	}
 	// }
-	
 }
