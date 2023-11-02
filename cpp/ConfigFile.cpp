@@ -92,6 +92,8 @@ void    ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::stri
     //                         0      1      2              3             4                  5                    6          7         8        9                           10                 11              12                13            14            15          16     17      18                19        
     std::string _server[] = {"[\n", "]\n", "\thost: ", "\tlisten: ", "\terror_page ", "\tlimitBodySize: ", "\tlocation: ", "\t{\n", "\t}\n", "\t\tallowedMethods: ", "\t\tredirection: ", "\t\troot: ", "\t\tautoIndex: ", "\t\tindex: ", "\t\tcgi: ", "\t\tcanUpload: ", "\n", "#", "\t\talias: ", "\tserverName: "};
     std::string line;
+    if (inputFile.peek() == std::ifstream::traits_type::eof())
+        printError_exit("error in config file : The file is empty.");
     while(std::getline(inputFile, line)) {
         line += '\n';
         for (i = 0; i < 20; i++) {
@@ -185,6 +187,8 @@ void    ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::stri
                 flag_location = 0;
                 flag_path = 0;
                 flag_poort_alias = 0;
+                if (_newLocation.root.empty() && _newLocation.alias.empty())
+                     printError_exit("error in config file : root and alias");
                 if (_newLocation.allowedMethods.empty())
                     _newLocation.allowedMethods.insert("GET");
                 _newServer.allLocations[path_location] = _newLocation;
