@@ -125,7 +125,6 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				if(clientObj.isResponseFinished())
 					clientObj._finalAnswer.append("\r\n");
 			}
-			
 			int dataSent = send(clientFdSock, clientObj._finalAnswer.c_str(), clientObj._finalAnswer.size(), MSG_NOSIGNAL);
 
 			if (dataSent == -1)
