@@ -303,12 +303,12 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             printError_exit("error in config file : default");
         }
     }
-    if (flag_server == 1 || answer.empty())
-        printError_exit("error in config file : file is empty or [");
     std::map<std::string, std::pair<ServerConfig *, std::map<std::string, ServerConfig *>>>::iterator it;
     for (it = _check.begin(); it != _check.end(); it++)
     {
         answer.push_back(it->second);
     }
+    if (flag_server == 1 || answer.empty())
+        printError_exit("error in config file : file is empty or [");
     inputFile.close();
 }
