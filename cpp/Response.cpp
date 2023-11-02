@@ -424,7 +424,7 @@ void Client::Response::GetDirectory()
 						if (!this->inputFile.is_open())
 						{
 							perror("Error open Fail: ");
-							this->me->_codeStatus = 404;
+							this->me->_codeStatus = 403;
 							return;
 						}
 						this->GenerateLastResponseHeader(200, *Iit, &st);
