@@ -20,8 +20,6 @@ void WebServer::initializeSockets(std::vector<std::pair<ServerConfig*, std::map<
 }
 
 
-#ifndef _KQUEUE_
-
 void	WebServer::run(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >&serversConfig)
 {
 	MimeAndError 						mime;
@@ -82,72 +80,3 @@ void	WebServer::run(std::vector<std::pair<ServerConfig*, std::map<std::string, S
 		}
 	}
 }
-
-#else
-void	WebServer::run(std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > >&serversConfig)
-{
-	MimeAndError 						mime;
-	std::map<int, Server*> 				ServersMap;
-	std::map<int, Server*>::iterator	itServer;
-
-	struct kevent	evSet;
-	int				kq;
-
-	std::vector<Server> servers(serversConfig.size());
-	initializeSockets(serversConfig, servers, ServersMap, &mime);
-
-	kq = kqueue();
-
-	for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
-    {
-		const int	&fdServer = itServer->first;
-
-		EV_SET(&evSet, fdServer, EVFILT_READ, EV_ADD, 0, 0, NULL);
-    	kevent(kq, &evSet, 1, NULL, 0, NULL);
-	}
-	struct timeval timeout;
-	timeout.tv_sec = 120;
-	timeout.tv_usec =0;
-	while (true)
-	{
-		itServer = --(ServersMap.end());
-		int	maxSocket = itServer->first;
-
-		for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
-			maxSocket = std::max(maxSocket, itServer->second->maxSockClient());
-
-
-		struct kevent *eventList = new struct kevent[maxSocket];
-
-
-		int numEvents = kevent(kq, NULL, 0, eventList, maxSocket, NULL);
-		if (numEvents == -1)
-		{
-			perror("Kqueue");
-			exit(1);
-		}
-
-		for (int i = 0; i < numEvents; ++i)
-		{
-			if (ServersMap.count(eventList[i].ident))
-			{
-				ServersMap[eventList[i].ident]->acceptClient(kq);
-			}
-			else if (eventList[i].filter == EVFILT_READ || eventList[i].filter == EVFILT_WRITE
-					|| (eventList[i].filter & EV_EOF))
-			{
-                for (itServer = ServersMap.begin(); itServer != ServersMap.end(); ++itServer)
-				{
-					if (itServer->second->isClientExist(eventList[i].ident))
-					{
-						itServer->second->processReadySockets(kq, eventList[i]);
-						break;
-					}
-				}
-            }
-		}
-
-		delete []eventList;
-	}
-}
-#endif
