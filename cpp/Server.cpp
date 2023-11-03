@@ -64,7 +64,11 @@ void	Server::socketBindListen()
         perror("bind");
         exit(1);
     }
-    listen(fdSock, SOMAXCONN);
+    if (listen(fdSock, SOMAXCONN))
+	{
+		perror("listen");
+        exit(1);
+	}
 }
 
 int	Server::maxSockClient() const
