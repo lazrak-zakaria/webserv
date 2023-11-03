@@ -14,36 +14,3 @@ class	WebServer
 
 #endif
 
-
-/*
-
-achraf 
-	vector of {deafultConf, std::map<string, conf*}
-
-
-	vector of server
-
-*/
-
-/*
-
-
-[
-	listen 
-	host
-	serverName
-
-	errorPages 404 path1
-	errorPages 403 path1
-
-	location
-	{
-
-	}
-]
-
-[
-	
-]
-
-*/

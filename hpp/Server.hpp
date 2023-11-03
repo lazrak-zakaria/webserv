@@ -4,7 +4,6 @@
 #include "ServerConfig.hpp"
 #include "Client.hpp"
 #include "MimeAndError.hpp"
-// #define _KQUEUE_
 
 class Server
 {
@@ -30,22 +29,11 @@ class Server
 		const Server& operator =(const Server& s);
 		Server();
 		Server(const Server& s);
-		#ifndef _KQUEUE_
+
 		void	checkClientsTimeout(fd_set &readSet, fd_set &writeSet);
 		void	acceptClient(fd_set &readSet);
 		void	processReadySockets(fd_set &tempReadSet, 
 						fd_set &tempWriteSet,fd_set &readSet, fd_set &writeSet);
-		#else
-		void	acceptClient(int kq);
-		bool	isClientExist(int fd);
-		void	changeToWrite(int kq, struct kevent &evList);
-		void	changeToRead(int kq, struct kevent &evList);
-		void	deleteWrite(int kq, struct kevent &evList);
-		void	deleteRead(int kq, struct kevent &evList);
-		void	processReadySockets(int kq, struct kevent& evList);
-		#endif
-
-
 };
 
 #endif

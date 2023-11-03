@@ -50,23 +50,9 @@ int main(int ac, char **argv)
 	
 	std::list<ServerConfig> allConfigs;
 	std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > serverConfigs;
+
 	ServerConfig::parseConfig(allConfigs, argv[1] ? argv[1] : "./configFiles/default.config", serverConfigs);
-
-	// print_server(allConfigs);
 	WebServer::run(serverConfigs);
-	exit(0);
 
-	// for (auto it = serverConfigs.begin(); it != serverConfigs.end(); ++it)
-	// {
-	// 	if (it->second.empty())
-	// 		printServer(it->first);
-	// 	else
-	// 	{
-	// 		for (auto itt = it->second.begin(); itt != it->second.end(); ++itt)
-	// 		{
-	// 			std::cerr << "server name: " << itt->first << "\n";
-	// 			printServer(itt->second);
-	// 		}
-	// 	}
-	// }
+	exit(0);
 }

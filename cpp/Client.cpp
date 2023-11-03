@@ -70,8 +70,8 @@ void	Client::clearClient()
 		_response.responseClear();
 
 
-		// for (size_t i = 0 ; i < filesToDelete.size(); ++i)
-		// 	unlink(filesToDelete[i].c_str());
+		for (size_t i = 0 ; i < filesToDelete.size(); ++i)
+			unlink(filesToDelete[i].c_str());
 		filesToDelete.clear();
 		_cgi.clearCgi();
 }
