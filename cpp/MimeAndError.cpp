@@ -84,6 +84,7 @@ MimeAndError::MimeAndError()
 	statusCode[404] = "HTTP/1.1 404 Not Found";
 	statusCode[405] = "HTTP/1.1 405 Method Not Allowed";
 	statusCode[408] = "HTTP/1.1 408 Request Timeout";
+	statusCode[409] = "HTTP/1.1 409 Conflict";
 	statusCode[411] = "HTTP/1.1 411 Length Required";
 	statusCode[413] = "HTTP/1.1 413 Payload Too Large";
 	statusCode[414] = "HTTP/1.1 414 URI Too Long";
