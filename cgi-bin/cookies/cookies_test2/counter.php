@@ -1,7 +1,5 @@
 <?php
-$timeout = 2;
-// ini_set( "session.gc_maxlifetime", $timeout );
-// ini_set( "session.cookie_lifetime", $timeout );
+$timeout = 3600;
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === "POST")

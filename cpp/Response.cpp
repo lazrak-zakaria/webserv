@@ -559,7 +559,7 @@ std::vector<std::string> Client::Response::DelReadDir(std::string path)
 	if (!Fd_dir)
 	{
 		perror("Error opendir fail: ");
-		this->me->_codeStatus = 404;
+		this->me->_codeStatus = 403;
 		return dir;
 	}
 	struct dirent *ReadDir;
@@ -595,50 +595,44 @@ void Client::Response::DeleteMethodResponse()
 	}
 	else if (S_ISREG(this->me->_st.st_mode))
 	{
-		if (this->me->_st.st_mode & S_IWUSR)
+		if (unlink(this->me->_finalPath.c_str()) == 0)
 		{
-			if (unlink(this->me->_finalPath.c_str()) == 0)
-			{
-				this->me->_codeStatus = 204;
-				this->GenerateLastResponseHeader(204, "", NULL);
-				return;
-			}
-			else
-			{
-				perror("Error Unlink Fail: ");
-				this->me->_codeStatus =  500;
-				return ;
-			}
+			this->me->_codeStatus = 204;
+			this->GenerateLastResponseHeader(204, "", NULL);
+			return;
 		}
 		else
-			this->me->_codeStatus = 403;
+		{
+			perror("Error Unlink Fail: ");
+			this->me->_codeStatus =  403;
+			return ;
+		}
 	}
 	else if (S_ISDIR(this->me->_st.st_mode))
 	{
 		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
 			this->me->_codeStatus = 409;
-		else if(this->me->_st.st_mode & S_IWUSR)
+		if (this->deletedir(this->me->_finalPath) == 0)
 		{
-			if (this->deletedir(this->me->_finalPath) == 0)
+			if (rmdir(this->me->_finalPath.c_str()) == -1)
 			{
-				if (rmdir(this->me->_finalPath.c_str()) == -1)
-				{
-					std::cerr << this->me->_finalPath.c_str() << std::endl;
-					perror("Error Rmdir Fail: ");
-					this->me->_codeStatus = 500;
-					return ;
-				}
-				else
-				{
-					me->_codeStatus = 204;
-					GenerateLastResponseHeader(204, "", NULL);
-					me->_flags.isResponseFinished = true;
-					this->me->_finalAnswer.append("0\r\n");
-				}
+				std::cerr << this->me->_finalPath.c_str() << std::endl;
+				perror("Error Rmdir Fail: ");
+				this->me->_codeStatus = 403;
+				return ;
+			}
+			else
+			{
+				me->_codeStatus = 204;
+				GenerateLastResponseHeader(204, "", NULL);
+				me->_flags.isResponseFinished = true;
+				this->me->_finalAnswer.append("0\r\n");
 			}
 		}
 		else
+		{
 			this->me->_codeStatus = 403;
+		}
 	}
 }
 
@@ -667,38 +661,19 @@ int Client::Response::deletedir(std::string path)
 		}
 		else if (S_ISREG(st.st_mode))
 		{
-			if (st.st_mode & S_IWUSR)
+			if (unlink(it->c_str()) == -1)
 			{
-				if (unlink(it->c_str()) == -1)
-				{
-					perror("Error Unlink Fail: ");
-					this->me->_codeStatus = 500;
-					this->delflag = 1;
-					return 1;
-				}
-			}
-			else
-			{
-				perror("Error Permission: ");
+				perror("Error Unlink Fail: ");
 				this->delflag = 1;
 				return 1;
 			}
 		}
 		else if (S_ISDIR(st.st_mode))
 		{
-			if (st.st_mode & S_IWUSR)
+			this->deletedir(*it);
+			if (rmdir(it->c_str()) != 0)
 			{
-				this->deletedir(*it);
-				if (rmdir(it->c_str()) != 0)
-				{
-					perror("Error rmdir Fail: ");
-					this->me->_codeStatus = 500;
-					return 1;
-				}
-			}
-			else
-			{
-				perror("Error Permission: ");
+				perror("Error rmdir Fail: ");
 				this->delflag = 1;
 				return 1;
 			}

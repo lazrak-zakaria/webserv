@@ -167,8 +167,6 @@ MimeAndError::MimeAndError()
 
 
 	errors[201] = "./configFiles/error/201.html";
-	errors[204] = "./configFiles/error/204.html";
-
 	errors[400] = "./configFiles/error/400.html";
 	errors[403] = "./configFiles/error/403.html";
 	errors[404] = "./configFiles/error/404.html";
