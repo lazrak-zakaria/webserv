@@ -54,7 +54,12 @@ void	Server::socketBindListen()
 	fcntl(fdSock, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
-    addrServer.sin_addr.s_addr = inet_addr(configData->host.c_str());
+    // addrServer.sin_addr.s_addr = inet_addr(configData->host.c_str());
+	if (!inet_aton(configData->host.c_str(), &addrServer.sin_addr))
+	{
+        std::cerr << "the address is not valid\n";
+        exit(1);
+	}
     addrServer.sin_port = htons(configData->port);
 	int optval = 1;
 	setsockopt(fdSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval));
