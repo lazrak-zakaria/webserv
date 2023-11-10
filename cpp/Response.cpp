@@ -599,6 +599,8 @@ void Client::Response::DeleteMethodResponse()
 		{
 			this->me->_codeStatus = 204;
 			this->GenerateLastResponseHeader(204, "", NULL);
+			me->_flags.isResponseFinished = true;
+			this->me->_finalAnswer.append("0\r\n");
 			return;
 		}
 		else
