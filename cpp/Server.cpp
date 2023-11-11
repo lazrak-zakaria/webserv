@@ -42,7 +42,7 @@ int		Server::getFdSock()
 	return fdSock;
 }
 
-// https://stackoverflow.com/questions/16508685/understanding-inaddr-any-for-socket-programming
+
 void	Server::socketBindListen()
 {
 	fdSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -54,7 +54,6 @@ void	Server::socketBindListen()
 	fcntl(fdSock, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
-    // addrServer.sin_addr.s_addr = inet_addr(configData->host.c_str());
 	if (!inet_aton(configData->host.c_str(), &addrServer.sin_addr))
 	{
         std::cerr << "the address is not valid\n";
@@ -102,7 +101,6 @@ void	Server::acceptClient(fd_set &readSet)
         return ;
 	}
 
-	std::cerr << "accept new client ------------------------------------------>:" << fdSockTmp << "\n";
 	FD_SET(fdSockTmp, &readSet);
 	serverClients[fdSockTmp];
 	serverClients[fdSockTmp].setAllConfigData(serverNamesConfig);
@@ -129,7 +127,6 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			{
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &readSet);
-				std::cerr << "drop READ client\n";
 				continue ;
 			}
 			
@@ -159,7 +156,6 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 			{
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &writeSet);
-				std::cerr << "drop WRITE client\n";
 				continue ;
 			}
 
@@ -189,7 +185,6 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 				invalidSockets.push_back(clientFdSock);
 				FD_CLR(clientFdSock, &writeSet);
 				FD_CLR(clientFdSock, &readSet);
-				std::cerr << "drop select timeout client\n";
 				continue ;
 			}
 		}
@@ -197,12 +192,12 @@ void	Server::processReadySockets(fd_set &tempReadSet,
 
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
-		std::cerr << "close "<< *it << "\n";
 		close(*it);
 		serverClients.erase(*it);
 	}
 	invalidSockets.clear();
 }
+
 
 void	Server::checkClientsTimeout(fd_set &readSet, fd_set &writeSet)
 {
@@ -217,13 +212,11 @@ void	Server::checkClientsTimeout(fd_set &readSet, fd_set &writeSet)
 			invalidSockets.push_back(clientFdSock);
 			FD_CLR(clientFdSock, &writeSet);
 			FD_CLR(clientFdSock, &readSet);
-			std::cerr << "drop timeout client\n";
 			continue ;
 		}
 	}
 	for (std::vector<int>::iterator it = invalidSockets.begin(); it != invalidSockets.end(); ++it)
 	{
-		std::cerr << "close "<< *it << "\n";
 		close(*it);
 		serverClients.erase(*it);
 	}

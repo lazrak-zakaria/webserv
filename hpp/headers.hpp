@@ -40,7 +40,7 @@
 #include <list>
 #include <utility>
 
-#define SIZE_READ 8
 
 #define DBG std::cerr<<"+++DEBUG+++\n"
+
 #endif

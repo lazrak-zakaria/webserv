@@ -33,7 +33,7 @@ class ServerConfig
 		ServerConfig();
 		void	clear();
 		static void parseConfig(std::list<ServerConfig> &allConfigs, std::string configName, 
-		std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > &answer);
+							std::vector<std::pair<ServerConfig*, std::map<std::string, ServerConfig*> > > &answer);
 };
 
 #endif

@@ -408,7 +408,7 @@ void	Client::Cgi::executeCgi()
 			if (me->_response.inputFile.is_open() == 0)
 			{
 				me->_codeStatus = 500;
-				std::cerr << "open failed to read cgi output\n";
+				std::cerr << "open failed to open cgi output\n";
 			}
 			processPid = -1;
 		}

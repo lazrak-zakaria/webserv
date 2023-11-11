@@ -16,7 +16,7 @@ std::vector<std::string> split(std::string str, char limiter)
 
 void printError_exit(std::string strError)
 {
-    std::cout << strError << std::endl;
+    std::cerr << strError << std::endl;
     exit(1);
 }
 

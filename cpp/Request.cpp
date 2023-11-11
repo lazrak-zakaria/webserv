@@ -913,7 +913,7 @@ void	Client::Request::parseChunkedData()
 			{
 				if (!outputFileName.empty())
 					me->filesToDelete.push_back(outputFileName);
-				std::cerr << "413 Payload Too Large\n";
+
 				me->setRequestFinished(413);
 				return ;
 			}
@@ -965,7 +965,6 @@ void	Client::Request::parseChunkedData()
 			}
 			else
 			{
-				std::cerr << "Error body should end with crlf\n";
 				if (!outputFileName.empty())
 					me->filesToDelete.push_back(outputFileName);
 				me->setRequestFinished(400);

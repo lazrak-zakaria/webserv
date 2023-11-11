@@ -618,7 +618,6 @@ void Client::Response::DeleteMethodResponse()
 		{
 			if (rmdir(this->me->_finalPath.c_str()) == -1)
 			{
-				std::cerr << this->me->_finalPath.c_str() << std::endl;
 				perror("Error Rmdir Fail: ");
 				this->me->_codeStatus = 403;
 				return ;

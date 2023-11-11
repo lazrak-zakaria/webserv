@@ -189,6 +189,8 @@ class Client
 		void		setRequestFinished(u_int16_t codeNum);
 		std::string &trim(std::string& str);
 
+
+
 	public:
 		std::string		_finalAnswer;
 		bool			isCompletelySent;
