@@ -210,7 +210,7 @@ void	Client::Request::postUploadRequest()
 		std::string extension = me->_mimeError->mimeReverse.count(contentType) ? 
 										me->_mimeError->mimeReverse[contentType] : "";
 		me->_finalPath.append(name.append(extension));
-		outputFileName = name;
+		outputFileName = me->_finalPath;
 		outputFile.open(me->_finalPath.c_str(), std::ios::binary);
 		if (!outputFile.is_open())
 		{
@@ -540,7 +540,8 @@ void	Client::Request::parseHeader(size_t crlf)
 		}
 	}
 
-	
+	if (hasContentLength && hasTransferEncoding)
+			goto BAD_REQUEST;
 
 	if (hasContentLength)
 	{
@@ -870,12 +871,12 @@ bool	Client::Request::parseMultipartHeader(size_t start, size_t multipartHeaderC
 	{
 		std::string	tmpFileName;
 		me->generateRandomName(tmpFileName);
-		outputFileName = tmpFileName;
 		std::string extension = me->_mimeError->mimeReverse.count(contentTypeTmp) ? 
 												me->_mimeError->mimeReverse[contentTypeTmp] : "";
 
 		uploadFileName = tmpFileName + extension;
 		std::string tmpPath = me->_finalPath + tmpFileName + extension;
+		outputFileName = tmpPath;
 
 		outputFile.open(tmpPath.c_str(), std::ios::binary);
 		if (!outputFile.is_open())
@@ -910,6 +911,8 @@ void	Client::Request::parseChunkedData()
 			TotalDataProcessed += expectedBytesToRead;
 			if (TotalDataProcessed > me->_configData->limitBodySize)
 			{
+				if (!outputFileName.empty())
+					me->filesToDelete.push_back(outputFileName);
 				std::cerr << "413 Payload Too Large\n";
 				me->setRequestFinished(413);
 				return ;
@@ -963,6 +966,8 @@ void	Client::Request::parseChunkedData()
 			else
 			{
 				std::cerr << "Error body should end with crlf\n";
+				if (!outputFileName.empty())
+					me->filesToDelete.push_back(outputFileName);
 				me->setRequestFinished(400);
 				return ;
 			}
