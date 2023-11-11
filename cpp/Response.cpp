@@ -620,9 +620,9 @@ void Client::Response::DeleteMethodResponse()
 	{
 		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
 			this->me->_codeStatus = 409;
-		if (this->deletedir(this->me->_finalPath) == 0)
+		if (this->deletedir(this->me->_finalPath) == 0 && this->me->_codeStatus != 403)
 		{
-			if (rmdir(this->me->_finalPath.c_str()) == -1)
+			if (rmdir(this->me->_finalPath.c_str()))
 			{
 				perror("Error Rmdir Fail: ");
 				this->me->_codeStatus = 403;
