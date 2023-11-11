@@ -540,7 +540,8 @@ void	Client::Request::parseHeader(size_t crlf)
 		}
 	}
 
-	
+	if (hasContentLength && hasTransferEncoding)
+			goto BAD_REQUEST;
 
 	if (hasContentLength)
 	{
