@@ -449,13 +449,19 @@ void Client::Response::GetDirectory()
 		}
 		std::vector<std::string> content;
 
+		Ret_St = stat(this->me->_finalPath.c_str(), &st);
+		if (Ret_St < 0)
+		{
+			this->me->_codeStatus = 404;
+			return;
+		}
 		if  (this->me->_FdDirectory)
 			closedir(this->me->_FdDirectory);
     	this->me->_FdDirectory = opendir(this->me->_finalPath.c_str());
     	if (!this->me->_FdDirectory)
     	{
         	perror("Error opendir fail: ");
-        	this->me->_codeStatus = 404 ;
+        	this->me->_codeStatus = 403 ;
         	return ;
     	}
 		this->me->_ReadDirectory = readdir(this->me->_FdDirectory);
