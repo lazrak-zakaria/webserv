@@ -119,7 +119,7 @@ void ServerConfig::parseConfig(std::list<ServerConfig> &allConfigs, std::string 
             break;
 
             case 1: // "]\n"
-                if (!flag_server)
+                if (!flag_server || flag_location)
                     printError_exit("Error in config file: Unexpected closing bracket without an opening bracket");
                 flag_server = 0;
                 if (tlisten.empty())
