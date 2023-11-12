@@ -619,7 +619,10 @@ void Client::Response::DeleteMethodResponse()
 	else if (S_ISDIR(this->me->_st.st_mode))
 	{
 		if (this->me->_finalPath[this->me->_finalPath.size() - 1] != '/')
+		{
 			this->me->_codeStatus = 409;
+			return ;
+		}
 		if (this->deletedir(this->me->_finalPath) == 0 && this->me->_codeStatus != 403)
 		{
 			if (rmdir(this->me->_finalPath.c_str()))
