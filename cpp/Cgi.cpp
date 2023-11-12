@@ -285,7 +285,7 @@ void Client::Cgi::checkCgiTimeout()
 		struct timeval tmv;
 		gettimeofday(&tmv, NULL);
 		size_t timeNow =  tmv.tv_sec;
-		if (timeNow - timeStart > 7)
+		if (timeNow - timeStart > 30)
 		{
 			kill(processPid, SIGKILL);
 			waitpid(processPid, 0, WNOHANG);
