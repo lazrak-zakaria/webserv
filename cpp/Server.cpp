@@ -51,7 +51,6 @@ void	Server::socketBindListen()
         perror("socket");
         exit(1);
     }
-	fcntl(fdSock, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     bzero(&addrServer, sizeof(addrServer));
     addrServer.sin_family = AF_INET;
 	if (!inet_aton(configData->host.c_str(), &addrServer.sin_addr))
