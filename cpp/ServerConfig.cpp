@@ -12,10 +12,10 @@ void    location::free_all()
 	redirection = "";
 	root = "";
 	alias = "";
-	autoIndex = 0;
+	autoIndex = true;
 	index.clear();
 	cgi.clear();
-	canUpload = 0;
+	canUpload = true;
 }
 
 ServerConfig::ServerConfig()

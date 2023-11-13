@@ -47,8 +47,6 @@ Client::Client( const Client &c )
 
 Client::~Client()
 {
-	if (this->_FdDirectory)
-		closedir(this->_FdDirectory);
 	clearClient();
 }
 
