@@ -545,28 +545,25 @@ void	Client::Request::parseHeader(size_t crlf)
 
 	if (hasContentLength)
 	{
-		if (requestHeadersMap["content-length"].size() == 1)
+		size_t k = 0;
+		std::string	&contentLengthTmp = *(--requestHeadersMap["content-length"].end());
+		while (k < contentLengthTmp.size() && contentLengthTmp[k] == ' ')
+			++k;
+		while (k < contentLengthTmp.size() && contentLengthTmp[k] == '0')
+			++k;
+		std::string	tmp;
+		while (k < contentLengthTmp.size() && isdigit(contentLengthTmp[k]))
+			tmp.push_back(contentLengthTmp[k++]);
+		while (k < contentLengthTmp.size() && contentLengthTmp[k] == ' ')
+			++k;
+		if (k != contentLengthTmp.size())
+			goto BAD_REQUEST;
+		if (tmp.size() > 19)
 		{
-			size_t k = 0;
-			std::string	&contentLengthTmp = *(--requestHeadersMap["content-length"].end());
-			while (k < contentLengthTmp.size() && contentLengthTmp[k] == ' ')
-				++k;
-			while (k < contentLengthTmp.size() && contentLengthTmp[k] == '0')
-				++k;
-			std::string	tmp;
-			while (k < contentLengthTmp.size() && isdigit(contentLengthTmp[k]))
-				tmp.push_back(contentLengthTmp[k++]);
-			while (k < contentLengthTmp.size() && contentLengthTmp[k] == ' ')
-				++k;
-			if (k != contentLengthTmp.size())
-				goto BAD_REQUEST;
-			if (tmp.size() > 19)
-			{
-				me->_codeStatus = 413;
-				goto BAD_REQUEST;
-			}
-			contentLength = atoi(tmp.c_str());	
+			me->_codeStatus = 413;
+			goto BAD_REQUEST;
 		}
+		contentLength = atoi(tmp.c_str());	
 	}
 
 	if (hasTransferEncoding)
