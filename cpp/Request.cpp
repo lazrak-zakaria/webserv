@@ -908,6 +908,8 @@ void	Client::Request::parseChunkedData()
 
 			if (hexValue.empty())
 			{
+				if (!outputFileName.empty())
+					me->filesToDelete.push_back(outputFileName);
 				me->setRequestFinished(400);
 				return ;
 			}
