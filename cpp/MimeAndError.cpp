@@ -160,7 +160,7 @@ MimeAndError::MimeAndError()
 	mimeReverse ["application/vnd.mozilla.xul+xml"]= ".xul";
 	mimeReverse ["application/zip"] = ".zip";
 	mimeReverse ["application/x-7z-compressed"]= ".7z";
-	mimeReverse ["audio/mp3"] = ".mp3";
+	mimeReverse ["audio/mpeg"] = ".mp3";
 	mimeReverse ["text/plain"] = ".txt";
 	mimeReverse ["video/mp4"] = ".mp4";
 
