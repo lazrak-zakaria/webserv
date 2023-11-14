@@ -110,7 +110,6 @@ class Client
 			void GetFile();
 			std::vector<std::string> readdirectory();
 			std::string generatehtml(std::vector<std::string> dir);
-			void SendChunkDir();
 
 			// delete
 			void DeleteMethodResponse();
@@ -136,10 +135,10 @@ class Client
 			pid_t								processPid;
 			size_t								timeStart;
 
-			std::string	inputFileCGi;
-			std::string	outputFileCGi;
+			std::string							inputFileCGi;
+			std::string							outputFileCGi;
 			
-			std::string cgiKeyProgram;
+			std::string 						cgiKeyProgram;
 			void		checkCgiTimeout();	
 			void		parseCgiHeader();
 			void		sendCgiBodyToFinaleAnswer();
@@ -160,7 +159,6 @@ class Client
 			bool	isChunked;
 			bool	isMultipart;
 			bool	inMultipartBody;
-			bool	multicanw;
 			bool	checkedMultipartPath;
 			/*chunked*/
 			bool	expectSizeRead;
@@ -177,12 +175,10 @@ class Client
 			bool	isCgiFinished;
 			bool	isCgiHeaderSent;
 			bool	isCgiHaveContentLength;
-			bool	isCgi;
 		} _flags;
 
 		bool		isLocationMatched(const std::string &locationDirective, const std::string &p);
 		void		detectFinalLocation(void);
-		void		addSlashToFinalPath();
 		bool		isMatchedWithCgi(std::string &file);
 		bool		isPathExist(std::string path);
 		size_t		getTimeNow();
@@ -204,7 +200,6 @@ class Client
 
 		void	clearClient();
 
-		void	test();
 		void	generateRandomName(std::string &name) const;
 
 		void	setDefaultConfigData(ServerConfig	*c);

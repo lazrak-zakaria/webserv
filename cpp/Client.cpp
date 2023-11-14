@@ -120,11 +120,6 @@ bool	Client::isPathExist(std::string path)
 	return stat(path.c_str(), &sb) == 0;
 }
 
-void	Client::addSlashToFinalPath()
-{
-	if (_finalPath[_finalPath.size() - 1] != '/')
-		_finalPath.push_back('/');
-}
 
 size_t	Client::getTimeNow()
 {
