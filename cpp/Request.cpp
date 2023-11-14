@@ -210,6 +210,7 @@ void	Client::Request::postUploadRequest()
 		std::string extension = me->_mimeError->mimeReverse.count(contentType) ? 
 										me->_mimeError->mimeReverse[contentType] : "";
 		me->_finalPath.append(name.append(extension));
+		me->_request.uploadFileName = name;
 		outputFileName = me->_finalPath;
 		outputFile.open(me->_finalPath.c_str(), std::ios::binary);
 		if (!outputFile.is_open())
