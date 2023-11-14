@@ -233,9 +233,6 @@ void	Client::Request::postUploadRequest()
 		parseChunkedData();
 	else if (me->_flags.isMultipart && me->_configData->allLocations[me->_locationKey].cgi.empty())
 	{
-		readAmountSoFar += requestBody.size();
-		if (readAmountSoFar >= contentLength)
-			me->_flags.isRequestFinished = true;
 		parseMultipart();
 	}
 	else
