@@ -906,6 +906,12 @@ void	Client::Request::parseChunkedData()
 			ss  << hexValue ; 
 			ss >> std::hex >> expectedBytesToRead ;
 
+			if (hexValue.empty())
+			{
+				me->setRequestFinished(400);
+				return ;
+			}
+
 			TotalDataProcessed += expectedBytesToRead;
 			if (TotalDataProcessed > me->_configData->limitBodySize)
 			{
