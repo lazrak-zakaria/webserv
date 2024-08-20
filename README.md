@@ -15,15 +15,15 @@
 ## Features
 - GET, POST, DELETE methods
 - Can be configured with a configuration file
-- CGI (Common Gateway Interface) to execute dynamic scripts such as PHP, Python, Perl,..., enabling server-side scripting and     dynamic content generation.
-- Cookies and session management
-- Multiple websites
+- CGI (Common Gateway Interface) to execute dynamic scripts such as PHP, Python, Perl,..., enabling server-side scripting and dynamic content generation.
+- Support cookies and session management
+- Able to serve multiple fully static websites.
 - Autoindex (directory listing)
 - Direct uploads
 
 
 ## Usage
-in terminal, clone:
+in the terminal, clone:
 ```
 git clone https://github.com/lazrak-zakaria/webserv.git && cd webserv
 ```
@@ -39,7 +39,7 @@ Now open a browser and enter the IP address and port from the configuration file
 
  
  ```
- ip-address:port/URL
+ ip_address:port/URL
 
  127.0.0.2:3030
  ```
