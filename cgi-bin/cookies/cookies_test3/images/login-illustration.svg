@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" role="img" aria-labelledby="title desc">
+  <title id="title">Login Illustration</title>
+  <desc id="desc">A secure login panel with lock icon.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5f7ff" />
+      <stop offset="1" stop-color="#e8f2ff" />
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4f8cff" />
+      <stop offset="1" stop-color="#2f6fde" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="420" rx="28" fill="url(#bg)"/>
+
+  <ellipse cx="470" cy="95" rx="85" ry="45" fill="#dce9ff"/>
+  <ellipse cx="120" cy="335" rx="95" ry="32" fill="#dce9ff"/>
+
+  <rect x="90" y="64" width="250" height="292" rx="24" fill="url(#card)"/>
+  <rect x="106" y="82" width="218" height="256" rx="16" fill="#ffffff" opacity="0.98"/>
+
+  <circle cx="215" cy="142" r="36" fill="#ebf2ff"/>
+  <circle cx="215" cy="134" r="16" fill="#7aa5ff"/>
+  <path d="M188 166c9-11 19-16 27-16s18 5 27 16" fill="none" stroke="#7aa5ff" stroke-width="8" stroke-linecap="round"/>
+
+  <rect x="145" y="204" width="140" height="16" rx="8" fill="#e7edff"/>
+  <rect x="145" y="234" width="140" height="16" rx="8" fill="#e7edff"/>
+
+  <rect x="158" y="278" width="114" height="34" rx="17" fill="#3d78ee"/>
+  <text x="215" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#ffffff">SIGN IN</text>
+
+  <rect x="420" y="145" width="106" height="88" rx="16" fill="#8ab0ff"/>
+  <path d="M444 145v-14a29 29 0 0158 0v14" fill="none" stroke="#2f5bb5" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="473" cy="184" r="10" fill="#2f5bb5"/>
+  <rect x="468" y="192" width="10" height="22" rx="5" fill="#2f5bb5"/>
+</svg>
